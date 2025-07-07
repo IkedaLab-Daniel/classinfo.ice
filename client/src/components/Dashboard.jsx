@@ -1,6 +1,6 @@
 
-import { Cloud, CheckSquare, BookOpen, Sun, CloudRain, Snowflake, IceCream, AlertCircle, Calendar, Clock, MapPin, Users, ChevronDown, ChevronUp } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Cloud, CheckSquare, BookOpen, Sun, CloudRain, Snowflake, IceCream, AlertCircle, Calendar, Clock, MapPin, Users, ChevronDown, ChevronUp, Moon, Sunset } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import ice from '../assets/ice.jpeg'
 import LoadingModal from './LoadingModal';
 import useApiWithLoading from '../hooks/useApiWithLoading';
@@ -20,8 +20,9 @@ const Dashboard = () => {
     const [isDataLoading, setIsDataLoading] = useState(true);
 
     useEffect(() => {
+        // Ensure we're always using the user's local time
         const timer = setInterval(() => {
-            setCurrentTime(new Date());
+            setCurrentTime(new Date()); // This automatically uses local timezone
         }, 1000);
 
         return () => clearInterval(timer);
@@ -78,7 +79,7 @@ const Dashboard = () => {
 
     // Helper function to check if a date is today (consistent with Tasks component)
     const isToday = (dueDate) => {
-        const now = new Date();
+        const now = new Date(); // User's local time
         const due = new Date(dueDate);
         
         // Get current date in local time (start of day)
@@ -93,9 +94,10 @@ const Dashboard = () => {
 
     // Helper function to check if a schedule is today
     const isScheduleToday = (schedule) => {
-        const today = new Date();
+        const today = new Date(); // User's local time
         const scheduleDate = new Date(schedule.date);
         
+        // Compare using local date strings to avoid timezone issues
         return today.toDateString() === scheduleDate.toDateString();
     };
 
@@ -180,6 +182,44 @@ const Dashboard = () => {
         return 'Good Evening!';
     };
 
+    const getGreetingIcon = () => {
+        const hour = currentTime.getHours();
+        if (hour < 12) return Sun; // Morning: Sun
+        if (hour < 17) return Sun; // Afternoon: Sun  
+        if (hour < 20) return Sunset; // Early Evening: Sunset
+        return Moon; // Night: Moon
+    };
+
+    const getGreetingIconStyle = () => {
+        const hour = currentTime.getHours();
+        if (hour < 12) {
+            // Morning: Bright yellow/orange gradient
+            return {
+                background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                boxShadow: '0 4px 12px rgba(251, 191, 36, 0.3)'
+            };
+        }
+        if (hour < 17) {
+            // Afternoon: Bright orange gradient
+            return {
+                background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)'
+            };
+        }
+        if (hour < 20) {
+            // Early Evening: Sunset colors
+            return {
+                background: 'linear-gradient(135deg, #f97316, #ea580c)',
+                boxShadow: '0 4px 12px rgba(249, 115, 22, 0.3)'
+            };
+        }
+        // Night: Deep blue/purple gradient
+        return {
+            background: 'linear-gradient(135deg, #1e40af, #1e3a8a)',
+            boxShadow: '0 4px 12px rgba(30, 64, 175, 0.3)'
+        };
+    };
+
     const formatTime = (date) => {
         return date.toLocaleTimeString('en-US', {
             hour: '2-digit',
@@ -230,8 +270,8 @@ const Dashboard = () => {
             <div className="dashboard">
                 <div className="left">
                     <div className="greeting-section">
-                        <div className="greeting-icon">
-                            <Sun size={32} />
+                        <div className="greeting-icon" style={getGreetingIconStyle()}>
+                            {React.createElement(getGreetingIcon(), { size: 32 })}
                         </div>
                         <p className="greeting">{getGreeting()}</p>
                     </div>
@@ -364,7 +404,6 @@ const Dashboard = () => {
                         <span className="card-description">Today</span>
                     </div>
                 </div>
-                V1.0
             </div>
         </section>
     )
