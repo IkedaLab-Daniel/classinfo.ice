@@ -171,7 +171,8 @@ const Manage = () => {
                 () => scheduleAPI.getAll(),
                 {
                     loadingMessage: "Loading schedules",
-                    showLoading: schedules.length === 0 // Only show modal if no data yet
+                    showLoading: schedules.length === 0, // Only show modal if no data yet
+                    serverWakeThreshold: 100 // Force server wake loader for styling
                 }
             );
             setSchedules(response.data || response);

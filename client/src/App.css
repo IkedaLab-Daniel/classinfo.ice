@@ -2232,7 +2232,7 @@ nav .wrapper .links a.active svg{
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .loading-progress {

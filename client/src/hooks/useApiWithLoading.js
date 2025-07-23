@@ -9,8 +9,8 @@ const useApiWithLoading = () => {
     const executeRequest = useCallback(async (apiCall, options = {}) => {
         const { 
             showLoading = true, 
-            serverWakeThreshold = 4000, // 4 seconds threshold for server wake detection
-            requestTimeout = 30000, // 30 seconds timeout for request
+            serverWakeThreshold = 3000,
+            requestTimeout = 90000,
             loadingMessage: requestLoadingMessage = "Loading..."
         } = options;
 

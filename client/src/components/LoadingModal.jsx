@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Coffee, Clock } from 'lucide-react';
 import LoaderCat from '../assets/loader-cat.gif'
+import LoaderBird from '../assets/sleeping.gif'
 
 const LoadingModal = ({ isOpen, message = "Loading...", isServerWaking = false }) => {
     const [dots, setDots] = useState('');
@@ -25,7 +26,7 @@ const LoadingModal = ({ isOpen, message = "Loading...", isServerWaking = false }
         if (!isServerWaking) return;
 
         const messages = [
-            'Server is sleeping, waking it up',
+            'Waking up the server',
             'Starting server services',
             'Connecting to database',
             'Loading your data',
@@ -38,7 +39,7 @@ const LoadingModal = ({ isOpen, message = "Loading...", isServerWaking = false }
         const interval = setInterval(() => {
             index = (index + 1) % messages.length;
             setWakingMessage(messages[index]);
-        }, 3000); // Slower transitions for better readability
+        }, 10000); // Slower transitions for better readability
 
         return () => clearInterval(interval);
     }, [isServerWaking]);
@@ -52,17 +53,11 @@ const LoadingModal = ({ isOpen, message = "Loading...", isServerWaking = false }
                     {isServerWaking ? (
                         <>
                             <div className="loading-icon server-waking">
-                                <Coffee size={48} />
-                                <div className="pulse-rings">
-                                    <div className="pulse-ring"></div>
-                                    <div className="pulse-ring"></div>
-                                    <div className="pulse-ring"></div>
-                                </div>
+                                <img src={LoaderBird}/>
                             </div>
                             <h3 className="loading-title">{wakingMessage}{dots}</h3>
                             <p className="loading-subtitle">
-                                <Clock size={16} />
-                                Server response is taking longer than usual - this may take up to 30 seconds
+                                Render servers love a good nap. This may take 20–30 seconds
                             </p>
                             <div className="loading-progress">
                                 <div className="progress-bar">
