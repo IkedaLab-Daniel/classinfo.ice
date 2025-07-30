@@ -9,8 +9,6 @@ const { errorHandler } = require('./middleware/errorHandler');
 
 // Route imports
 const scheduleRoutes = require('./routes/schedules');
-const instructorRoutes = require('./routes/instructors');
-const departmentRoutes = require('./routes/departments');
 
 // Connect to database
 connectDB();
@@ -78,8 +76,6 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api/schedules', scheduleRoutes);
-app.use('/api/instructors', instructorRoutes);
-app.use('/api/departments', departmentRoutes);
 
 // API documentation route
 app.get('/api', (req, res) => {
@@ -97,25 +93,6 @@ app.get('/api', (req, res) => {
         'GET /api/schedules/range/:startDate/:endDate': 'Get schedules in date range',
         'GET /api/schedules/instructor/:instructorName': 'Get schedules by instructor'
       },
-      instructors: {
-        'GET /api/instructors': 'Get all instructors with optional filtering',
-        'GET /api/instructors/:id': 'Get specific instructor by ID',
-        'POST /api/instructors': 'Create new instructor',
-        'PUT /api/instructors/:id': 'Update instructor',
-        'DELETE /api/instructors/:id': 'Delete instructor',
-        'GET /api/instructors/:id/schedule': 'Get instructor\'s schedule',
-        'GET /api/instructors/department/:departmentName': 'Get instructors by department'
-      },
-      departments: {
-        'GET /api/departments': 'Get all departments with optional filtering',
-        'GET /api/departments/:id': 'Get specific department by ID',
-        'POST /api/departments': 'Create new department',
-        'PUT /api/departments/:id': 'Update department',
-        'DELETE /api/departments/:id': 'Delete department',
-        'GET /api/departments/:id/stats': 'Get department statistics',
-        'GET /api/departments/:id/instructors': 'Get department\'s instructors',
-        'GET /api/departments/:id/schedule': 'Get department\'s schedule'
-      }
     },
     queryParameters: {
       pagination: 'page, limit',
