@@ -58,9 +58,60 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
-// Request logging middleware
+// Request logging middleware with status codes and colors
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.originalUrl} - ${new Date().toISOString()}`);
+  const startTime = Date.now();
+  
+  // Store original end function
+  const originalEnd = res.end;
+  
+  // Override res.end to capture when response is sent
+  res.end = function(chunk, encoding) {
+    // Restore original end function
+    res.end = originalEnd;
+    
+    // Calculate response time
+    const responseTime = Date.now() - startTime;
+    
+    // Color codes for different status ranges
+    const getStatusColor = (status) => {
+      if (status >= 200 && status < 300) return '\x1b[32m'; // Green for 2xx
+      if (status >= 300 && status < 400) return '\x1b[36m'; // Cyan for 3xx
+      if (status >= 400 && status < 500) return '\x1b[33m'; // Yellow for 4xx
+      if (status >= 500) return '\x1b[31m'; // Red for 5xx
+      return '\x1b[37m'; // White for others
+    };
+    
+    // Color codes for HTTP methods
+    const getMethodColor = (method) => {
+      switch (method) {
+        case 'GET': return '\x1b[32m';    // Green
+        case 'POST': return '\x1b[34m';   // Blue
+        case 'PUT': return '\x1b[35m';    // Magenta
+        case 'DELETE': return '\x1b[31m'; // Red
+        case 'PATCH': return '\x1b[33m';  // Yellow
+        default: return '\x1b[37m';       // White
+      }
+    };
+    
+    const resetColor = '\x1b[0m';
+    const grayColor = '\x1b[90m';
+    
+    const statusColor = getStatusColor(res.statusCode);
+    const methodColor = getMethodColor(req.method);
+    
+    console.log(
+      `${methodColor}${req.method}${resetColor} ` +
+      `${req.originalUrl} ` +
+      `${statusColor}${res.statusCode}${resetColor} ` +
+      `${grayColor}${responseTime}ms${resetColor} ` +
+      `${grayColor}- ${new Date().toISOString()}${resetColor}`
+    );
+    
+    // Call original end function
+    return originalEnd.call(this, chunk, encoding);
+  };
+  
   next();
 });
 
