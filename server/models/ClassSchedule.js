@@ -7,12 +7,6 @@ const classScheduleSchema = new mongoose.Schema({
     trim: true,
     maxlength: [100, 'Subject cannot exceed 100 characters']
   },
-  instructor: {
-    type: String,
-    required: [true, 'Instructor is required'],
-    trim: true,
-    maxlength: [100, 'Instructor name cannot exceed 100 characters']
-  },
   date: {
     type: Date,
     required: [true, 'Date is required'],
@@ -39,12 +33,6 @@ const classScheduleSchema = new mongoose.Schema({
     trim: true,
     maxlength: [500, 'Description cannot exceed 500 characters']
   },
-  department: {
-    type: String,
-    required: [true, 'Department is required'],
-    trim: true,
-    maxlength: [100, 'Department cannot exceed 100 characters']
-  },
   status: {
     type: String,
     enum: ['active', 'cancelled', 'completed'],
@@ -56,19 +44,8 @@ const classScheduleSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-// Virtual for checking if class is full
-classScheduleSchema.virtual('isFull').get(function() {
-  return this.enrolledStudents >= this.capacity;
-});
-
-// Virtual for available spots
-classScheduleSchema.virtual('availableSpots').get(function() {
-  return this.capacity - this.enrolledStudents;
-});
-
 // Index for efficient queries
 classScheduleSchema.index({ date: 1, startTime: 1 });
-classScheduleSchema.index({ instructor: 1, date: 1 });
 
 // Validation to ensure end time is after start time
 classScheduleSchema.pre('save', function(next) {
