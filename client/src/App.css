@@ -452,7 +452,7 @@ nav .wrapper .links a.active svg{
 
 .dashboard .left p {
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5),
-               0 -2px 4cap rgba(0, 0, 0, 0.5);
+               0 -2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .dashboard .left p.class{
@@ -579,5 +579,37 @@ nav .wrapper .links a.active svg{
   
   .time-info, .room-info, .notes-section {
     gap: 8px;
+  }
+
+  .dashboard{
+    margin: 20px 10px;
+    padding: 20px;
+    flex-direction: column;
+  }
+
+  .dashboard .right{
+    display: none;
+  }
+
+  .dashboard .left .greeting{
+    font-size: 1.6rem;
+  }
+
+  .dashboard .left p.class{
+    font-size: 1rem;
+  }
+
+  .dashboard .manage-by-container{
+    margin-top: 50px;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .dashboard .manage-by-container img{
+    width: 20px;
+  }
+
+  .dashboard .manage-by-container p{
+    font-size: 0.7rem;
   }
 }
