@@ -1,4 +1,4 @@
-import Today from "../Components/Today"
+import Today from '../components/Today'
 
 const Home = () => {
     return(
