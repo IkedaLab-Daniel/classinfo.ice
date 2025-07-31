@@ -1,10 +1,11 @@
 
-import { Cloud, CheckSquare, BookOpen, Sun, CloudRain, Snowflake, IceCream, AlertCircle, Calendar, Clock, MapPin, Users } from 'lucide-react';
+import { Cloud, CheckSquare, BookOpen, Sun, CloudRain, Snowflake, IceCream, AlertCircle, Calendar, Clock, MapPin, Users, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import ice from '../assets/ice.jpeg'
 
 const Dashboard = () => {
     const [currentTime, setCurrentTime] = useState(new Date());
+    const [isDataExpanded, setIsDataExpanded] = useState(false);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -63,6 +64,35 @@ const Dashboard = () => {
                             <BookOpen size={20} />
                         </div>
                         <p className='class'>Class: BSIT - 3B</p>
+                    </div>
+                    <div className="data-container-mobile">
+                        <div className="data-summary">
+                            <div className="data-item">
+                                <Sun size={16} />
+                                <span>28°C</span>
+                            </div>
+                            <div className="data-item">
+                                <AlertCircle size={16} />
+                                <span>3</span>
+                            </div>
+                            <div className="data-item">
+                                <Calendar size={16} />
+                                <span>3</span>
+                            </div>
+                            <button 
+                                className="expand-btn" 
+                                onClick={() => setIsDataExpanded(!isDataExpanded)}
+                            >
+                                {isDataExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                            </button>
+                        </div>
+                        {isDataExpanded && (
+                            <div className="data-details">
+                                <p><Sun size={16} /> 28°C Partly Cloudy</p>
+                                <p><AlertCircle size={16} /> 3 Tasks Due Today</p>
+                                <p><Calendar size={16} /> 3 Classes Today</p>
+                            </div>
+                        )}
                     </div>
                     <div className="manage-by-container">
                         {/* <div className="manager-icon">
