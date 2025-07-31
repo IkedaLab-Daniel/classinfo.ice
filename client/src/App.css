@@ -7,6 +7,12 @@
   font-family: "Poppins", sans-serif;
 }
 
+section{
+  width: 100vw;
+  max-width: 1200px;
+  margin: auto;
+}
+
 nav{
   position: fixed;
   bottom: 20px;
@@ -67,6 +73,34 @@ nav .wrapper .links a:hover svg,
 nav .wrapper .links a.active svg{
   color: white;
 }
+
+/* Today.jsx */
+.schedule-cards-container{
+  background-color: rgba(255, 224, 224, 0);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.schedule-cards-container .schedule-card{
+  background-color: rgb(255, 255, 255);
+  border: 1.5px solid rgb(54, 54, 54);
+  width: 280px;
+  border-radius: 6px;
+}
+
+.schedule-cards-container .schedule-card .head{
+  font-weight: 600;
+  border-bottom: 1.5px solid black;
+  padding: 4px 10px;
+}
+
+.schedule-cards-container .schedule-card .body{
+  padding: 10px;
+}
+
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
