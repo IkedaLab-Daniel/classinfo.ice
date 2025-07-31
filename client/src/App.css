@@ -293,6 +293,14 @@ nav .wrapper .links a.active svg{
   font-weight: 500;
   text-transform: capitalize;
   align-self: flex-start;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.status svg {
+  flex-shrink: 0;
 }
 
 /* Status color variations */

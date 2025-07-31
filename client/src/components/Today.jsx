@@ -1,4 +1,4 @@
-import { Clock, MapPin, FileText, Calendar, BookOpen } from 'lucide-react';
+import { Clock, MapPin, FileText, Calendar, BookOpen, CheckCircle, Play, AlertCircle, XCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 const Today = () => {
@@ -37,6 +37,26 @@ const Today = () => {
 
         // For other statuses (completed, etc.), return as is
         return schedule.status;
+    };
+
+    // Function to get status icon
+    const getStatusIcon = (status) => {
+        switch (status.toLowerCase()) {
+            case 'completed':
+                return <CheckCircle size={14} />;
+            case 'live now':
+                return <Play size={14} />;
+            case 'upcoming':
+                return <Clock size={14} />;
+            case 'cancelled':
+                return <XCircle size={14} />;
+            case 'active':
+                return <CheckCircle size={14} />;
+            case 'scheduled':
+                return <Calendar size={14} />;
+            default:
+                return <AlertCircle size={14} />;
+        }
     };
 
     // Fetch schedules from server
@@ -149,9 +169,10 @@ const Today = () => {
                                     <p className="notes">{schedule.description}</p>
                                 </div>
                             </div>
-                            <p className={`status status-${getDisplayStatus(schedule).toLowerCase().replace(' ', '-')}`}>
-                                {getDisplayStatus(schedule)}
-                            </p>
+                            <div className={`status status-${getDisplayStatus(schedule).toLowerCase().replace(' ', '-')}`}>
+                                {getStatusIcon(getDisplayStatus(schedule))}
+                                <span>{getDisplayStatus(schedule)}</span>
+                            </div>
                         </div>     
                     </div>
                 ))
