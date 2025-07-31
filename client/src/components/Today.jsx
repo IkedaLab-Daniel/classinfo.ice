@@ -162,13 +162,17 @@ const Today = () => {
                                 <MapPin size={16} />
                                 <p className="room">{schedule.room}</p>
                             </div>
-                            <div className="notes-section">
+                            
+                            {schedule.description && (
+                                <div className="notes-section">
                                 <FileText size={16} />
                                 <div>
                                     <p className="notes-label">Notes:</p>
                                     <p className="notes">{schedule.description}</p>
                                 </div>
                             </div>
+                            )}
+                            
                             <div className={`status status-${getDisplayStatus(schedule).toLowerCase().replace(' ', '-')}`}>
                                 {getStatusIcon(getDisplayStatus(schedule))}
                                 <span>{getDisplayStatus(schedule)}</span>

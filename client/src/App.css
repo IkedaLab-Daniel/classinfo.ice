@@ -207,7 +207,7 @@ nav .wrapper .links a.active svg{
 .schedule-card {
   background: white;
   width: 375px;
-  border: 2px solid rgb(96, 96, 96);
+  border: 1.5px solid rgb(96, 96, 96);
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
@@ -225,7 +225,7 @@ nav .wrapper .links a.active svg{
   gap: 12px;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #9c9ea2;
 }
 
 .schedule-card .head svg {
