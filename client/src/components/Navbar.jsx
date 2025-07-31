@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import useBootstrapNavbar from '../hooks/useBootstrapNavbar';
 
 const Navbar = () => {
   const location = useLocation();
+  useBootstrapNavbar(); // Initialize Bootstrap navbar functionality
 
   const isActive = (path) => {
     return location.pathname === path;
@@ -11,13 +13,28 @@ const Navbar = () => {
   // Close mobile menu when route changes
   useEffect(() => {
     const navbarCollapse = document.getElementById('navbarNav');
+    const navbarToggler = document.querySelector('.navbar-toggler');
+    
     if (navbarCollapse && navbarCollapse.classList.contains('show')) {
-      const bsCollapse = new window.bootstrap.Collapse(navbarCollapse, {
-        toggle: false
-      });
-      bsCollapse.hide();
+      navbarCollapse.classList.remove('show');
+      if (navbarToggler) {
+        navbarToggler.setAttribute('aria-expanded', 'false');
+      }
     }
   }, [location.pathname]);
+
+  const handleNavLinkClick = () => {
+    // Close mobile menu when a nav link is clicked
+    const navbarCollapse = document.getElementById('navbarNav');
+    const navbarToggler = document.querySelector('.navbar-toggler');
+    
+    if (navbarCollapse && navbarCollapse.classList.contains('show')) {
+      navbarCollapse.classList.remove('show');
+      if (navbarToggler) {
+        navbarToggler.setAttribute('aria-expanded', 'false');
+      }
+    }
+  };
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
@@ -44,6 +61,7 @@ const Navbar = () => {
               <Link
                 className={`nav-link ${isActive('/') ? 'active fw-bold' : ''}`}
                 to="/"
+                onClick={handleNavLinkClick}
               >
                 🏠 Home
               </Link>
@@ -52,8 +70,18 @@ const Navbar = () => {
               <Link
                 className={`nav-link ${isActive('/weekly') ? 'active fw-bold' : ''}`}
                 to="/weekly"
+                onClick={handleNavLinkClick}
               >
                 📅 Weekly
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                className={`nav-link ${isActive('/manage') ? 'active fw-bold' : ''}`}
+                to="/manage"
+                onClick={handleNavLinkClick}
+              >
+                🗂️ Manage
               </Link>
             </li>
           </ul>

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Homepage from './components/Homepage';
 import WeeklySchedule from './components/WeeklySchedule';
+import ManageSchedules from './components/ManageSchedules';
 import './index.css';
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Homepage />} />
             <Route path="/weekly" element={<WeeklySchedule />} />
+            <Route path="/manage" element={<ManageSchedules />} />
           </Routes>
         </main>
         <footer className="bg-light mt-5 py-4">
