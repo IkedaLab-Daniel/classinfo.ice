@@ -427,33 +427,93 @@ nav .wrapper .links a.active svg{
 .dashboard{
   display: flex;
   justify-content: space-between;
-  background-image: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), url(./assets/dashboard-bg.jpg);
+  background-image: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)), url(./assets/dashboard-bg.jpg);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  padding: 60px 20px;
+  padding: 30px 20px;
   margin-top: 20px;
   border-radius: 12px;
-  color: white;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  color: rgb(246, 246, 246);
   box-shadow: 0 8px 10px rgba(0, 0, 0, 0.17);
 }
 
 .dashboard .greeting{
-  font-size: 2rem;
-  font-weight: 600
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.dashboard .left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+
+.dashboard .left p {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5),
+               0 -2px 4cap rgba(0, 0, 0, 0.5);
+}
+
+.dashboard .left p.class{
+  font-weight: 500;
+  font-size: 1.5rem;
 }
 
 .dashboard .right{
   display: flex;
-  gap: 10px;
+  gap: 16px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5),
+               0 -2px 4cap rgba(0, 0, 0, 0.5);
 }
 
 .dashboard .right .card{
-  background-color: red;
-  border-radius: 8px;
-  max-width: 200px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  width: 180px;
+  min-height: 140px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 2px solid rgba(255, 255, 255, 0.331);
+}
+
+.dashboard .right .card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard .right .card svg {
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.card-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #eeeeee;
+  margin: 0;
+}
+
+.card-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #f3f3f3;
+  margin: 0;
+  text-align: center;
+}
+
+.card-description {
+  font-size: 0.8rem;
+  color: #cccccc;
+  margin: 0;
+  text-align: center;
 }
 
 @keyframes spin {

@@ -1,4 +1,6 @@
 
+import { Cloud, CheckSquare, BookOpen, Sun, CloudRain, Snowflake } from 'lucide-react';
+
 const Dashboard = () => {
     
     return(
@@ -6,27 +8,27 @@ const Dashboard = () => {
             <div className="dashboard">
                 <div className="left">
                     <p className="greeting">Good Morning!</p>
-                    <p>Class: BSIT - 3B</p>
-                    <p>Managed by:</p>
+                    <p className='class'>Class: BSIT - 3B</p>
+                    <p className='manage-by'>Managed by:</p>
                 </div>
                 <div className="right">
                     <div className="card">
-                        {/* icon */}
-                        <span>28°C</span>
-                        <span>Weather</span>
-                        <span>Partly Cloudy</span>
+                        <Cloud size={32} />
+                        <span className="card-value">28°C</span>
+                        <span className="card-label">Weather</span>
+                        <span className="card-description">Partly Cloudy</span>
                     </div>
                     <div className="card">
-                        {/* icon */}
-                        <span>3</span>
-                        <span>Tasks Due</span>
-                        <span>Today</span>
+                        <CheckSquare size={32} />
+                        <span className="card-value">3</span>
+                        <span className="card-label">Tasks Due</span>
+                        <span className="card-description">Today</span>
                     </div>
                     <div className="card">
-                        {/* icon */}
-                        <span>3</span>
-                        <span>Classes</span>
-                        <span>Remaining</span>
+                        <BookOpen size={32} />
+                        <span className="card-value">3</span>
+                        <span className="card-label">Classes</span>
+                        <span className="card-description">Remaining</span>
                     </div>
                 </div>
                 
