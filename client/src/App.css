@@ -423,6 +423,39 @@ nav .wrapper .links a.active svg{
   margin-bottom: 16px;
 }
 
+/* Dashboard.jsx */
+.dashboard{
+  display: flex;
+  justify-content: space-between;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), url(./assets/dashboard-bg.jpg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 60px 20px;
+  margin-top: 20px;
+  border-radius: 12px;
+  color: white;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 10px rgba(0, 0, 0, 0.17);
+}
+
+.dashboard .greeting{
+  font-size: 2rem;
+  font-weight: 600
+}
+
+.dashboard .right{
+  display: flex;
+  gap: 10px;
+}
+
+.dashboard .right .card{
+  background-color: red;
+  border-radius: 8px;
+  max-width: 200px;
+  justify-content: center;
+}
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
