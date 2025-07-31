@@ -9,6 +9,36 @@ const Today = () => {
     // Get today's date in YYYY-MM-DD format
     const today = new Date().toISOString().split('T')[0];
 
+    // Function to determine display status based on current time
+    const getDisplayStatus = (schedule) => {
+        // If status is cancelled, don't change it
+        if (schedule.status.toLowerCase() === 'cancelled') {
+            return schedule.status;
+        }
+
+        // Only modify "active" status based on current time
+        if (schedule.status.toLowerCase() === 'active') {
+            const now = new Date();
+            const currentTime = now.toTimeString().slice(0, 5); // Get HH:MM format
+            
+            // Check if current time is within the schedule time range
+            if (currentTime >= schedule.startTime && currentTime <= schedule.endTime) {
+                return 'Live Now';
+            }
+            // Check if current time is after the schedule's end time
+            else if (currentTime > schedule.endTime) {
+                return 'Completed';
+            } 
+            // Current time is before the schedule's start time
+            else {
+                return 'Upcoming';
+            }
+        }
+
+        // For other statuses (completed, etc.), return as is
+        return schedule.status;
+    };
+
     // Fetch schedules from server
     useEffect(() => {
         const fetchSchedules = async () => {
@@ -21,9 +51,9 @@ const Today = () => {
                 }
                 
                 const data = await response.json();
-                console.log(data)
+                console.log('API Response:', data);
+                console.log('Schedules data:', data.data);
                 setSchedules(data.data || []);
-                console.log(schedules)
                 setError(null);
             } catch (err) {
                 console.error('Error fetching schedules:', err);
@@ -37,12 +67,21 @@ const Today = () => {
         fetchSchedules();
     }, []);
 
+    // Debug: Log schedules when they change
+    useEffect(() => {
+        console.log('Schedules state updated:', schedules);
+        console.log('Number of schedules:', schedules.length);
+    }, [schedules]);
+
     // Filter schedules for today
     const todaySchedules = schedules.filter(schedule => {
         // Parse the ISO date string to get just the date part
         const scheduleDate = new Date(schedule.date).toISOString().split('T')[0];
+        console.log(`Schedule: ${schedule.subject}, Date: ${scheduleDate}, Today: ${today}, Match: ${scheduleDate === today}`);
         return scheduleDate === today;
     });
+
+    console.log('Today schedules:', todaySchedules);
 
     // Format time for display
     const formatTime = (time) => {
@@ -110,7 +149,9 @@ const Today = () => {
                                     <p className="notes">{schedule.description}</p>
                                 </div>
                             </div>
-                            <p className={`status status-${schedule.status.toLowerCase()}`}>{schedule.status}</p>
+                            <p className={`status status-${getDisplayStatus(schedule).toLowerCase().replace(' ', '-')}`}>
+                                {getDisplayStatus(schedule)}
+                            </p>
                         </div>     
                     </div>
                 ))
