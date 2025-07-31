@@ -432,7 +432,7 @@ nav .wrapper .links a.active svg{
   background-position: center;
   background-repeat: no-repeat;
   padding: 30px 20px;
-  margin-top: 20px;
+  margin: 20px 20px;
   border-radius: 12px;
   color: rgb(246, 246, 246);
   box-shadow: 0 8px 10px rgba(0, 0, 0, 0.17);
@@ -443,11 +443,25 @@ nav .wrapper .links a.active svg{
   font-weight: 700;
 }
 
+.current-time {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.current-date {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #e0e0e0;
+  margin: 0 0 8px 0;
+}
+
 .dashboard .left {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 4px;
+  gap: 16px;
 }
 
 .dashboard .left p {
@@ -455,19 +469,76 @@ nav .wrapper .links a.active svg{
                0 -2px 4px rgba(0, 0, 0, 0.5);
 }
 
+.greeting-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.greeting-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+}
+
+.greeting-icon svg {
+  color: white;
+}
+
+.time-section, .class-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.time-icon, .class-icon, .manager-icon {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.time-icon svg, .class-icon svg, .manager-icon svg {
+  color: white;
+}
+
+.time-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.manage-by-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.manager-info {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+}
+
 .dashboard .left p.class{
   font-weight: 500;
   font-size: 1.5rem;
+  margin: 0;
 }
 
 .name{
   font-weight: 600;
-}
-
-.manage-by-container{
-  display: flex;
-  align-items: center;
-  gap: 10px;
 }
 
 .manage-by-container .img-wrapper{
@@ -511,9 +582,35 @@ nav .wrapper .links a.active svg{
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
-.dashboard .right .card svg {
-  color: #ffffff;
-  margin-bottom: 4px;
+.card-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  transition: transform 0.2s ease;
+}
+
+.weather-card .card-icon {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+}
+
+.tasks-card .card-icon {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.classes-card .card-icon {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.card-icon svg {
+  color: white;
+}
+
+.card-icon:hover {
+  transform: scale(1.1);
 }
 
 .card-value {
@@ -602,7 +699,12 @@ nav .wrapper .links a.active svg{
   .dashboard .manage-by-container{
     margin-top: 50px;
     flex-direction: column;
-    gap: 0;
+    gap: 0; 
+  }
+
+  .dashboard .manage-by-container .img-wrapper{
+    display: flex;
+    justify-content: center;
   }
 
   .dashboard .manage-by-container img{
@@ -611,5 +713,14 @@ nav .wrapper .links a.active svg{
 
   .dashboard .manage-by-container p{
     font-size: 0.7rem;
+  }
+
+  .manager-info{
+    gap: 2px;
+    flex-direction: column;
+  }
+
+  .time-info{
+    gap: 0;
   }
 }
