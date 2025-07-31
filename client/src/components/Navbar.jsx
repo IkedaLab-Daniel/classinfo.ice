@@ -1,18 +1,39 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
-const Navbar = ({ activeTab, setActiveTab }) => {
+const Navbar = () => {
+  const location = useLocation();
+
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    const navbarCollapse = document.getElementById('navbarNav');
+    if (navbarCollapse && navbarCollapse.classList.contains('show')) {
+      const bsCollapse = new window.bootstrap.Collapse(navbarCollapse, {
+        toggle: false
+      });
+      bsCollapse.hide();
+    }
+  }, [location.pathname]);
+
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
       <div className="container">
-        <a className="navbar-brand" href="#home">
+        <Link className="navbar-brand" to="/">
           📚 ClassInfo
-        </a>
+        </Link>
         
         <button 
           className="navbar-toggler" 
           type="button" 
           data-bs-toggle="collapse" 
           data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
         >
           <span className="navbar-toggler-icon"></span>
         </button>
@@ -20,21 +41,20 @@ const Navbar = ({ activeTab, setActiveTab }) => {
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto">
             <li className="nav-item">
-              <button
-                className={`nav-link btn btn-link text-white ${activeTab === 'home' ? 'active fw-bold' : ''}`}
-                onClick={() => setActiveTab('home')}
+              <Link
+                className={`nav-link ${isActive('/') ? 'active fw-bold' : ''}`}
+                to="/"
               >
                 🏠 Home
-              </button>
+              </Link>
             </li>
             <li className="nav-item">
-              <button
-                className={`nav-link btn btn-link text-white ${activeTab === 'weekly' ? 'active fw-bold' : ''}`}
-                onClick={() => setActiveTab('weekly')}
-                disabled
+              <Link
+                className={`nav-link ${isActive('/weekly') ? 'active fw-bold' : ''}`}
+                to="/weekly"
               >
-                📅 Weekly (Coming Soon)
-              </button>
+                📅 Weekly
+              </Link>
             </li>
           </ul>
         </div>
