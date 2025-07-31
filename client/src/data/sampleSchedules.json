@@ -1,0 +1,96 @@
+{
+  "success": true,
+  "count": 6,
+  "total": 6,
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "pages": 1
+  },
+  "data": [
+    {
+      "_id": "688a2b3c9117ee94703a47aa",
+      "subject": "Advanced Web Development 3",
+      "date": "2025-07-31T00:00:00.000Z",
+      "startTime": "09:00",
+      "endTime": "11:00",
+      "room": "LAB-206",
+      "description": "",
+      "status": "Completed",
+      "createdAt": "2025-07-30T14:25:01.000Z",
+      "updatedAt": "2025-07-30T15:37:26.118Z",
+      "__v": 0,
+      "id": "688a2b3c9117ee94703a47aa"
+    },
+    {
+      "_id": "688a3599158896087978273a",
+      "subject": "Database Management Systems",
+      "date": "2025-07-31T00:00:00.000Z",
+      "startTime": "13:00",
+      "endTime": "15:00",
+      "room": "ROOM-301",
+      "description": "Advanced SQL queries, database optimization, and transaction management. Practical exercises with real-world datasets.",
+      "status": "active",
+      "createdAt": "2025-07-30T14:25:01.000Z",
+      "updatedAt": "2025-07-30T14:25:01.000Z",
+      "__v": 0,
+      "id": "688a3599158896087978273a"
+    },
+    {
+      "_id": "688a4599158896087978274b",
+      "subject": "Mobile Application Development",
+      "date": "2025-07-31T00:00:00.000Z",
+      "startTime": "15:30",
+      "endTime": "17:30",
+      "room": "LAB-105",
+      "description": "React Native development with Firebase integration. Building cross-platform mobile applications.",
+      "status": "active",
+      "createdAt": "2025-07-30T14:25:01.000Z",
+      "updatedAt": "2025-07-30T14:25:01.000Z",
+      "__v": 0,
+      "id": "688a4599158896087978274b"
+    },
+    {
+      "_id": "688a5599158896087978275c",
+      "subject": "Software Engineering Principles",
+      "date": "2025-08-01T00:00:00.000Z",
+      "startTime": "10:00",
+      "endTime": "12:00",
+      "room": "ROOM-202",
+      "description": "Agile methodologies, design patterns, and software architecture. Team project presentations.",
+      "status": "scheduled",
+      "createdAt": "2025-07-30T14:25:01.000Z",
+      "updatedAt": "2025-07-30T14:25:01.000Z",
+      "__v": 0,
+      "id": "688a5599158896087978275c"
+    },
+    {
+      "_id": "688a6599158896087978276d",
+      "subject": "Artificial Intelligence",
+      "date": "2025-08-02T00:00:00.000Z",
+      "startTime": "09:30",
+      "endTime": "11:30",
+      "room": "LAB-401",
+      "description": "Machine learning algorithms, neural networks, and AI model training with TensorFlow.",
+      "status": "scheduled",
+      "createdAt": "2025-07-30T14:25:01.000Z",
+      "updatedAt": "2025-07-30T14:25:01.000Z",
+      "__v": 0,
+      "id": "688a6599158896087978276d"
+    },
+    {
+      "_id": "688a7599158896087978277e",
+      "subject": "Computer Networks",
+      "date": "2025-08-02T00:00:00.000Z",
+      "startTime": "14:00",
+      "endTime": "16:00",
+      "room": "LAB-303",
+      "description": "Network protocols, security, and distributed systems. Hands-on networking lab exercises.",
+      "status": "scheduled",
+      "createdAt": "2025-07-30T14:25:01.000Z",
+      "updatedAt": "2025-07-30T14:25:01.000Z",
+      "__v": 0,
+      "id": "688a7599158896087978277e"
+    }
+  ]
+}

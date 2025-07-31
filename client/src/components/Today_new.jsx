@@ -5,12 +5,10 @@ const Today = () => {
     // Get today's date in YYYY-MM-DD format
     const today = new Date().toISOString().split('T')[0];
     
-    // Filter schedules for today - data is now in sampleData.data array
-    const todaySchedules = sampleData.data.filter(schedule => {
-        // Parse the ISO date string to get just the date part
-        const scheduleDate = new Date(schedule.date).toISOString().split('T')[0];
-        return scheduleDate === today;
-    });
+    // Filter schedules for today
+    const todaySchedules = sampleData.schedules.filter(schedule => 
+        schedule.date === today
+    );
 
     // Format time for display
     const formatTime = (time) => {
@@ -18,7 +16,7 @@ const Today = () => {
         const hour = parseInt(hours);
         const ampm = hour >= 12 ? 'PM' : 'AM';
         const displayHour = hour % 12 || 12;
-        return `${displayHour}:${minutes} ${ampm}`;
+        return `${displayHour}:${minutes}${ampm}`;
     };
 
     // Format date for display
