@@ -146,7 +146,7 @@ const Today = () => {
                 </div>
             ) : todaySchedules.length > 0 ? (
                 todaySchedules.map(schedule => (
-                    <div key={schedule.id || schedule._id} className="schedule-card">
+                    <div key={schedule.id || schedule._id} className="schedule-card" data-aos="fade-up">
                         <div className="head">
                             <BookOpen size={20} />
                             <p className="subject">{schedule.subject}</p>
@@ -162,7 +162,7 @@ const Today = () => {
                                 <MapPin size={16} />
                                 <p className="room">{schedule.room}</p>
                             </div>
-                            
+
                             {schedule.description && (
                                 <div className="notes-section">
                                 <FileText size={16} />
