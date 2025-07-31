@@ -6,6 +6,12 @@ import ice from '../assets/ice.jpeg'
 const Dashboard = () => {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [isDataExpanded, setIsDataExpanded] = useState(false);
+    const [weather, setWeather] = useState({
+        temp: '--',
+        description: 'Loading...',
+        icon: '01d'
+    });
+    const [weatherLoading, setWeatherLoading] = useState(true);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -13,6 +19,44 @@ const Dashboard = () => {
         }, 1000);
 
         return () => clearInterval(timer);
+    }, []);
+
+    useEffect(() => {
+        const fetchWeather = async () => {
+            try {
+                setWeatherLoading(true);
+                const API_KEY = import.meta.env.VITE_OPEN_WEATHER_API;
+                const response = await fetch(
+                    `https://api.openweathermap.org/data/2.5/weather?q=Mabalacat&appid=${API_KEY}&units=metric`
+                );
+                
+                if (!response.ok) {
+                    throw new Error('Weather data not available');
+                }
+                
+                const data = await response.json();
+                setWeather({
+                    temp: Math.round(data.main.temp),
+                    description: data.weather[0].description,
+                    icon: data.weather[0].icon
+                });
+            } catch (error) {
+                console.error('Error fetching weather:', error);
+                setWeather({
+                    temp: '--',
+                    description: 'Unavailable',
+                    icon: '01d'
+                });
+            } finally {
+                setWeatherLoading(false);
+            }
+        };
+
+        fetchWeather();
+        // Refresh weather every 10 minutes
+        const weatherInterval = setInterval(fetchWeather, 10 * 60 * 1000);
+        
+        return () => clearInterval(weatherInterval);
     }, []);
 
     const getGreeting = () => {
@@ -38,6 +82,26 @@ const Dashboard = () => {
             month: 'long',
             day: 'numeric'
         });
+    };
+
+    const getWeatherIcon = (iconCode) => {
+        return `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+    };
+
+    const getWeatherLucideIcon = (iconCode) => {
+        // Fallback icons for when OpenWeather icons fail to load
+        const iconMap = {
+            '01d': Sun, '01n': Sun,
+            '02d': Cloud, '02n': Cloud,
+            '03d': Cloud, '03n': Cloud,
+            '04d': Cloud, '04n': Cloud,
+            '09d': CloudRain, '09n': CloudRain,
+            '10d': CloudRain, '10n': CloudRain,
+            '11d': Cloud, '11n': Cloud,
+            '13d': Snowflake, '13n': Snowflake,
+            '50d': Cloud, '50n': Cloud
+        };
+        return iconMap[iconCode] || Sun;
     };
     
     return(
@@ -68,8 +132,26 @@ const Dashboard = () => {
                     <div className="data-container-mobile">
                         <div className="data-summary">
                             <div className="data-item">
-                                <Sun size={16} />
-                                <span>28°C</span>
+                                {weatherLoading ? (
+                                    <div className="weather-loading">
+                                        <Sun size={16} />
+                                        <span>--°C</span>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <img 
+                                            src={getWeatherIcon(weather.icon)} 
+                                            alt={weather.description}
+                                            className="weather-icon-small"
+                                            onError={(e) => {
+                                                e.target.style.display = 'none';
+                                                e.target.nextSibling.style.display = 'flex';
+                                            }}
+                                        />
+                                        <Sun size={16} className="weather-icon-fallback" style={{display: 'none'}} />
+                                        <span>{weather.temp}°C</span>
+                                    </>
+                                )}
                             </div>
                             <div className="data-item">
                                 <AlertCircle size={16} />
@@ -88,7 +170,19 @@ const Dashboard = () => {
                         </div>
                         {isDataExpanded && (
                             <div className="data-details">
-                                <p><Sun size={16} /> 28°C Partly Cloudy</p>
+                                <p>
+                                    <img 
+                                        src={getWeatherIcon(weather.icon)} 
+                                        alt={weather.description}
+                                        className="weather-icon-small"
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                            e.target.nextSibling.style.display = 'flex';
+                                        }}
+                                    />
+                                    <Sun size={16} className="weather-icon-fallback" style={{display: 'none'}} />
+                                    {weather.temp}°C {weather.description}
+                                </p>
                                 <p><AlertCircle size={16} /> 3 Tasks Due Today</p>
                                 <p><Calendar size={16} /> 3 Classes Today</p>
                             </div>
@@ -111,11 +205,26 @@ const Dashboard = () => {
                 <div className="right">
                     <div className="card weather-card">
                         <div className="card-icon">
-                            <Sun size={28} />
+                            {weatherLoading ? (
+                                <Sun size={28} />
+                            ) : (
+                                <>
+                                    <img 
+                                        src={getWeatherIcon(weather.icon)} 
+                                        alt={weather.description}
+                                        className="weather-icon-large"
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                            e.target.nextSibling.style.display = 'flex';
+                                        }}
+                                    />
+                                    <Sun size={28} className="weather-icon-fallback" style={{display: 'none'}} />
+                                </>
+                            )}
                         </div>
-                        <span className="card-value">28°C</span>
+                        <span className="card-value">{weather.temp}°C</span>
                         <span className="card-label">Weather</span>
-                        <span className="card-description">Partly Cloudy</span>
+                        <span className="card-description">{weather.description}</span>
                     </div>
                     <div className="card tasks-card">
                         <div className="card-icon">

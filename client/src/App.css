@@ -613,6 +613,30 @@ nav .wrapper .links a.active svg{
   transform: scale(1.1);
 }
 
+.weather-icon-large {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.weather-icon-small {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.weather-icon-fallback {
+  flex-shrink: 0;
+}
+
+.weather-loading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.7;
+}
+
 .card-value {
   font-size: 1.8rem;
   font-weight: 700;
@@ -690,7 +714,7 @@ nav .wrapper .links a.active svg{
   font-size: 0.9rem;
   font-weight: 600;
   color: #ffffff;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 2px 4px rgba(199, 199, 199, 0.5);
 }
 
 .expand-btn {
@@ -720,6 +744,7 @@ nav .wrapper .links a.active svg{
   padding-top: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.2);
   animation: slideDown 0.3s ease-out;
+  text-shadow: 0 2px 4px rgba(199, 199, 199, 0.5);
 }
 
 @keyframes slideDown {
@@ -781,6 +806,7 @@ nav .wrapper .links a.active svg{
     margin: 20px 10px;
     padding: 20px;
     flex-direction: column;
+    transition: .4s;
   }
 
   .dashboard .right{
