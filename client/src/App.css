@@ -284,15 +284,53 @@ nav .wrapper .links a.active svg{
 }
 
 .status {
+  width: 100%;
+  text-align: center;
   margin: 12px 0 0 0;
   padding: 6px 12px;
-  background: #dbeafe;
-  color: #1d4ed8;
   border-radius: 6px;
   font-size: 0.85rem;
   font-weight: 500;
   text-transform: capitalize;
   align-self: flex-start;
+}
+
+/* Status color variations */
+.status-completed {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.status-live {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.status-upcoming {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.status-cancelled {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+/* Active status with pulse animation */
+.status-active {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.status-scheduled {
+  background: #e0e7ff;
+  color: #3730a3;
+  border: 1px solid #c7d2fe;
 }
 
 .no-schedules {
@@ -313,6 +351,58 @@ nav .wrapper .links a.active svg{
 .no-schedules p {
   font-size: 1.1rem;
   margin: 0;
+}
+
+/* Loading and Error States */
+.loading-state, .error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.loading-state svg, .error-state svg {
+  margin-bottom: 16px;
+  color: #9ca3af;
+}
+
+.loading-state p, .error-state p {
+  font-size: 1.1rem;
+  margin: 0 0 16px 0;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.retry-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.retry-btn:hover {
+  background: #1d4ed8;
 }
 
 /* Mobile responsiveness for Today component */

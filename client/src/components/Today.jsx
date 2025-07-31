@@ -1,12 +1,44 @@
 import { Clock, MapPin, FileText, Calendar, BookOpen } from 'lucide-react';
-import sampleData from '../data/sampleSchedules.json';
+import { useState, useEffect } from 'react';
 
 const Today = () => {
+    const [schedules, setSchedules] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
     // Get today's date in YYYY-MM-DD format
     const today = new Date().toISOString().split('T')[0];
-    
-    // Filter schedules for today - data is now in sampleData.data array
-    const todaySchedules = sampleData.data.filter(schedule => {
+
+    // Fetch schedules from server
+    useEffect(() => {
+        const fetchSchedules = async () => {
+            try {
+                setLoading(true);
+                const response = await fetch('http://localhost:5001/api/schedules');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log(data)
+                setSchedules(data.data || []);
+                console.log(schedules)
+                setError(null);
+            } catch (err) {
+                console.error('Error fetching schedules:', err);
+                setError(err.message);
+                setSchedules([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchSchedules();
+    }, []);
+
+    // Filter schedules for today
+    const todaySchedules = schedules.filter(schedule => {
         // Parse the ISO date string to get just the date part
         const scheduleDate = new Date(schedule.date).toISOString().split('T')[0];
         return scheduleDate === today;
@@ -40,9 +72,22 @@ const Today = () => {
         <p>{formatDate(today)}</p>
         
         <div className="schedule-cards-container">
-            {todaySchedules.length > 0 ? (
+            {loading ? (
+                <div className="loading-state">
+                    <div className="spinner"></div>
+                    <p>Loading today's schedules...</p>
+                </div>
+            ) : error ? (
+                <div className="error-state">
+                    <Calendar size={48} />
+                    <p>Error loading schedules: {error}</p>
+                    <button onClick={() => window.location.reload()} className="retry-btn">
+                        Try Again
+                    </button>
+                </div>
+            ) : todaySchedules.length > 0 ? (
                 todaySchedules.map(schedule => (
-                    <div key={schedule.id} className="schedule-card">
+                    <div key={schedule.id || schedule._id} className="schedule-card">
                         <div className="head">
                             <BookOpen size={20} />
                             <p className="subject">{schedule.subject}</p>
@@ -65,7 +110,7 @@ const Today = () => {
                                     <p className="notes">{schedule.description}</p>
                                 </div>
                             </div>
-                            <p className="status">{schedule.status}</p>
+                            <p className={`status status-${schedule.status.toLowerCase()}`}>{schedule.status}</p>
                         </div>     
                     </div>
                 ))
