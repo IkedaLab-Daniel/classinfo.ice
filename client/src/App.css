@@ -460,11 +460,33 @@ nav .wrapper .links a.active svg{
   font-size: 1.5rem;
 }
 
+.name{
+  font-weight: 600;
+}
+
+.manage-by-container{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.manage-by-container .img-wrapper{
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.manage-by-container .img-wrapper img{
+  width: 30px;
+  border-radius: 20px;
+  border: 1px solid rgb(89, 89, 89);
+}
+
 .dashboard .right{
   display: flex;
   gap: 16px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5),
-               0 -2px 4cap rgba(0, 0, 0, 0.5);
+               0 -2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .dashboard .right .card{

@@ -1,6 +1,6 @@
 
-import { Cloud, CheckSquare, BookOpen, Sun, CloudRain, Snowflake } from 'lucide-react';
-
+import { Cloud, CheckSquare, BookOpen, Sun, CloudRain, Snowflake, IceCream } from 'lucide-react';
+import ice from '../assets/ice.jpeg'
 const Dashboard = () => {
     
     return(
@@ -9,7 +9,15 @@ const Dashboard = () => {
                 <div className="left">
                     <p className="greeting">Good Morning!</p>
                     <p className='class'>Class: BSIT - 3B</p>
-                    <p className='manage-by'>Managed by:</p>
+                    {/* <p className='manage-by'>Managed by:</p> */}
+                    <div className="manage-by-container">
+                        <div className="img-wrapper">
+                            <img src={ice} alt="" />
+                            <img src={ice} alt="" />
+                            <img src={ice} alt="" />
+                        </div>
+                        <p>Managed by: <span className='name'>Ice, Ice, Baby</span></p>
+                    </div>
                 </div>
                 <div className="right">
                     <div className="card">
