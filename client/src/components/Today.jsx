@@ -1,5 +1,6 @@
 import { Clock, MapPin, FileText, Calendar, BookOpen, CheckCircle, Play, AlertCircle, XCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { scheduleAPI } from '../config/api';
 
 const Today = () => {
     const [schedules, setSchedules] = useState([]);
@@ -64,13 +65,8 @@ const Today = () => {
         const fetchSchedules = async () => {
             try {
                 setLoading(true);
-                const response = await fetch('http://localhost:5001/api/schedules');
+                const data = await scheduleAPI.getAll();
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
                 console.log('API Response:', data);
                 console.log('Schedules data:', data.data);
                 setSchedules(data.data || []);
