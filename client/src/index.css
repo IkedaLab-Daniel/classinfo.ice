@@ -1,0 +1,51 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+/* Custom styles for ClassInfo */
+body {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.navbar-brand {
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+.schedule-card {
+  transition: transform 0.2s ease-in-out;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.schedule-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.time-badge {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.status-badge {
+  font-size: 0.8rem;
+}
+
+.no-schedules {
+  color: #6c757d;
+  font-style: italic;
+}
+
+.schedule-time {
+  color: #495057;
+  font-weight: 500;
+}
+
+.schedule-room {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
