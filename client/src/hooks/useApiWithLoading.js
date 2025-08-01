@@ -9,7 +9,7 @@ const useApiWithLoading = () => {
     const executeRequest = useCallback(async (apiCall, options = {}) => {
         const { 
             showLoading = true, 
-            serverWakeThreshold = 5000, // 5 seconds
+            serverWakeThreshold = 2000, // Reduced to 2 seconds for easier testing
             loadingMessage: requestLoadingMessage = "Loading..."
         } = options;
 
@@ -22,6 +22,7 @@ const useApiWithLoading = () => {
             }
         }
 
+        console.log('Starting API request with threshold:', serverWakeThreshold);
         setIsLoading(true);
         setLoadingMessage(requestLoadingMessage);
         setIsServerWaking(false);
@@ -31,6 +32,7 @@ const useApiWithLoading = () => {
 
         // Set up server wake detection
         const wakeTimer = setTimeout(() => {
+            console.log('Wake timer triggered - showing server waking message');
             setIsServerWaking(true);
         }, serverWakeThreshold);
 
@@ -40,6 +42,7 @@ const useApiWithLoading = () => {
             
             // If the request took longer than threshold, it was likely a cold start
             const duration = Date.now() - startTime;
+            console.log(`Request completed in ${duration}ms`);
             if (duration > serverWakeThreshold) {
                 console.log(`Server was likely sleeping. Request took ${duration}ms`);
             }
@@ -48,9 +51,11 @@ const useApiWithLoading = () => {
             return result;
         } catch (err) {
             clearTimeout(wakeTimer);
+            console.log('Request failed:', err.message);
             setError(err.message);
             throw err;
         } finally {
+            console.log('Cleaning up loading states');
             setIsLoading(false);
             setIsServerWaking(false);
         }

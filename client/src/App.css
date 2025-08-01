@@ -2137,6 +2137,12 @@ nav .wrapper .links a.active svg{
   animation: bolt 2s ease-in-out infinite;
 }
 
+.loader-cat {
+  width: 100%;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
 .server-waking {
   position: relative;
 }
@@ -2178,7 +2184,7 @@ nav .wrapper .links a.active svg{
 }
 
 .loading-title {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: 600;
   color: #1a1a1a;
   margin: 0;

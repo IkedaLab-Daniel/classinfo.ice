@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Loader2, Coffee, Zap, Clock } from 'lucide-react';
+import { Coffee, Clock } from 'lucide-react';
+import LoaderCat from '../assets/loader-cat.gif'
 
 const LoadingModal = ({ isOpen, message = "Loading...", isServerWaking = false }) => {
     const [dots, setDots] = useState('');
@@ -70,8 +71,7 @@ const LoadingModal = ({ isOpen, message = "Loading...", isServerWaking = false }
                     ) : (
                         <>
                             <div className="loading-icon">
-                                <Loader2 size={48} className="spinner" />
-                                <Zap size={20} className="loading-bolt" />
+                                <img src={LoaderCat} alt="Loading..." className="loader-cat" />
                             </div>
                             <h3 className="loading-title">{message}{dots}</h3>
                             <p className="loading-subtitle">Please wait while we fetch your data</p>
