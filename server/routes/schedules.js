@@ -14,9 +14,7 @@ router.get('/', asyncHandler(async (req, res) => {
     date,
     instructor,
     department,
-    status,
-    sortBy = 'date',
-    sortOrder = 'asc'
+    status
   } = req.query;
 
   // Build query
@@ -30,24 +28,12 @@ router.get('/', asyncHandler(async (req, res) => {
     };
   }
   
-  if (instructor) {
-    query.instructor = { $regex: instructor, $options: 'i' };
-  }
-  
-  if (department) {
-    query.department = { $regex: department, $options: 'i' };
-  }
-  
   if (status) {
     query.status = status;
   }
 
-  // Build sort object
-  const sort = {};
-  sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
-  if (sortBy !== 'startTime') {
-    sort.startTime = 1; // Secondary sort by start time
-  }
+  // Build sort object - always sort by date first, then by startTime
+  const sort = { date: -1, startTime:1 }; // Always sort by date ascending, then by start time
 
   // Execute query with pagination
   const skip = (page - 1) * limit;

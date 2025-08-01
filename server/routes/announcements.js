@@ -11,8 +11,6 @@ router.get('/', asyncHandler(async (req, res) => {
   const {
     page = 1,
     limit = 10,
-    sortBy = 'createdAt',
-    sortOrder = 'desc',
     search
   } = req.query;
 
@@ -29,9 +27,8 @@ router.get('/', asyncHandler(async (req, res) => {
   const limitNum = Math.max(1, Math.min(50, parseInt(limit))); // Max 50 items per page
   const skip = (pageNum - 1) * limitNum;
 
-  // Build sort object
-  const sort = {};
-  sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
+  // Build sort object - always sort by creation date (newest first)
+  const sort = { createdAt: -1 }; // Always sort by creation date descending
 
   // Execute query with pagination
   const [announcements, total] = await Promise.all([
