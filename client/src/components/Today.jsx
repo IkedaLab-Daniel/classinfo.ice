@@ -1,11 +1,12 @@
 import { Clock, MapPin, FileText, Calendar, BookOpen, CheckCircle, Play, AlertCircle, XCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { scheduleAPI } from '../config/api';
+import LoadingModal from './LoadingModal';
+import useApiWithLoading from '../hooks/useApiWithLoading';
 
 const Today = () => {
     const [schedules, setSchedules] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const { isLoading, isServerWaking, error, executeRequest, clearError } = useApiWithLoading();
 
     // Get today's date in YYYY-MM-DD format using local timezone
     const today = new Date().getFullYear() + '-' + 
@@ -67,25 +68,25 @@ const Today = () => {
     useEffect(() => {
         const fetchSchedules = async () => {
             try {
-                setLoading(true);
-                // Use the specific today endpoint instead of getting all schedules
-                const data = await scheduleAPI.getToday();
+                const data = await executeRequest(
+                    () => scheduleAPI.getToday(),
+                    { 
+                        loadingMessage: "Loading today's schedule",
+                        serverWakeThreshold: 2500
+                    }
+                );
                 
                 console.log('Today API Response:', data);
                 console.log('Today schedules data:', data.data);
                 setSchedules(data.data || []);
-                setError(null);
             } catch (err) {
                 console.error('Error fetching today schedules:', err);
-                setError(err.message);
                 setSchedules([]);
-            } finally {
-                setLoading(false);
             }
         };
 
         fetchSchedules();
-    }, []);
+    }, [executeRequest]);
 
     // Debug: Log schedules when they change
     useEffect(() => {
@@ -119,6 +120,13 @@ const Today = () => {
 
     return(
        <section id="today">
+        {/* Loading Modal */}
+        <LoadingModal 
+            isOpen={isLoading} 
+            message="Loading today's schedule"
+            isServerWaking={isServerWaking}
+        />
+        
         <div className="today-header">
             <Calendar size={24} />
             <h2>Today's Schedule</h2>
@@ -126,12 +134,7 @@ const Today = () => {
         <p>{formatDate(today)}</p>
         
         <div className="schedule-cards-container">
-            {loading ? (
-                <div className="loading-state">
-                    <div className="spinner"></div>
-                    <p>Loading today's schedules...</p>
-                </div>
-            ) : error ? (
+            {!isLoading && error ? (
                 <div className="error-state">
                     <Calendar size={48} />
                     <p>Error loading schedules: {error}</p>
@@ -139,7 +142,7 @@ const Today = () => {
                         Try Again
                     </button>
                 </div>
-            ) : todaySchedules.length > 0 ? (
+            ) : !isLoading && todaySchedules.length > 0 ? (
                 todaySchedules.map(schedule => (
                     <div key={schedule.id || schedule._id} className="schedule-card" data-aos="fade-up">
                         <div className="head">
@@ -175,12 +178,12 @@ const Today = () => {
                         </div>     
                     </div>
                 ))
-            ) : (
+            ) : !isLoading ? (
                 <div className="no-schedules">
                     <Calendar size={48} />
                     <p>No classes scheduled for today!</p>
                 </div>
-            )}
+            ) : null}
         </div>
        </section>
     )

@@ -2,11 +2,12 @@
 import { Plus, Calendar, Megaphone, Settings, Users, X, Save, Edit, Trash2, Clock, MapPin, Eye } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { scheduleAPI, announcementAPI } from '../config/api';
+import LoadingModal from '../components/LoadingModal';
+import useApiWithLoading from '../hooks/useApiWithLoading';
 
 const Manage = () => {
     const [showScheduleModal, setShowScheduleModal] = useState(false);
     const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
-    const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
     const [schedules, setSchedules] = useState([]);
     const [schedulesLoading, setSchedulesLoading] = useState(true);
@@ -22,6 +23,9 @@ const Manage = () => {
     
     // Active tab state
     const [activeTab, setActiveTab] = useState('schedules');
+    
+    // Loading modal state
+    const { isLoading, loadingMessage, showServerWaking, executeRequest } = useApiWithLoading();
 
     // Schedule form state
     const [scheduleForm, setScheduleForm] = useState({
@@ -50,7 +54,13 @@ const Manage = () => {
     const fetchSchedules = async () => {
         try {
             setSchedulesLoading(true);
-            const response = await scheduleAPI.getAll();
+            const response = await executeRequest(
+                () => scheduleAPI.getAll(),
+                {
+                    loadingMessage: "Loading schedules",
+                    showLoading: schedules.length === 0 // Only show modal if no data yet
+                }
+            );
             setSchedules(response.data || response);
         } catch (error) {
             console.error('Error fetching schedules:', error);
@@ -63,7 +73,13 @@ const Manage = () => {
     const fetchAnnouncements = async () => {
         try {
             setAnnouncementsLoading(true);
-            const response = await announcementAPI.getAll();
+            const response = await executeRequest(
+                () => announcementAPI.getAll(),
+                {
+                    loadingMessage: "Loading announcements",
+                    showLoading: announcements.length === 0 // Only show modal if no data yet
+                }
+            );
             setAnnouncements(response.data || response);
         } catch (error) {
             console.error('Error fetching announcements:', error);
@@ -102,17 +118,17 @@ const Manage = () => {
     const confirmDeleteSchedule = async () => {
         if (!scheduleToDelete) return;
         
-        setLoading(true);
         try {
-            await scheduleAPI.delete(scheduleToDelete._id);
+            await executeRequest(
+                () => scheduleAPI.delete(scheduleToDelete._id),
+                { loadingMessage: "Deleting schedule..." }
+            );
             setMessage({ type: 'success', text: 'Schedule deleted successfully!' });
             fetchSchedules(); // Refresh the list
             setShowDeleteConfirm(false);
             setScheduleToDelete(null);
         } catch (error) {
             setMessage({ type: 'error', text: error.message || 'Failed to delete schedule' });
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -136,17 +152,17 @@ const Manage = () => {
     const confirmDeleteAnnouncement = async () => {
         if (!announcementToDelete) return;
         
-        setLoading(true);
         try {
-            await announcementAPI.delete(announcementToDelete._id);
+            await executeRequest(
+                () => announcementAPI.delete(announcementToDelete._id),
+                { loadingMessage: "Deleting announcement..." }
+            );
             setMessage({ type: 'success', text: 'Announcement deleted successfully!' });
             fetchAnnouncements(); // Refresh the list
             setShowDeleteConfirm(false);
             setAnnouncementToDelete(null);
         } catch (error) {
             setMessage({ type: 'error', text: error.message || 'Failed to delete announcement' });
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -184,13 +200,18 @@ const Manage = () => {
 
     const handleScheduleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
         try {
             if (editingSchedule) {
-                await scheduleAPI.update(editingSchedule._id, scheduleForm);
+                await executeRequest(
+                    () => scheduleAPI.update(editingSchedule._id, scheduleForm),
+                    { loadingMessage: "Updating schedule..." }
+                );
                 setMessage({ type: 'success', text: 'Schedule updated successfully!' });
             } else {
-                await scheduleAPI.create(scheduleForm);
+                await executeRequest(
+                    () => scheduleAPI.create(scheduleForm),
+                    { loadingMessage: "Creating schedule..." }
+                );
                 setMessage({ type: 'success', text: 'Schedule created successfully!' });
             }
             fetchSchedules(); // Refresh the list
@@ -199,20 +220,23 @@ const Manage = () => {
             }, 2000);
         } catch (error) {
             setMessage({ type: 'error', text: error.message || `Failed to ${editingSchedule ? 'update' : 'create'} schedule` });
-        } finally {
-            setLoading(false);
         }
     };
 
     const handleAnnouncementSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
         try {
             if (editingAnnouncement) {
-                await announcementAPI.update(editingAnnouncement._id, announcementForm);
+                await executeRequest(
+                    () => announcementAPI.update(editingAnnouncement._id, announcementForm),
+                    { loadingMessage: "Updating announcement..." }
+                );
                 setMessage({ type: 'success', text: 'Announcement updated successfully!' });
             } else {
-                await announcementAPI.create(announcementForm);
+                await executeRequest(
+                    () => announcementAPI.create(announcementForm),
+                    { loadingMessage: "Creating announcement..." }
+                );
                 setMessage({ type: 'success', text: 'Announcement created successfully!' });
             }
             fetchAnnouncements(); // Refresh the list
@@ -221,8 +245,6 @@ const Manage = () => {
             }, 2000);
         } catch (error) {
             setMessage({ type: 'error', text: error.message || `Failed to ${editingAnnouncement ? 'update' : 'create'} announcement` });
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -748,9 +770,9 @@ const Manage = () => {
                                 <button type="button" className="cancel-btn" onClick={closeModals}>
                                     Cancel
                                 </button>
-                                <button type="submit" className="save-btn" disabled={loading}>
+                                <button type="submit" className="save-btn">
                                     <Save size={18} />
-                                    {loading ? `${editingSchedule ? 'Updating' : 'Creating'}...` : `${editingSchedule ? 'Update' : 'Create'} Schedule`}
+                                    {editingSchedule ? 'Update' : 'Create'} Schedule
                                 </button>
                             </div>
                         </form>
@@ -822,9 +844,9 @@ const Manage = () => {
                                 <button type="button" className="cancel-btn" onClick={closeModals}>
                                     Cancel
                                 </button>
-                                <button type="submit" className="save-btn" disabled={loading}>
+                                <button type="submit" className="save-btn">
                                     <Save size={18} />
-                                    {loading ? `${editingAnnouncement ? 'Updating' : 'Publishing'}...` : `${editingAnnouncement ? 'Update' : 'Publish'} Announcement`}
+                                    {editingAnnouncement ? 'Update' : 'Publish'} Announcement
                                 </button>
                             </div>
                         </form>
@@ -888,16 +910,21 @@ const Manage = () => {
                                     type="button" 
                                     className="delete-confirm-btn" 
                                     onClick={scheduleToDelete ? confirmDeleteSchedule : confirmDeleteAnnouncement}
-                                    disabled={loading}
                                 >
                                     <Trash2 size={18} />
-                                    {loading ? 'Deleting...' : `Delete ${scheduleToDelete ? 'Schedule' : 'Announcement'}`}
+                                    Delete {scheduleToDelete ? 'Schedule' : 'Announcement'}
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
+
+            <LoadingModal
+                isLoading={isLoading}
+                message={loadingMessage}
+                showServerWaking={showServerWaking}
+            />
         </section>
     )
 }

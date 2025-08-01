@@ -2,16 +2,18 @@
 import { Cloud, CheckSquare, BookOpen, Sun, CloudRain, Snowflake, IceCream, AlertCircle, Calendar, Clock, MapPin, Users, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import ice from '../assets/ice.jpeg'
+import LoadingModal from './LoadingModal';
+import useApiWithLoading from '../hooks/useApiWithLoading';
 
 const Dashboard = () => {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [isDataExpanded, setIsDataExpanded] = useState(false);
+    const { isLoading: isWeatherLoading, isServerWaking, executeRequest } = useApiWithLoading();
     const [weather, setWeather] = useState({
         temp: '--',
         description: 'Loading...',
         icon: '01d'
     });
-    const [weatherLoading, setWeatherLoading] = useState(true);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -24,17 +26,27 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchWeather = async () => {
             try {
-                setWeatherLoading(true);
                 const API_KEY = import.meta.env.VITE_OPEN_WEATHER_API;
-                const response = await fetch(
-                    `https://api.openweathermap.org/data/2.5/weather?q=Mabalacat&appid=${API_KEY}&units=metric`
+                
+                const data = await executeRequest(
+                    async () => {
+                        const response = await fetch(
+                            `https://api.openweathermap.org/data/2.5/weather?q=Mabalacat&appid=${API_KEY}&units=metric`
+                        );
+                        
+                        if (!response.ok) {
+                            throw new Error('Weather data not available');
+                        }
+                        
+                        return await response.json();
+                    },
+                    {
+                        loadingMessage: "Loading weather data",
+                        serverWakeThreshold: 4000, // Weather API might be slower
+                        showLoading: true
+                    }
                 );
                 
-                if (!response.ok) {
-                    throw new Error('Weather data not available');
-                }
-                
-                const data = await response.json();
                 setWeather({
                     temp: Math.round(data.main.temp),
                     description: data.weather[0].description,
@@ -47,17 +59,18 @@ const Dashboard = () => {
                     description: 'Unavailable',
                     icon: '01d'
                 });
-            } finally {
-                setWeatherLoading(false);
             }
         };
 
         fetchWeather();
         // Refresh weather every 10 minutes
-        const weatherInterval = setInterval(fetchWeather, 10 * 60 * 1000);
+        const weatherInterval = setInterval(() => {
+            // Don't show loading modal for automatic refreshes
+            fetchWeather();
+        }, 10 * 60 * 1000);
         
         return () => clearInterval(weatherInterval);
-    }, []);
+    }, [executeRequest]);
 
     const getGreeting = () => {
         const hour = currentTime.getHours();
@@ -106,6 +119,13 @@ const Dashboard = () => {
     
     return(
         <section id="dashboard">
+            {/* Loading Modal */}
+            <LoadingModal 
+                isOpen={isWeatherLoading} 
+                message="Loading weather data"
+                isServerWaking={isServerWaking}
+            />
+            
             <div className="dashboard">
                 <div className="left">
                     <div className="greeting-section">
@@ -132,7 +152,7 @@ const Dashboard = () => {
                     <div className="data-container-mobile">
                         <div className="data-summary">
                             <div className="data-item">
-                                {weatherLoading ? (
+                                {isWeatherLoading ? (
                                     <div className="weather-loading">
                                         <Sun size={16} />
                                         <span>--°C</span>
@@ -205,7 +225,7 @@ const Dashboard = () => {
                 <div className="right">
                     <div className="card weather-card">
                         <div className="card-icon">
-                            {weatherLoading ? (
+                            {isWeatherLoading ? (
                                 <Sun size={28} />
                             ) : (
                                 <>
