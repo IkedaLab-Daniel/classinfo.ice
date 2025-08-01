@@ -263,7 +263,7 @@ const Dashboard = () => {
                         <span className="card-description">Remaining</span>
                     </div>
                 </div>
-                
+                V1.0
             </div>
         </section>
     )
