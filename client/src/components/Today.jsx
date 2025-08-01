@@ -7,8 +7,11 @@ const Today = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Get today's date in YYYY-MM-DD format
-    const today = new Date().toISOString().split('T')[0];
+    // Get today's date in YYYY-MM-DD format using local timezone
+    const today = new Date().getFullYear() + '-' + 
+                  String(new Date().getMonth() + 1).padStart(2, '0') + '-' + 
+                  String(new Date().getDate()).padStart(2, '0');
+    console.log('Today (local):', today);
 
     // Function to determine display status based on current time
     const getDisplayStatus = (schedule) => {
@@ -65,14 +68,15 @@ const Today = () => {
         const fetchSchedules = async () => {
             try {
                 setLoading(true);
-                const data = await scheduleAPI.getAll();
+                // Use the specific today endpoint instead of getting all schedules
+                const data = await scheduleAPI.getToday();
                 
-                console.log('API Response:', data);
-                console.log('Schedules data:', data.data);
+                console.log('Today API Response:', data);
+                console.log('Today schedules data:', data.data);
                 setSchedules(data.data || []);
                 setError(null);
             } catch (err) {
-                console.error('Error fetching schedules:', err);
+                console.error('Error fetching today schedules:', err);
                 setError(err.message);
                 setSchedules([]);
             } finally {
@@ -85,19 +89,14 @@ const Today = () => {
 
     // Debug: Log schedules when they change
     useEffect(() => {
-        console.log('Schedules state updated:', schedules);
-        console.log('Number of schedules:', schedules.length);
+        console.log('Today schedules state updated:', schedules);
+        console.log('Number of today schedules:', schedules.length);
     }, [schedules]);
 
-    // Filter schedules for today
-    const todaySchedules = schedules.filter(schedule => {
-        // Parse the ISO date string to get just the date part
-        const scheduleDate = new Date(schedule.date).toISOString().split('T')[0];
-        console.log(`Schedule: ${schedule.subject}, Date: ${scheduleDate}, Today: ${today}, Match: ${scheduleDate === today}`);
-        return scheduleDate === today;
-    });
+    // Since we're using the today endpoint, we don't need to filter anymore
+    const todaySchedules = schedules;
 
-    console.log('Today schedules:', todaySchedules);
+    console.log('Final today schedules:', todaySchedules);
 
     // Format time for display
     const formatTime = (time) => {
