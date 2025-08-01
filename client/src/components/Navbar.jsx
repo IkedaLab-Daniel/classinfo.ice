@@ -1,6 +1,9 @@
 import { Calendar, CalendarDays, CheckSquare, Settings } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 
 const NavBar = () => {
+    const location = useLocation();
+
     return(
         <nav>
             <div className="wrapper">
@@ -8,22 +11,22 @@ const NavBar = () => {
                     <span>ClassInfo.Ice</span>
                 </div>
                 <div className="links">
-                    <a href="#">
+                    <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
                         <Calendar size={18} />
                         <span>Today</span>
-                    </a>
-                    <a href="#">
+                    </Link>
+                    <Link to="/" className={location.pathname === '/weekly' ? 'active' : ''}>
                         <CalendarDays size={18} />
                         <span>Weekly</span>
-                    </a>
-                    <a href="#">
+                    </Link>
+                    <Link to="/" className={location.pathname === '/tasks' ? 'active' : ''}>
                         <CheckSquare size={18} />
                         <span>Tasks</span>
-                    </a>
-                    <a href="#">
+                    </Link>
+                    <Link to="/manage" className={location.pathname === '/manage' ? 'active' : ''}>
                         <Settings size={18} />
                         <span>Manage</span>
-                    </a>
+                    </Link>
                 </div>
             </div>
             

@@ -885,6 +885,287 @@ nav .wrapper .links a.active svg{
   color: #dc2626;
 }
 
+/* Manage.jsx */
+#manage {
+  padding: 20px;
+  min-height: calc(100vh - 100px);
+  margin-bottom: 300px;
+}
+
+.manage-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.manage-header h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.manage-header svg {
+  color: #2563eb;
+}
+
+.manage-subtitle {
+  color: #666;
+  margin-bottom: 32px;
+  font-size: 1rem;
+}
+
+.action-cards-container {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.action-card {
+  background: white;
+  width: 350px;
+  min-height: 200px;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  transition: all 0.3s ease;
+}
+
+.schedule-card::before {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.announcement-card::before {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.action-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+}
+
+.schedule-card:hover {
+  border-color: #3b82f6;
+}
+
+.announcement-card:hover {
+  border-color: #8b5cf6;
+}
+
+.action-card-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  transition: transform 0.3s ease;
+}
+
+.schedule-card .action-card-icon {
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  color: #2563eb;
+}
+
+.announcement-card .action-card-icon {
+  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+  color: #7c3aed;
+}
+
+.action-card:hover .action-card-icon {
+  transform: scale(1.1);
+}
+
+.action-card-content h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+
+.action-card-content p {
+  color: #6b7280;
+  line-height: 1.5;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  margin-top: auto;
+}
+
+.schedule-card .action-button {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+}
+
+.announcement-card .action-button {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+}
+
+.action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.action-button svg {
+  flex-shrink: 0;
+}
+
+.quick-stats {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 180px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Mobile responsiveness for Manage component */
+@media (max-width: 768px) {
+  #manage {
+    padding: 15px;
+  }
+  
+  .manage-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .action-cards-container {
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  
+  .action-card {
+    width: 100%;
+    min-height: 160px;
+    padding: 20px;
+  }
+  
+  .action-card-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+  }
+  
+  .action-card-content h3 {
+    font-size: 1.25rem;
+  }
+  
+  .action-card-content p {
+    font-size: 0.875rem;
+    margin-bottom: 16px;
+  }
+  
+  .action-button {
+    padding: 10px 16px;
+  }
+  
+  .quick-stats {
+    gap: 16px;
+  }
+  
+  .stat-item {
+    min-width: 160px;
+    padding: 16px;
+  }
+  
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .stat-number {
+    font-size: 1.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .action-cards-container {
+    gap: 12px;
+  }
+  
+  .stat-item {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
 /* Mobile responsiveness for Today component */
 @media (max-width: 768px) {
   #today {
