@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 const ClassSchedule = require('../models/ClassSchedule');
+const Announcement = require('../models/Announcement');
 const Instructor = require('../models/Instructor');
 const Department = require('../models/Department');
 
@@ -335,6 +336,40 @@ const classSchedules = [
   }
 ];
 
+// Sample announcements
+const announcements = [
+  {
+    title: 'Welcome to the New Semester!',
+    description: 'Classes will begin on August 5, 2025. Please make sure to check your schedules and prepare all necessary materials. Late enrollment is available until August 10, 2025.',
+    postedBy: 'Admin Office'
+  },
+  {
+    title: 'Library Hours Extended',
+    description: 'Starting August 15, 2025, the library will be open 24/7 during weekdays to accommodate student study needs. Weekend hours remain 8 AM to 10 PM.',
+    postedBy: 'Library Administration'
+  },
+  {
+    title: 'Midterm Examination Schedule',
+    description: 'Midterm examinations will be held from September 20-27, 2025. Detailed schedules will be posted on the student portal by September 10. Please check your respective department notices.',
+    postedBy: 'Academic Affairs'
+  },
+  {
+    title: 'Campus Wi-Fi Upgrade',
+    description: 'The campus network infrastructure will be upgraded on August 12, 2025, from 12 AM to 6 AM. Internet services may be intermittent during this period.',
+    postedBy: 'IT Department'
+  },
+  {
+    title: 'Student Organizations Fair',
+    description: 'Join us for the annual Student Organizations Fair on August 18, 2025, from 10 AM to 4 PM at the main campus quad. Discover clubs and organizations that match your interests!',
+    postedBy: 'Student Affairs'
+  },
+  {
+    title: 'Emergency Contact Update',
+    description: 'All students are required to update their emergency contact information through the student portal by August 20, 2025. This is mandatory for enrollment completion.',
+    postedBy: 'Registrar Office'
+  }
+];
+
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI, {
@@ -355,6 +390,7 @@ const seedDatabase = async () => {
     // Clear existing data
     console.log('🗑️  Clearing existing data...');
     await ClassSchedule.deleteMany({});
+    await Announcement.deleteMany({});
     await Instructor.deleteMany({});
     await Department.deleteMany({});
 
@@ -373,6 +409,11 @@ const seedDatabase = async () => {
     const createdSchedules = await ClassSchedule.insertMany(classSchedules);
     console.log(`✅ Created ${createdSchedules.length} class schedules`);
 
+    // Seed announcements
+    console.log('📢 Seeding announcements...');
+    const createdAnnouncements = await Announcement.insertMany(announcements);
+    console.log(`✅ Created ${createdAnnouncements.length} announcements`);
+
     console.log('🎉 Database seeded successfully!');
     
     // Display summary
@@ -380,6 +421,7 @@ const seedDatabase = async () => {
     console.log(`   Departments: ${createdDepartments.length}`);
     console.log(`   Instructors: ${createdInstructors.length}`);
     console.log(`   Class Schedules: ${createdSchedules.length}`);
+    console.log(`   Announcements: ${createdAnnouncements.length}`);
 
   } catch (error) {
     console.error('❌ Error seeding database:', error.message);

@@ -23,6 +23,21 @@ const classScheduleSchemas = {
   }).min(1)
 };
 
+// Announcement Validation Schemas
+const announcementSchemas = {
+  create: Joi.object({
+    title: Joi.string().trim().max(200).required(),
+    description: Joi.string().trim().max(2000).required(),
+    postedBy: Joi.string().trim().max(100).required()
+  }),
+  
+  update: Joi.object({
+    title: Joi.string().trim().max(200),
+    description: Joi.string().trim().max(2000),
+    postedBy: Joi.string().trim().max(100)
+  }).min(1)
+};
+
 // Validation middleware function
 const validate = (schema) => {
   return (req, res, next) => {
@@ -51,5 +66,6 @@ const validate = (schema) => {
 
 module.exports = {
   classScheduleSchemas,
+  announcementSchemas,
   validate
 };

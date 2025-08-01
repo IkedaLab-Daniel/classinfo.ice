@@ -9,6 +9,7 @@ const { errorHandler } = require('./middleware/errorHandler');
 
 // Route imports
 const scheduleRoutes = require('./routes/schedules');
+const announcementRoutes = require('./routes/announcements');
 
 // Connect to database
 connectDB();
@@ -127,7 +128,9 @@ app.get('/health', (req, res) => {
 });
 
 // API routes
+// Routes
 app.use('/api/schedules', scheduleRoutes);
+app.use('/api/announcements', announcementRoutes);
 
 // API documentation route
 app.get('/api', (req, res) => {
@@ -145,6 +148,15 @@ app.get('/api', (req, res) => {
         'GET /api/schedules/range/:startDate/:endDate': 'Get schedules in date range',
         'GET /api/schedules/instructor/:instructorName': 'Get schedules by instructor'
       },
+      announcements: {
+        'GET /api/announcements': 'Get all announcements with optional filtering and pagination',
+        'GET /api/announcements/:id': 'Get specific announcement by ID',
+        'POST /api/announcements': 'Create new announcement',
+        'PUT /api/announcements/:id': 'Update announcement',
+        'DELETE /api/announcements/:id': 'Delete announcement',
+        'GET /api/announcements/latest': 'Get latest announcements (default 5)',
+        'GET /api/announcements/range/:startDate/:endDate': 'Get announcements in date range'
+      }
     },
     queryParameters: {
       pagination: 'page, limit',

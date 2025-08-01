@@ -861,6 +861,30 @@ nav .wrapper .links a.active svg{
   gap: 5px;
 }
 
+.announcement-item {
+  margin-bottom: 20px;
+}
+
+.announcement-item:last-child {
+  margin-bottom: 0;
+}
+
+.announcement-divider {
+  border: none;
+  border-top: 1px solid rgba(75, 68, 246, 0.2);
+  margin: 15px 0;
+}
+
+.loading-state, .error-state, .no-announcements {
+  text-align: center;
+  padding: 20px;
+  color: #6b7280;
+}
+
+.error-state {
+  color: #dc2626;
+}
+
 /* Mobile responsiveness for Today component */
 @media (max-width: 768px) {
   #today {
