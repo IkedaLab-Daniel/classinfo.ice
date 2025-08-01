@@ -85,7 +85,16 @@ export const scheduleAPI = {
   getAll: () => apiClient.get(API_ENDPOINTS.SCHEDULES),
 
   // Get all schedules Today
-  getToday: () => apiClient.get(API_ENDPOINTS.SCHEDULES_TODAY),
+  getToday: () => {
+    // Calculate today's date in the client's local timezone
+    const today = new Date();
+    const localDate = today.getFullYear() + '-' + 
+                     String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                     String(today.getDate()).padStart(2, '0');
+    
+    // Use the general schedules endpoint with date filter instead of the today endpoint
+    return apiClient.get(`${API_ENDPOINTS.SCHEDULES}?date=${localDate}`);
+  },
   
   // Get schedules by date
   getByDate: (date) => apiClient.get(API_ENDPOINTS.SCHEDULES_BY_DATE(date)),
