@@ -784,20 +784,23 @@ nav .wrapper .links a.active svg{
 .announcement-container{
   display: flex;
   justify-content: space-between;
+  align-items: center;
   background-color: #F9FAFB;
-  padding: 30px 20px;
   margin: 20px 20px;
   border-left: 4px solid #4B44F6;
   border-radius: 12px;
   color: #111827;
   box-shadow: 0 8px 10px rgba(0, 0, 0, 0.17);
+  padding: 10px;
+  border-top: 1px solid rgb(173, 173, 173);
+  border-right: 1px solid rgb(173, 173, 173);
+  border-bottom: 1px solid rgb(173, 173, 173);
 }
 
 .announcement-container .announcement-header{
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 10px;
   cursor: pointer;
   padding: 10px;
   border-radius: 8px;
@@ -828,7 +831,7 @@ nav .wrapper .links a.active svg{
 
 .announcement-content {
   animation: slideDown 0.3s ease-out;
-  padding-top: 10px;
+  padding: 10px;
   border-top: 1px solid rgba(75, 68, 246, 0.2);
   margin-top: 10px;
 }
@@ -964,7 +967,7 @@ nav .wrapper .links a.active svg{
 
   .announcement-container{
     margin: 0px 10px;
-    padding: 20px;
+    padding: 5px;
   }
 
   .announcement-container .announcement-header h3{
