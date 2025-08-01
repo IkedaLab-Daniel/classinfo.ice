@@ -783,8 +783,7 @@ nav .wrapper .links a.active svg{
 /* Announcement */
 .announcement-container{
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   background-color: #F9FAFB;
   margin: 20px 20px;
   border-left: 4px solid #4B44F6;
