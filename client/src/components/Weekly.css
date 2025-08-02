@@ -98,6 +98,8 @@
 .status-label{
     font-size: 0.8rem;
     font-weight: 600;
+    display: flex;
+    gap: 5px;
 }
 
 /* Schedule card status variants */
@@ -127,15 +129,15 @@
 }
 
 .schedule-card.upcoming {
-    border-left-color: #2563eb;
-    border-top: 1px solid #2563eb;
-    border-right: 1px solid #2563eb;
-    border-bottom: 1px solid #2563eb;
+    border-left-color: #efd25f;
+    border-top: 1px solid #efd25f;
+    border-right: 1px solid #efd25f;
+    border-bottom: 1px solid #efd25f;
     background: rgba(37, 99, 235, 0.05);
 }
 
 .schedule-card.upcoming .status-label{
-    color: #2563eb;
+    color: #d5ae14;
 }
 
 .schedule-card.cancelled {
@@ -165,11 +167,6 @@
     gap: 6px;
 }
 
-.time::before {
-    content: "🕐";
-    font-size: 12px;
-}
-
 .location {
     font-size: 14px;
     color: #6b7280;
@@ -177,11 +174,6 @@
     display: flex;
     align-items: center;
     gap: 6px;
-}
-
-.location::before {
-    content: "📍";
-    font-size: 12px;
 }
 
 .note {
