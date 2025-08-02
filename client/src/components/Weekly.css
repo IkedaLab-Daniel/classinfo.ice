@@ -1,5 +1,6 @@
 #weekly{
   padding: 20px;
+  width: 100%;
 }
 
 /* .weekly-container{
@@ -7,14 +8,17 @@
 } */
 
 .calendar {
-    background-color: red;
     margin-top: 20px;
     display: flex;
+    flex-wrap: wrap;
     width: 100%;
+    background-color: white;
+    border: 1px solid rgb(216, 216, 216);
+    border-radius: 4px;
 }
 
 
-.day {
+.day-card {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 4px;
     padding: 8px;
@@ -22,10 +26,10 @@
     border: 1px solid rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
     min-height: 200px;
-    width: 195px;
+    width: 16.65%;
 }
 
-.day:hover {
+.day-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
@@ -33,10 +37,11 @@
 /* Day header */
 .day-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    align-items: left;
     margin-bottom: 16px;
-    padding-bottom: 12px;
+    padding: 20px;
     border-bottom: 2px solid rgba(37, 99, 235, 0.1);
 }
 
@@ -57,7 +62,7 @@
     align-items: center;
     justify-content: center;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 16px;
     margin: 0;
 }
 
@@ -65,7 +70,7 @@
 .day-content {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
 }
 
 .day-content > p {
@@ -80,10 +85,9 @@
 .schedule-card {
     background: rgba(255, 255, 255, 0.8);
     border-radius: 12px;
-    padding: 14px;
+    padding: 5px 10px;
     border-left: 4px solid #e5e7eb;
     transition: all 0.2s ease;
-    backdrop-filter: blur(5px);
 }
 
 .schedule-card:hover {
@@ -91,21 +95,57 @@
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
+.status-label{
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
 /* Schedule card status variants */
 .schedule-card.completed {
     border-left-color: #10b981;
+    border-top: 1px solid #10b981;
+    border-right: 1px solid #10b981;
+    border-bottom: 1px solid #10b981;
     background: rgba(16, 185, 129, 0.05);
 }
 
+.schedule-card.completed .status-label{
+    color: #10b981;
+}
+
 .schedule-card.live {
-    border-left-color: #f59e0b;
+    border-left-color: #ef4444;
+    border-top: 1px solid #ef4444;
+    border-right: 1px solid #ef4444;
+    border-bottom: 1px solid #ef4444;
     background: rgba(245, 158, 11, 0.05);
-    animation: pulse-glow 2s ease-in-out infinite;
+    animation: pulse-glow-2 2s ease-in-out infinite;
+}
+
+.schedule-card.live .status-label{
+    color: #ef4444;
 }
 
 .schedule-card.upcoming {
     border-left-color: #2563eb;
+    border-top: 1px solid #2563eb;
+    border-right: 1px solid #2563eb;
+    border-bottom: 1px solid #2563eb;
     background: rgba(37, 99, 235, 0.05);
+}
+
+.schedule-card.upcoming .status-label{
+    color: #2563eb;
+}
+
+.schedule-card.cancelled {
+    border-left-color: #a2a2a2;
+    border-top: 1px solid #a2a2a2;
+    border-right: 1px solid #a2a2a2;
+    border-bottom: 1px solid #a2a2a2;
+    background: rgba(37, 99, 235, 0.05);
+    opacity: 0.5;
+    pointer-events: none;
 }
 
 /* Schedule card content */
@@ -159,12 +199,12 @@
 }
 
 /* Animations */
-@keyframes pulse-glow {
+@keyframes pulse-glow-2 {
     0%, 100% {
-        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
     }
     50% {
-        box-shadow: 0 6px 25px rgba(245, 158, 11, 0.4);
+        box-shadow: 0 6px 25px rgba(239, 68, 68, 0.6);
     }
 }
 
@@ -176,7 +216,7 @@
         padding: 16px 0;
     }
     
-    .day {
+    .day-card {
         padding: 14px;
         min-height: 150px;
     }
@@ -197,7 +237,7 @@
         gap: 12px;
     }
     
-    .day {
+    .day-card {
         padding: 12px;
     }
     
