@@ -35,19 +35,33 @@ app.use('/api/', limiter);
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, etc.)
-    if (!origin) return callback(null, true);
+    if (!origin) {
+      console.log('🌐 CORS: Request with no origin (mobile/postman) - ALLOWED');
+      return callback(null, true);
+    }
     
     const allowedOrigins = [
       'http://localhost:5173',
       'http://localhost:3000',
       'http://localhost:5174',
-      'https://dailyclass.netlify.app'
+      'https://dailyclass.netlify.app',
+      'https://dailyclass.netlify.app/'
     ];
     
     if (allowedOrigins.indexOf(origin) !== -1) {
+      console.log(`✅ CORS: Origin '${origin}' - ALLOWED`);
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      console.log(`\n🚫 CORS ERROR: Origin '${origin}' - BLOCKED`);
+      console.log('📋 Allowed origins:');
+      allowedOrigins.forEach((allowedOrigin, index) => {
+        console.log(`   ${index + 1}. ${allowedOrigin}`);
+      });
+      console.log('💡 To fix: Add this origin to the allowedOrigins array in server.js\n');
+      
+      const corsError = new Error(`CORS: Origin '${origin}' not allowed. Check server logs for allowed origins.`);
+      corsError.statusCode = 403;
+      callback(corsError);
     }
   },
   credentials: true,
