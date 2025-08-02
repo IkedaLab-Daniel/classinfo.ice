@@ -332,7 +332,7 @@
         flex-wrap: wrap;
         gap: 0;
         padding: 0;
-        border: 5px solid rgb(216, 216, 216);
+        border: 1.5px solid rgb(216, 216, 216);
     }
     
     .day-card {
