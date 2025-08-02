@@ -175,7 +175,7 @@ nav .wrapper .links a.active svg{
 /* Today Component Styles */
 #today {
   padding: 20px;
-  min-height: calc(100vh - 100px);
+  height: auto;
 }
 
 .today-header {
