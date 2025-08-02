@@ -1,5 +1,5 @@
 import './Weekly.css'
-import { Calendar, Clock, MapPin, StickyNote, CheckCircle, Circle, AlertCircle, XCircle } from 'lucide-react';
+import { Calendar, Clock, MapPin, StickyNote, CheckCircle, Circle, AlertCircle, XCircle, Coffee } from 'lucide-react';
 
 const Weekly = () => {
     // > Sample struture muna. Mapping na pag sa actual data
@@ -50,7 +50,10 @@ const Weekly = () => {
                             <p className="date">29</p>
                         </div>
                         <div className="day-content">
-                            <p>No Class</p>
+                            <div className="no-class">
+                                <Coffee size={50}/>
+                                <p>No Class</p>
+                            </div>
                         </div>
                     </div>
 

@@ -190,6 +190,16 @@
     font-style: italic;
 }
 
+.no-class{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #808080;
+    gap: 10px;
+    margin-top: 50px;
+}
+
 /* Animations */
 @keyframes pulse-glow-2 {
     0%, 100% {
