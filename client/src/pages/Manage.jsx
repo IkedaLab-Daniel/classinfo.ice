@@ -1384,6 +1384,7 @@ const Manage = () => {
                                         <option value="homework">Homework</option>
                                         <option value="lab">Lab</option>
                                         <option value="reading">Reading</option>
+                                        <option value="payment">Payment</option>
                                         <option value="other">Other</option>
                                     </select>
                                 </div>
