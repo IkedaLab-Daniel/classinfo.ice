@@ -7,6 +7,87 @@
   background-color: red;
 } */
 
+.weekly-header {
+    margin-bottom: 20px;
+}
+
+.week-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.week-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+.nav-button {
+    background: rgba(37, 99, 235, 0.1);
+    border: 2px solid rgba(37, 99, 235, 0.2);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #2563eb;
+}
+
+.nav-button:hover {
+    background: rgba(37, 99, 235, 0.15);
+    border-color: rgba(37, 99, 235, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.nav-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+}
+
+.current-week-button {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 8px;
+}
+
+.current-week-button:hover {
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.weekly-header h2{
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #1a1a1a;    
+  margin: 0;
+}
+
+.weekly-header p {
+    margin: 4px 0 0 0;
+    color: #6b7280;
+    font-size: 16px;
+}
+
+.weekly-header svg{
+    color: #2563eb;
+}
+
+
 .calendar {
     margin-top: 20px;
     display: flex;
@@ -25,7 +106,7 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     border: 1px solid rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
-    min-height: 200px;
+    min-height: 390px;
     width: 16.65%;
 }
 
@@ -212,6 +293,28 @@
 
 /* Responsive design */
 @media (max-width: 768px) {
+    .week-navigation {
+        gap: 12px;
+    }
+    
+    .nav-button {
+        width: 42px;
+        height: 42px;
+    }
+    
+    .weekly-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .weekly-header p {
+        font-size: 14px;
+    }
+    
+    .current-week-button {
+        font-size: 11px;
+        padding: 6px 12px;
+    }
+    
     .calendar {
         grid-template-columns: 1fr;
         gap: 16px;
@@ -235,6 +338,23 @@
 }
 
 @media (max-width: 480px) {
+    .week-navigation {
+        gap: 8px;
+    }
+    
+    .nav-button {
+        width: 38px;
+        height: 38px;
+    }
+    
+    .weekly-header h2 {
+        font-size: 1.3rem;
+    }
+    
+    .week-info {
+        min-width: 0; /* Allow flex item to shrink */
+    }
+    
     .calendar {
         gap: 12px;
     }

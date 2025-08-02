@@ -1,15 +1,16 @@
 import './Weekly.css'
-import { Calendar, Clock, MapPin, StickyNote, CheckCircle, Circle, AlertCircle, XCircle, Coffee } from 'lucide-react';
+import { Calendar, Clock, MapPin, StickyNote, CheckCircle, Circle, AlertCircle, XCircle, Coffee, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { scheduleAPI } from '../config/api';
 import useApiWithLoading from '../hooks/useApiWithLoading';
 
 const Weekly = () => {
     const [weeklySchedules, setWeeklySchedules] = useState([]);
+    const [currentWeekOffset, setCurrentWeekOffset] = useState(0); // 0 = current week, -1 = previous week, +1 = next week
     const { executeRequest, isLoading, error } = useApiWithLoading();
 
     // Helper function to get current week's date range
-    const getCurrentWeekRange = () => {
+    const getCurrentWeekRange = (weekOffset = 0) => {
         const today = new Date();
         const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
         const startOfWeek = new Date(today);
@@ -17,6 +18,9 @@ const Weekly = () => {
         // Calculate Monday of current week
         const daysFromMonday = currentDay === 0 ? 6 : currentDay - 1;
         startOfWeek.setDate(today.getDate() - daysFromMonday);
+        
+        // Apply week offset (add/subtract weeks)
+        startOfWeek.setDate(startOfWeek.getDate() + (weekOffset * 7));
         
         // Calculate Saturday of current week (6 days from Monday)
         const endOfWeek = new Date(startOfWeek);
@@ -89,10 +93,17 @@ const Weekly = () => {
         const targetDate = new Date(startDate);
         targetDate.setDate(startDate.getDate() + dayIndex);
         
+        // Use consistent date formatting
+        const fullDate = targetDate.getFullYear() + '-' + 
+                         String(targetDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                         String(targetDate.getDate()).padStart(2, '0');
+        
+        console.log(`Day ${dayIndex} (${dayNames[dayIndex]}):`, fullDate);
+        
         return {
             name: dayNames[dayIndex],
             date: targetDate.getDate(),
-            fullDate: targetDate.toISOString().split('T')[0]
+            fullDate: fullDate
         };
     };
 
@@ -109,17 +120,33 @@ const Weekly = () => {
         // Ensure schedules is an array before processing
         const schedulesArray = Array.isArray(schedules) ? schedules : [];
         
+        console.log('Grouping schedules:');
+        console.log('Week range:', weekRange);
+        console.log('Available days:', Object.keys(groupedSchedules));
+        console.log('Schedules to group:', schedulesArray);
+        
         // Group schedules by date
         schedulesArray.forEach(schedule => {
-            const scheduleDate = new Date(schedule.date).toISOString().split('T')[0];
-            if (groupedSchedules[scheduleDate]) {
-                groupedSchedules[scheduleDate].push({
+            // Handle UTC date properly - create date from the ISO string and get local date
+            const scheduleDate = new Date(schedule.date);
+            const localDateString = scheduleDate.getFullYear() + '-' + 
+                                   String(scheduleDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                                   String(scheduleDate.getDate()).padStart(2, '0');
+            
+            console.log(`Schedule "${schedule.subject}" date:`, schedule.date, '-> local:', localDateString);
+            
+            if (groupedSchedules[localDateString]) {
+                groupedSchedules[localDateString].push({
                     ...schedule,
                     status: getScheduleStatus(schedule)
                 });
+                console.log(`✓ Added to ${localDateString}`);
+            } else {
+                console.log(`✗ No matching day for ${localDateString}. Available:`, Object.keys(groupedSchedules));
             }
         });
         
+        console.log('Final grouped schedules:', groupedSchedules);
         return groupedSchedules;
     };
 
@@ -127,7 +154,7 @@ const Weekly = () => {
     useEffect(() => {
         const fetchWeeklySchedules = async () => {
             try {
-                const weekRange = getCurrentWeekRange();
+                const weekRange = getCurrentWeekRange(currentWeekOffset);
                 const schedulesData = await executeRequest(
                     () => scheduleAPI.getRange(weekRange.start, weekRange.end),
                     { loadingMessage: "Loading weekly schedule..." }
@@ -135,7 +162,7 @@ const Weekly = () => {
                 
                 console.log("API Response:", schedulesData);
                 
-                // Extract schedules array from API response
+                // ? Extract schedules array from API response
                 let schedulesArray = [];
                 if (schedulesData && schedulesData.data && Array.isArray(schedulesData.data)) {
                     schedulesArray = schedulesData.data;
@@ -144,6 +171,7 @@ const Weekly = () => {
                 }
                 
                 setWeeklySchedules(schedulesArray);
+                // > console.log > debugger
                 console.log("Processed schedules:", schedulesArray);
             } catch (error) {
                 console.error('Failed to fetch weekly schedules:', error);
@@ -152,17 +180,58 @@ const Weekly = () => {
         };
 
         fetchWeeklySchedules();
-    }, [executeRequest]);
+    }, [executeRequest, currentWeekOffset]); // Add currentWeekOffset to dependency array
 
-    const weekRange = getCurrentWeekRange();
+    // Navigation functions
+    const goToPreviousWeek = () => {
+        setCurrentWeekOffset(prev => prev - 1);
+    };
+
+    const goToNextWeek = () => {
+        setCurrentWeekOffset(prev => prev + 1);
+    };
+
+    const goToCurrentWeek = () => {
+        setCurrentWeekOffset(0);
+    };
+
+    const weekRange = getCurrentWeekRange(currentWeekOffset);
     const groupedSchedules = groupSchedulesByDay(weeklySchedules, weekRange);
 
     return(
         <section id="weekly">
             <div className="weekly-container">
                 <div className="weekly-header">
-                    <h3><Calendar size={24} style={{display: 'inline', marginRight: '8px'}} />Weekly Schedule</h3>
-                    <p>{new Date(weekRange.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} - {new Date(weekRange.endDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</p>
+                    <div className="week-navigation">
+                        <button 
+                            className="nav-button prev-button" 
+                            onClick={goToPreviousWeek}
+                            aria-label="Previous week"
+                        >
+                            <ChevronLeft size={20} />
+                        </button>
+                        
+                        <div className="week-info">
+                            <h2><Calendar size={24} style={{display: 'inline', marginRight: '8px'}} />Weekly Schedule</h2>
+                            <p>{new Date(weekRange.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} - {new Date(weekRange.endDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</p>
+                            {currentWeekOffset !== 0 && (
+                                <button 
+                                    className="current-week-button" 
+                                    onClick={goToCurrentWeek}
+                                >
+                                    Go to Current Week
+                                </button>
+                            )}
+                        </div>
+                        
+                        <button 
+                            className="nav-button next-button" 
+                            onClick={goToNextWeek}
+                            aria-label="Next week"
+                        >
+                            <ChevronRight size={20} />
+                        </button>
+                    </div>
                 </div>
                 {error && (
                     <div className="error-message" style={{color: 'red', textAlign: 'center', margin: '20px 0'}}>
@@ -193,10 +262,10 @@ const Weekly = () => {
                                             
                                             return (
                                                 <div key={schedule._id} className={`schedule-card ${schedule.status}`}>
-                                                    <p className="status-label">
+                                                    <div className="status-label">
                                                         <StatusIcon size={16}/>
                                                         <p>{statusDisplay.text}</p>
-                                                    </p>
+                                                    </div>
                                                     <p className="sched-title">{schedule.subject}</p>
                                                     <p className="time">
                                                         <Clock size={16} style={{display: 'inline', marginRight: '6px'}} />
