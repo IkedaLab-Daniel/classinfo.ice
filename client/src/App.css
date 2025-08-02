@@ -963,10 +963,6 @@ nav .wrapper .links a.active svg{
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
 }
 
-.schedule-card:hover {
-  border-color: #3b82f6;
-}
-
 .announcement-card:hover {
   border-color: #8b5cf6;
 }

@@ -1,5 +1,5 @@
 #weekly{
-  padding: 20px;
+  padding: 12px;
   width: 100%;
 }
 
@@ -15,7 +15,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 20px;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
 .week-info {
@@ -29,14 +30,15 @@
     background: rgba(37, 99, 235, 0.1);
     border: 2px solid rgba(37, 99, 235, 0.2);
     border-radius: 50%;
-    width: 48px;
-    height: 48px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
     color: #2563eb;
+    flex-shrink: 0;
 }
 
 .nav-button:hover {
@@ -71,43 +73,45 @@
 }
 
 .weekly-header h2{
-  font-size: 1.8rem;
+  font-size: 1.4rem;
   font-weight: 600;
   color: #1a1a1a;    
   margin: 0;
+  text-align: center;
 }
 
 .weekly-header p {
     margin: 4px 0 0 0;
     color: #6b7280;
-    font-size: 16px;
+    font-size: 14px;
+    text-align: center;
 }
 
 .weekly-header svg{
     color: #2563eb;
 }
 
-
 .calendar {
-    margin-top: 20px;
+    margin-top: 16px;
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     width: 100%;
     background-color: white;
     border: 1px solid rgb(216, 216, 216);
     border-radius: 4px;
+    gap: 12px;
+    padding: 12px;
 }
-
 
 .day-card {
     background: rgba(255, 255, 255, 0.95);
-    border-radius: 4px;
-    padding: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     border: 1px solid rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
-    min-height: 390px;
-    width: 16.65%;
+    min-height: 200px;
+    width: 100%;
 }
 
 .day-card:hover {
@@ -118,17 +122,17 @@
 /* Day header */
 .day-header {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: left;
-    margin-bottom: 16px;
-    padding: 20px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 12px 16px;
     border-bottom: 2px solid rgba(37, 99, 235, 0.1);
 }
 
 .day-header .day {
     font-weight: 600;
-    font-size: 18px;
+    font-size: 16px;
     color: #1f2937;
     margin: 0;
 }
@@ -136,15 +140,16 @@
 .day-header .date {
     background: linear-gradient(135deg, #2563eb, #3b82f6);
     color: white;
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
-    font-size: 16px;
+    font-size: 14px;
     margin: 0;
+    flex-shrink: 0;
 }
 
 /* Day content */
@@ -277,8 +282,14 @@
     justify-content: center;
     align-items: center;
     color: #808080;
-    gap: 10px;
-    margin-top: 50px;
+    gap: 8px;
+    margin-top: 30px;
+    padding: 20px;
+}
+
+.no-class svg {
+    width: 40px;
+    height: 40px;
 }
 
 /* Animations */
@@ -288,6 +299,77 @@
     }
     50% {
         box-shadow: 0 6px 25px rgba(239, 68, 68, 0.6);
+    }
+}
+
+/* Desktop styles - min-width: 768px */
+@media (min-width: 768px) {
+    #weekly {
+        padding: 20px;
+    }
+    
+    .week-navigation {
+        gap: 20px;
+        flex-wrap: nowrap;
+    }
+    
+    .nav-button {
+        width: 48px;
+        height: 48px;
+    }
+    
+    .weekly-header h2 {
+        font-size: 1.8rem;
+    }
+    
+    .weekly-header p {
+        font-size: 16px;
+    }
+    
+    .calendar {
+        margin-top: 20px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0;
+        padding: 0;
+        border: 5px solid rgb(216, 216, 216);
+    }
+    
+    .day-card {
+        border-radius: 4px;
+        padding: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        min-height: 390px;
+        width: 16.65%;
+    }
+    
+    .day-header {
+        flex-direction: column;
+        justify-content: center;
+        align-items: left;
+        margin-bottom: 16px;
+        padding: 20px;
+    }
+    
+    .day-header .day {
+        font-size: 18px;
+    }
+    
+    .day-header .date {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+    
+    .no-class {
+        gap: 10px;
+        margin-top: 50px;
+        padding: 0;
+    }
+    
+    .no-class svg {
+        width: 50px;
+        height: 50px;
     }
 }
 
@@ -316,14 +398,16 @@
     }
     
     .calendar {
-        grid-template-columns: 1fr;
-        gap: 16px;
-        padding: 16px 0;
+        gap: 10px;
+        padding: 0;
+        border: 0px solid rgb(216, 216, 216);
     }
     
     .day-card {
         padding: 14px;
         min-height: 150px;
+        border: 2px solid #d2d9e2;
+
     }
     
     .day-header .day {
@@ -334,6 +418,10 @@
         width: 28px;
         height: 28px;
         font-size: 12px;
+    }
+
+    .no-class{
+        margin-top: 0px;
     }
 }
 
