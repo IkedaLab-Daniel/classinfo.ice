@@ -1,13 +1,14 @@
 
-import { Plus, Calendar, Megaphone, Settings, Users, X, Save, Edit, Trash2, Clock, MapPin, Eye } from 'lucide-react';
+import { Plus, Calendar, Megaphone, Settings, Users, X, Save, Edit, Trash2, Clock, MapPin, Eye, ClipboardList, AlertTriangle, CheckCircle2, Target } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { scheduleAPI, announcementAPI } from '../config/api';
+import { scheduleAPI, announcementAPI, taskAPI } from '../config/api';
 import LoadingModal from '../components/LoadingModal';
 import useApiWithLoading from '../hooks/useApiWithLoading';
 
 const Manage = () => {
     const [showScheduleModal, setShowScheduleModal] = useState(false);
     const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
+    const [showTaskModal, setShowTaskModal] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
     const [schedules, setSchedules] = useState([]);
     const [schedulesLoading, setSchedulesLoading] = useState(true);
@@ -20,6 +21,12 @@ const Manage = () => {
     const [announcementsLoading, setAnnouncementsLoading] = useState(true);
     const [editingAnnouncement, setEditingAnnouncement] = useState(null);
     const [announcementToDelete, setAnnouncementToDelete] = useState(null);
+    
+    // Tasks state
+    const [tasks, setTasks] = useState([]);
+    const [tasksLoading, setTasksLoading] = useState(true);
+    const [editingTask, setEditingTask] = useState(null);
+    const [taskToDelete, setTaskToDelete] = useState(null);
     
     // Active tab state
     const [activeTab, setActiveTab] = useState('schedules');
@@ -45,10 +52,22 @@ const Manage = () => {
         postedBy: ''
     });
 
+    // Task form state
+    const [taskForm, setTaskForm] = useState({
+        title: '',
+        description: '',
+        type: 'assignment',
+        class: '',
+        dueDate: '',
+        priority: 'medium',
+        status: 'pending'
+    });
+
     // Fetch schedules on component mount
     useEffect(() => {
         fetchSchedules();
         fetchAnnouncements();
+        fetchTasks();
     }, []);
 
     const fetchSchedules = async () => {
@@ -86,6 +105,33 @@ const Manage = () => {
             setMessage({ type: 'error', text: 'Failed to load announcements' });
         } finally {
             setAnnouncementsLoading(false);
+        }
+    };
+
+    const fetchTasks = async () => {
+        try {
+            setTasksLoading(true);
+            const response = await executeRequest(
+                () => taskAPI.getAll({
+                    sortBy: 'dueDate',
+                    sortOrder: 'desc',
+                    limit: 50
+                }),
+                {
+                    loadingMessage: "Loading tasks",
+                    showLoading: tasks.length === 0 // Only show modal if no data yet
+                }
+            );
+            if (response && response.success && Array.isArray(response.data)) {
+                setTasks(response.data);
+            } else {
+                setTasks(response.data || response || []);
+            }
+        } catch (error) {
+            console.error('Error fetching tasks:', error);
+            setMessage({ type: 'error', text: 'Failed to load tasks' });
+        } finally {
+            setTasksLoading(false);
         }
     };
 
@@ -172,14 +218,61 @@ const Manage = () => {
         setMessage({ type: '', text: '' });
     };
 
+    // Task handlers
+    const handleEditTask = (task) => {
+        setEditingTask(task);
+        setTaskForm({
+            title: task.title || '',
+            description: task.description || '',
+            type: task.type || 'assignment',
+            class: task.class || '',
+            dueDate: task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 16) : '',
+            priority: task.priority || 'medium',
+            status: task.status || 'pending'
+        });
+        setShowTaskModal(true);
+        setMessage({ type: '', text: '' });
+    };
+
+    const handleDeleteTask = (task) => {
+        setTaskToDelete(task);
+        setShowDeleteConfirm(true);
+    };
+
+    const confirmDeleteTask = async () => {
+        if (!taskToDelete) return;
+        
+        try {
+            await executeRequest(
+                () => taskAPI.delete(taskToDelete._id),
+                { loadingMessage: "Deleting task..." }
+            );
+            setMessage({ type: 'success', text: 'Task deleted successfully!' });
+            fetchTasks(); // Refresh the list
+            setShowDeleteConfirm(false);
+            setTaskToDelete(null);
+        } catch (error) {
+            setMessage({ type: 'error', text: error.message || 'Failed to delete task' });
+        }
+    };
+
+    const handleAddTask = () => {
+        setEditingTask(null);
+        setShowTaskModal(true);
+        setMessage({ type: '', text: '' });
+    };
+
     const closeModals = () => {
         setShowScheduleModal(false);
         setShowAnnouncementModal(false);
+        setShowTaskModal(false);
         setShowDeleteConfirm(false);
         setEditingSchedule(null);
         setScheduleToDelete(null);
         setEditingAnnouncement(null);
         setAnnouncementToDelete(null);
+        setEditingTask(null);
+        setTaskToDelete(null);
         setMessage({ type: '', text: '' });
         // Reset forms
         setScheduleForm({
@@ -195,6 +288,15 @@ const Manage = () => {
             title: '',
             description: '',
             postedBy: ''
+        });
+        setTaskForm({
+            title: '',
+            description: '',
+            type: 'assignment',
+            class: '',
+            dueDate: '',
+            priority: 'medium',
+            status: 'pending'
         });
     };
 
@@ -248,6 +350,31 @@ const Manage = () => {
         }
     };
 
+    const handleTaskSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            if (editingTask) {
+                await executeRequest(
+                    () => taskAPI.update(editingTask._id, taskForm),
+                    { loadingMessage: "Updating task..." }
+                );
+                setMessage({ type: 'success', text: 'Task updated successfully!' });
+            } else {
+                await executeRequest(
+                    () => taskAPI.create(taskForm),
+                    { loadingMessage: "Creating task..." }
+                );
+                setMessage({ type: 'success', text: 'Task created successfully!' });
+            }
+            fetchTasks(); // Refresh the list
+            setTimeout(() => {
+                closeModals();
+            }, 2000);
+        } catch (error) {
+            setMessage({ type: 'error', text: error.message || `Failed to ${editingTask ? 'update' : 'create'} task` });
+        }
+    };
+
     const handleScheduleChange = (e) => {
         setScheduleForm({
             ...scheduleForm,
@@ -258,6 +385,13 @@ const Manage = () => {
     const handleAnnouncementChange = (e) => {
         setAnnouncementForm({
             ...announcementForm,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const handleTaskChange = (e) => {
+        setTaskForm({
+            ...taskForm,
             [e.target.name]: e.target.value
         });
     };
@@ -293,6 +427,49 @@ const Manage = () => {
                 return 'status-cancelled';
             default:
                 return 'status-scheduled';
+        }
+    };
+
+    const formatDateTime = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        }) + ' at ' + date.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
+    };
+
+    const getTaskStatusColor = (status) => {
+        switch (status?.toLowerCase()) {
+            case 'completed':
+                return 'status-completed';
+            case 'pending':
+                return 'status-scheduled';
+            case 'in-progress':
+                return 'status-active';
+            case 'overdue':
+                return 'status-cancelled';
+            default:
+                return 'status-scheduled';
+        }
+    };
+
+    const getPriorityColor = (priority) => {
+        switch (priority?.toLowerCase()) {
+            case 'urgent':
+                return '#dc2626';
+            case 'high':
+                return '#ef4444';
+            case 'medium':
+                return '#3b82f6';
+            case 'low':
+                return '#10b981';
+            default:
+                return '#6b7280';
         }
     };
 
@@ -332,6 +509,20 @@ const Manage = () => {
                         </div>
                     </div>
                 </div>
+
+                <div className="action-card task-card" onClick={handleAddTask}>
+                    <div className="action-card-icon">
+                        <ClipboardList size={32} />
+                    </div>
+                    <div className="action-card-content">
+                        <h3>Add Task</h3>
+                        <p>Create and manage assignments, projects, and other tasks</p>
+                        <div className="action-button">
+                            <Plus size={20} />
+                            <span>Add New</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* Schedules and Announcements Table */}
@@ -353,6 +544,14 @@ const Manage = () => {
                             <Megaphone size={18} />
                             <span>Announcements</span>
                             <span className="tab-count">{announcements.length}</span>
+                        </button>
+                        <button 
+                            className={`tab-btn ${activeTab === 'tasks' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('tasks')}
+                        >
+                            <ClipboardList size={18} />
+                            <span>Tasks</span>
+                            <span className="tab-count">{tasks.length}</span>
                         </button>
                     </div>
                 </div>
@@ -500,7 +699,7 @@ const Manage = () => {
                             </>
                         )}
                     </>
-                ) : (
+                ) : activeTab === 'announcements' ? (
                     <>
                         {announcementsLoading ? (
                             <div className="loading-container">
@@ -615,6 +814,172 @@ const Manage = () => {
                                                     <Eye size={14} />
                                                     <span>{announcement.description}</span>
                                                 </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </>
+                ) : (
+                    <>
+                        {tasksLoading ? (
+                            <div className="loading-container">
+                                <div className="spinner"></div>
+                                <p>Loading tasks...</p>
+                            </div>
+                        ) : tasks.length === 0 ? (
+                            <div className="no-schedules-container">
+                                <ClipboardList size={48} />
+                                <p>No tasks found</p>
+                                <button className="add-first-schedule-btn" onClick={handleAddTask}>
+                                    <Plus size={16} />
+                                    Add Your First Task
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                {/* Desktop Tasks Table */}
+                                <div className="schedules-table-container desktop-table">
+                                    <table className="schedules-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Title</th>
+                                                <th>Type</th>
+                                                <th>Class</th>
+                                                <th>Due Date</th>
+                                                <th>Priority</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {tasks.map((task) => (
+                                                <tr key={task._id}>
+                                                    <td className="subject-cell">
+                                                        <div className="subject-info">
+                                                            <span className="subject-name">{task.title}</span>
+                                                            {task.description && (
+                                                                <span className="subject-desc">
+                                                                    {task.description.length > 80 
+                                                                        ? `${task.description.substring(0, 80)}...` 
+                                                                        : task.description}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span className="room-badge">{task.type}</span>
+                                                    </td>
+                                                    <td className="posted-by-cell">
+                                                        <span className="posted-by-badge">{task.class}</span>
+                                                    </td>
+                                                    <td>{formatDateTime(task.dueDate)}</td>
+                                                    <td>
+                                                        <span 
+                                                            className="status-badge" 
+                                                            style={{ 
+                                                                backgroundColor: getPriorityColor(task.priority),
+                                                                color: 'white' 
+                                                            }}
+                                                        >
+                                                            {task.priority}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span className={`status-badge ${getTaskStatusColor(task.status)}`}>
+                                                            {task.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="actions-cell">
+                                                        <div className="action-buttons">
+                                                            <button 
+                                                                className="edit-btn"
+                                                                onClick={() => handleEditTask(task)}
+                                                                title="Edit Task"
+                                                            >
+                                                                <Edit size={16} />
+                                                            </button>
+                                                            <button 
+                                                                className="delete-btn"
+                                                                onClick={() => handleDeleteTask(task)}
+                                                                title="Delete Task"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* Mobile Tasks Cards */}
+                                <div className="schedules-mobile-container mobile-cards">
+                                    {tasks.map((task) => (
+                                        <div key={task._id} className="schedule-mobile-card">
+                                            <div className="mobile-card-header">
+                                                <div className="mobile-subject">
+                                                    <h4>{task.title}</h4>
+                                                    <span className={`status-badge ${getTaskStatusColor(task.status)}`}>
+                                                        {task.status}
+                                                    </span>
+                                                </div>
+                                                <div className="mobile-actions">
+                                                    <button 
+                                                        className="edit-btn"
+                                                        onClick={() => handleEditTask(task)}
+                                                        title="Edit"
+                                                    >
+                                                        <Edit size={16} />
+                                                    </button>
+                                                    <button 
+                                                        className="delete-btn"
+                                                        onClick={() => handleDeleteTask(task)}
+                                                        title="Delete"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="mobile-card-body">
+                                                <div className="mobile-info-row">
+                                                    <div className="mobile-info-item">
+                                                        <Target size={14} />
+                                                        <span className="room-badge">{task.type}</span>
+                                                    </div>
+                                                    <div className="mobile-info-item">
+                                                        <Users size={14} />
+                                                        <span className="posted-by-badge">{task.class}</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="mobile-info-row">
+                                                    <div className="mobile-info-item">
+                                                        <Clock size={14} />
+                                                        <span>{formatDateTime(task.dueDate)}</span>
+                                                    </div>
+                                                    <div className="mobile-info-item">
+                                                        <AlertTriangle size={14} />
+                                                        <span 
+                                                            style={{ 
+                                                                color: getPriorityColor(task.priority),
+                                                                fontWeight: '600' 
+                                                            }}
+                                                        >
+                                                            {task.priority}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                
+                                                {task.description && (
+                                                    <div className="mobile-description">
+                                                        <Eye size={14} />
+                                                        <span>{task.description}</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     ))}
@@ -854,14 +1219,154 @@ const Manage = () => {
                 </div>
             )}
 
+            {/* Task Modal */}
+            {showTaskModal && (
+                <div className="modal-overlay" onClick={closeModals}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <div className="modal-title">
+                                <ClipboardList size={24} />
+                                <h3>{editingTask ? 'Edit Task' : 'Add New Task'}</h3>
+                            </div>
+                            <button className="close-btn" onClick={closeModals}>
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {message.text && (
+                            <div className={`message ${message.type}`}>
+                                {message.text}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleTaskSubmit} className="modal-form">
+                            <div className="form-group">
+                                <label htmlFor="taskTitle">Title *</label>
+                                <input
+                                    type="text"
+                                    id="taskTitle"
+                                    name="title"
+                                    value={taskForm.title}
+                                    onChange={handleTaskChange}
+                                    required
+                                    placeholder="Enter task title"
+                                />
+                            </div>
+
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label htmlFor="taskType">Type *</label>
+                                    <select
+                                        id="taskType"
+                                        name="type"
+                                        value={taskForm.type}
+                                        onChange={handleTaskChange}
+                                        required
+                                    >
+                                        <option value="assignment">Assignment</option>
+                                        <option value="project">Project</option>
+                                        <option value="exam">Exam</option>
+                                        <option value="quiz">Quiz</option>
+                                        <option value="presentation">Presentation</option>
+                                        <option value="homework">Homework</option>
+                                        <option value="lab">Lab</option>
+                                        <option value="reading">Reading</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="taskClass">Class *</label>
+                                    <input
+                                        type="text"
+                                        id="taskClass"
+                                        name="class"
+                                        value={taskForm.class}
+                                        onChange={handleTaskChange}
+                                        required
+                                        placeholder="e.g., Web Development, Data Science"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label htmlFor="taskDueDate">Due Date *</label>
+                                    <input
+                                        type="datetime-local"
+                                        id="taskDueDate"
+                                        name="dueDate"
+                                        value={taskForm.dueDate}
+                                        onChange={handleTaskChange}
+                                        required
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="taskPriority">Priority *</label>
+                                    <select
+                                        id="taskPriority"
+                                        name="priority"
+                                        value={taskForm.priority}
+                                        onChange={handleTaskChange}
+                                        required
+                                    >
+                                        <option value="low">Low</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="high">High</option>
+                                        <option value="urgent">Urgent</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            {/* <div className="form-group">
+                                <label htmlFor="taskStatus">Status *</label>
+                                <select
+                                    id="taskStatus"
+                                    name="status"
+                                    value={taskForm.status}
+                                    onChange={handleTaskChange}
+                                    required
+                                >
+                                    <option value="pending">Pending</option>
+                                    <option value="in-progress">In Progress</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="overdue">Overdue</option>
+                                </select>
+                            </div> */}
+
+                            <div className="form-group">
+                                <label htmlFor="taskDescription">Description</label>
+                                <textarea
+                                    id="taskDescription"
+                                    name="description"
+                                    value={taskForm.description}
+                                    onChange={handleTaskChange}
+                                    placeholder="Enter task description (optional)"
+                                    rows="4"
+                                />
+                            </div>
+
+                            <div className="form-actions">
+                                <button type="button" className="cancel-btn" onClick={closeModals}>
+                                    Cancel
+                                </button>
+                                <button type="submit" className="save-btn">
+                                    <Save size={18} />
+                                    {editingTask ? 'Update' : 'Create'} Task
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
             {/* Delete Confirmation Modal */}
-            {showDeleteConfirm && (scheduleToDelete || announcementToDelete) && (
+            {showDeleteConfirm && (scheduleToDelete || announcementToDelete || taskToDelete) && (
                 <div className="modal-overlay" onClick={closeModals}>
                     <div className="modal-content delete-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <div className="modal-title">
                                 <Trash2 size={24} />
-                                <h3>Delete {scheduleToDelete ? 'Schedule' : 'Announcement'}</h3>
+                                <h3>Delete {scheduleToDelete ? 'Schedule' : announcementToDelete ? 'Announcement' : 'Task'}</h3>
                             </div>
                             <button className="close-btn" onClick={closeModals}>
                                 <X size={20} />
@@ -880,7 +1385,7 @@ const Manage = () => {
                                     <Trash2 size={32} />
                                 </div>
                                 <p className="delete-message">
-                                    Are you sure you want to delete this {scheduleToDelete ? 'schedule' : 'announcement'}?
+                                    Are you sure you want to delete this {scheduleToDelete ? 'schedule' : announcementToDelete ? 'announcement' : 'task'}?
                                 </p>
                                 <div className="schedule-info">
                                     {scheduleToDelete ? (
@@ -889,11 +1394,17 @@ const Manage = () => {
                                             <span>{formatDate(scheduleToDelete.date)} • {formatTime(scheduleToDelete.startTime)} - {formatTime(scheduleToDelete.endTime)}</span>
                                             <span>Room: {scheduleToDelete.room}</span>
                                         </>
-                                    ) : (
+                                    ) : announcementToDelete ? (
                                         <>
                                             <strong>{announcementToDelete.title}</strong>
                                             <span>Posted by: {announcementToDelete.postedBy}</span>
                                             <span>{formatDate(announcementToDelete.createdAt)}</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <strong>{taskToDelete.title}</strong>
+                                            <span>{taskToDelete.type} • {taskToDelete.class}</span>
+                                            <span>Due: {formatDateTime(taskToDelete.dueDate)}</span>
                                         </>
                                     )}
                                 </div>
@@ -909,10 +1420,10 @@ const Manage = () => {
                                 <button 
                                     type="button" 
                                     className="delete-confirm-btn" 
-                                    onClick={scheduleToDelete ? confirmDeleteSchedule : confirmDeleteAnnouncement}
+                                    onClick={scheduleToDelete ? confirmDeleteSchedule : announcementToDelete ? confirmDeleteAnnouncement : confirmDeleteTask}
                                 >
                                     <Trash2 size={18} />
-                                    Delete {scheduleToDelete ? 'Schedule' : 'Announcement'}
+                                    Delete {scheduleToDelete ? 'Schedule' : announcementToDelete ? 'Announcement' : 'Task'}
                                 </button>
                             </div>
                         </div>

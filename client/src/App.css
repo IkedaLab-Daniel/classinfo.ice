@@ -925,22 +925,20 @@ nav .wrapper .links a.active svg{
 }
 
 .action-cards-container .action-card {
-  background: white;
-  width: 48%;
-  min-height: 200px;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-  cursor: pointer;
-  border: 2px solid transparent;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
-}
-
-.action-card::before {
+    background: white;
+    width: 32%;
+    min-height: 200px;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 2px solid transparent;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}.action-card::before {
   content: '';
   position: absolute;
   top: 0;
@@ -955,19 +953,25 @@ nav .wrapper .links a.active svg{
 }
 
 .announcement-card::before {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.task-card::before {
+    background: linear-gradient(135deg, #10b981, #059669);
 }
 
 .action-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+    transform: translateY(-8px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
 }
 
 .announcement-card:hover {
-  border-color: #8b5cf6;
+    border-color: #8b5cf6;
 }
 
-.action-card-icon {
+.task-card:hover {
+    border-color: #10b981;
+}.action-card-icon {
   width: 64px;
   height: 64px;
   border-radius: 50%;
@@ -984,11 +988,14 @@ nav .wrapper .links a.active svg{
 }
 
 .announcement-card .action-card-icon {
-  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
-  color: #7c3aed;
+    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+    color: #7c3aed;
 }
 
-.action-card:hover .action-card-icon {
+.task-card .action-card-icon {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    color: #059669;
+}.action-card:hover .action-card-icon {
   transform: scale(1.1);
 }
 
@@ -1023,11 +1030,14 @@ nav .wrapper .links a.active svg{
 }
 
 .announcement-card .action-button {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-  color: white;
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: white;
 }
 
-.action-button:hover {
+.task-card .action-button {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}.action-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
