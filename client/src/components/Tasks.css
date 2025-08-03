@@ -245,3 +245,34 @@
     border-radius: 15px;
     font-size: 0.8rem;
 }
+
+/* Due date status styling */
+.tasks-container .task-cards-container .task-card .foot .due-status {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.tasks-container .task-cards-container .task-card .foot .due-status.overdue {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+.tasks-container .task-cards-container .task-card .foot .due-status.due-today {
+    color: #f59e0b;
+    font-weight: 600;
+}
+
+.tasks-container .task-cards-container .task-card .foot .due-status.urgent {
+    color: #dc2626;
+    font-weight: 600;
+}
+
+.tasks-container .task-cards-container .task-card .foot .due-status.soon {
+    color: #f59e0b;
+    font-weight: 500;
+}
+
+.tasks-container .task-cards-container .task-card .foot .due-status.normal {
+    color: #6b7280;
+    font-weight: 500;
+}

@@ -175,6 +175,34 @@ const Tasks = () => {
         }
     };
 
+    // Helper function to get due date status class for styling
+    const getDueDateStatusClass = (dueDate) => {
+        const now = new Date();
+        const due = new Date(dueDate);
+        
+        // Get current date in local time (start of day)
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        
+        // Get due date in UTC but treat as local date (start of day)
+        const dueDay = new Date(due.getUTCFullYear(), due.getUTCMonth(), due.getUTCDate());
+        
+        // Calculate difference in days
+        const diffTime = dueDay.getTime() - today.getTime();
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays < 0) {
+            return 'overdue';
+        } else if (diffDays === 0) {
+            return 'due-today';
+        } else if (diffDays === 1) {
+            return 'urgent';
+        } else if (diffDays <= 3) {
+            return 'soon';
+        } else {
+            return 'normal';
+        }
+    };
+
     // Loading state
     if (isLoading) {
         return (
@@ -245,6 +273,7 @@ const Tasks = () => {
                         const TaskTypeIcon = getTaskTypeIcon(task.type);
                         const SubjectIcon = getSubjectIcon(task.class);
                         const PriorityIcon = getPriorityIcon(task.priority);
+                        const dueDateStatusClass = getDueDateStatusClass(task.dueDate);
                         
                         return (
                             <div key={task._id} className={`task-card ${task.status}`}>
@@ -284,7 +313,7 @@ const Tasks = () => {
                                         <PriorityIcon size={16} />
                                         <p className={`priority ${task.priority}`}>{task.priority.toUpperCase()}</p>
                                     </div>
-                                    <p>{getDaysRemaining(task.dueDate)}</p>
+                                    <p className={`due-status ${dueDateStatusClass}`}>{getDaysRemaining(task.dueDate)}</p>
                                 </div>
                             </div>
                         );
