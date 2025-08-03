@@ -12,10 +12,17 @@
 
 .tasks-container .tasks-header{
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     gap: 10px;
     margin: 20px 0;
+}
+
+.tasks-container .tasks-header .heading-icon-wrapper{
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .tasks-container .tasks-header svg{
@@ -24,6 +31,14 @@
 
 .tasks-container .tasks-header h2{
     font-size: 1.8rem;
+}
+
+.tasks-container .tasks-subtitle {
+    color: #6b7280;
+    font-size: 1rem;
+    margin: 0 0 24px 0;
+    text-align: center;
+    font-weight: 400;
 }
 
 .tasks-container .task-cards-container{
@@ -362,6 +377,11 @@
         font-size: 1.5rem;
     }
     
+    .tasks-container .tasks-subtitle {
+        font-size: 0.9rem;
+        margin: 0 0 20px 0;
+    }
+    
     .tasks-container .task-cards-container {
         gap: 12px;
     }
@@ -442,6 +462,12 @@
     
     .tasks-container .tasks-header h2 {
         font-size: 1.3rem;
+    }
+    
+    .tasks-container .tasks-subtitle {
+        font-size: 0.85rem;
+        margin: 0 0 16px 0;
+        padding: 0 10px;
     }
     
     .tasks-container .task-cards-container {

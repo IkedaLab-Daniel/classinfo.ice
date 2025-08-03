@@ -169,7 +169,7 @@ const Tasks = () => {
         } else if (diffDays === 0) {
             return 'Due Today';
         } else if (diffDays === 1) {
-            return '1 Day remaining';
+            return 'Due tommorow';
         } else {
             return `${diffDays} Days remaining`;
         }
@@ -263,8 +263,17 @@ const Tasks = () => {
         <section id="tasks">
             <div className="tasks-container">
                 <div className="tasks-header">
-                    <ClipboardList size={24} />
-                    <h2>Tasks</h2>
+                    <div className="heading-icon-wrapper">
+                        <ClipboardList size={24} />
+                        <h2>Tasks</h2>
+                    </div>
+                    
+                    <p className="tasks-subtitle">
+                        {tasks.length > 0 
+                            ? `Managing ${tasks.length} task${tasks.length === 1 ? '' : 's'} • ${tasks.filter(t => t.status === 'pending').length} pending`
+                            : 'Stay organized with your assignments and deadlines'
+                        }
+                    </p>
                 </div>
 
                 <div className="task-cards-container">
