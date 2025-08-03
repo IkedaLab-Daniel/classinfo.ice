@@ -13,31 +13,61 @@ const NavBar = () => {
             return;
         }
 
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        setActiveSection(entry.target.id);
+        let observer;
+
+        const createObserver = () => {
+            // Dynamic observer settings based on screen size
+            const isMobile = window.innerWidth <= 768;
+            const observerConfig = {
+                threshold: [0.1, 0.2, 0.3, 0.4, 0.5], // Multiple thresholds for better detection
+                rootMargin: isMobile ? '-60px 0px -60% 0px' : '-80px 0px -50% 0px'
+            };
+
+            observer = new IntersectionObserver(
+                (entries) => {
+                    // Find the entry with the highest intersection ratio
+                    let maxEntry = null;
+                    let maxRatio = 0;
+                    
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
+                            maxRatio = entry.intersectionRatio;
+                            maxEntry = entry;
+                        }
+                    });
+                    
+                    // Only update if we found a highly intersecting element
+                    if (maxEntry && maxRatio > (isMobile ? 0.05 : 0.1)) {
+                        setActiveSection(maxEntry.target.id);
                     }
-                });
-            },
-            {
-                threshold: 0.3,
-                rootMargin: '-100px 0px -40% 0px'
-            }
-        );
+                },
+                observerConfig
+            );
 
-        const sections = ['today', 'weekly', 'tasks'];
-        sections.forEach((id) => {
-            const element = document.getElementById(id);
-            if (element) observer.observe(element);
-        });
-
-        return () => {
+            const sections = ['today-page', 'weekly', 'tasks'];
             sections.forEach((id) => {
                 const element = document.getElementById(id);
-                if (element) observer.unobserve(element);
+                if (element) observer.observe(element);
             });
+        };
+
+        createObserver();
+
+        // Handle window resize to recreate observer with new settings
+        const handleResize = () => {
+            if (observer) {
+                observer.disconnect();
+            }
+            createObserver();
+        };
+
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            if (observer) {
+                observer.disconnect();
+            }
+            window.removeEventListener('resize', handleResize);
         };
     }, [location.pathname]);
 
@@ -48,7 +78,7 @@ const NavBar = () => {
             setTimeout(() => scrollToSection(sectionId), 100); // Small delay to ensure DOM is ready
         } else if (location.pathname === '/') {
             // Set default active section when on home page without hash
-            setActiveSection('today');
+            setActiveSection('today-page');
         }
     }, [location.pathname, location.hash]);
 
@@ -75,7 +105,14 @@ const NavBar = () => {
     // Handle clicks for home page sections
     const handleSectionClick = (e, sectionId) => {
         e.preventDefault();
-        scrollToSection(sectionId);
+        // Map display names to actual element IDs
+        const idMap = {
+            'today': 'today-page',
+            'weekly': 'weekly',
+            'tasks': 'tasks'
+        };
+        const actualId = idMap[sectionId] || sectionId;
+        scrollToSection(actualId);
     };
 
     // Determine if a nav item is active
@@ -84,7 +121,14 @@ const NavBar = () => {
             return sectionId === 'manage';
         }
         if (location.pathname === '/' && sectionId) {
-            return activeSection === sectionId;
+            // Map display names to actual element IDs for comparison
+            const idMap = {
+                'today': 'today-page',
+                'weekly': 'weekly',
+                'tasks': 'tasks'
+            };
+            const actualId = idMap[sectionId] || sectionId;
+            return activeSection === actualId;
         }
         return false;
     };
@@ -97,7 +141,7 @@ const NavBar = () => {
                 </div>
                 <div className="links">
                     <a 
-                        href="#today" 
+                        href="#today-page" 
                         onClick={(e) => handleSectionClick(e, 'today')}
                         className={isActive('today') ? 'active' : ''}
                     >

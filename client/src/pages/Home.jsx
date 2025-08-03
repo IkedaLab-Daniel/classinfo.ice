@@ -10,10 +10,10 @@ const Home = () => {
         <>
             <Dashboard />
             <Announcement />
-            <div id="today">
+            <div id="today-page">
                 <Today />
             </div>
-            <div id="weekly">
+            <div id="weekly" style={{ minHeight: '400px', paddingTop: '10px', paddingBottom: '10px' }}>
                 <Weekly />
             </div>
             <div id="tasks">
