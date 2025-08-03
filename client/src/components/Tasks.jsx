@@ -290,8 +290,13 @@ const Tasks = () => {
 
                                 <div className="content">
                                     <div className="task-title">
-                                        {/* <TaskTypeIcon size={18} /> */}
                                         <p className="title">{task.title}</p>
+                                    </div>
+                                    <div className="task-type">
+                                        <span className={`type-badge ${task.type}`}>
+                                            <TaskTypeIcon size={12} />
+                                            {task.type}
+                                        </span>
                                     </div>
                                     <p className="description">{task.description || 'No description provided'}</p>
                                     <div className="due-info">

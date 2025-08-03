@@ -15,6 +15,7 @@
     justify-content: center;
     align-items: center;
     gap: 10px;
+    margin: 20px 0;
 }
 
 .tasks-container .tasks-header svg{
@@ -82,13 +83,76 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 10px;
+    margin-bottom: 2px;
 }
 
 .tasks-container .task-cards-container .task-card .content .task-title .title{
     font-size: 1.2rem;
     font-weight: 500;
     margin: 0;
+}
+
+.tasks-container .task-cards-container .task-card .content .task-type{
+    margin-bottom: 8px;
+}
+
+.tasks-container .task-cards-container .task-card .content .task-type .type-badge{
+    background-color: #e0f2fe;
+    color: #0369a1;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: capitalize;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Task type specific colors */
+.tasks-container .task-cards-container .task-card .content .task-type .type-badge.assignment{
+    background-color: #e0f2fe;
+    color: #0369a1;
+}
+
+.tasks-container .task-cards-container .task-card .content .task-type .type-badge.project{
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.tasks-container .task-cards-container .task-card .content .task-type .type-badge.exam{
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+.tasks-container .task-cards-container .task-card .content .task-type .type-badge.quiz{
+    background-color: #fef3e2;
+    color: #ea580c;
+}
+
+.tasks-container .task-cards-container .task-card .content .task-type .type-badge.presentation{
+    background-color: #ede9fe;
+    color: #7c3aed;
+}
+
+.tasks-container .task-cards-container .task-card .content .task-type .type-badge.homework{
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.tasks-container .task-cards-container .task-card .content .task-type .type-badge.lab{
+    background-color: #ecfdf5;
+    color: #059669;
+}
+
+.tasks-container .task-cards-container .task-card .content .task-type .type-badge.reading{
+    background-color: #f0f9ff;
+    color: #0284c7;
+}
+
+.tasks-container .task-cards-container .task-card .content .task-type .type-badge.other{
+    background-color: #f3f4f6;
+    color: #6b7280;
 }
 
 .tasks-container .task-cards-container .task-card .content .due-info{
@@ -325,6 +389,17 @@
         line-height: 1.4;
     }
     
+    .tasks-container .task-cards-container .task-card .content .task-type .type-badge {
+        font-size: 0.7rem;
+        padding: 1px 6px;
+        gap: 3px;
+    }
+    
+    .tasks-container .task-cards-container .task-card .content .task-type .type-badge svg {
+        width: 10px;
+        height: 10px;
+    }
+    
     .tasks-container .task-cards-container .task-card .content .due-info {
         margin-top: 10px;
         gap: 4px;
@@ -403,6 +478,17 @@
         font-size: 0.85rem;
         line-height: 1.3;
         margin-bottom: 8px;
+    }
+    
+    .tasks-container .task-cards-container .task-card .content .task-type .type-badge {
+        font-size: 0.65rem;
+        padding: 1px 5px;
+        gap: 2px;
+    }
+    
+    .tasks-container .task-cards-container .task-card .content .task-type .type-badge svg {
+        width: 8px;
+        height: 8px;
     }
     
     .tasks-container .task-cards-container .task-card .content .due-info {
