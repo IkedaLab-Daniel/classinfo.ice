@@ -897,17 +897,41 @@ nav .wrapper .links a.active svg{
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 0px 10px 8px 10px;
+  margin: 0px 10px 8px 10px;  justify-content: space-between;
 }
 
 .manage-header h2 {
   font-size: 1.8rem;
   font-weight: 600;
   color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .manage-header svg {
   color: #2563eb;
+}
+
+.logout-button {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.logout-button:hover {
+  background: #c82333;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
 }
 
 .manage-subtitle {

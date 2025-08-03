@@ -4,8 +4,13 @@ import { useState, useEffect } from 'react';
 import { scheduleAPI, announcementAPI, taskAPI } from '../config/api';
 import LoadingModal from '../components/LoadingModal';
 import useApiWithLoading from '../hooks/useApiWithLoading';
+import SimpleAuth from '../components/SimpleAuth';
 
 const Manage = () => {
+    // Authentication state
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [showAuth, setShowAuth] = useState(true);
+
     const [showScheduleModal, setShowScheduleModal] = useState(false);
     const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
     const [showTaskModal, setShowTaskModal] = useState(false);
@@ -63,12 +68,59 @@ const Manage = () => {
         status: 'pending'
     });
 
+    // Check authentication on component mount
+    useEffect(() => {
+        const checkAuth = () => {
+            const authStatus = sessionStorage.getItem('adminAuth');
+            const authTime = sessionStorage.getItem('adminAuthTime');
+            
+            if (authStatus === 'true' && authTime) {
+                // Check if authentication is still valid (expires after 8 hours)
+                const authTimeMs = parseInt(authTime);
+                const now = Date.now();
+                const eightHours = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
+                
+                if (now - authTimeMs < eightHours) {
+                    setIsAuthenticated(true);
+                    setShowAuth(false);
+                } else {
+                    // Authentication expired
+                    sessionStorage.removeItem('adminAuth');
+                    sessionStorage.removeItem('adminAuthTime');
+                    setIsAuthenticated(false);
+                    setShowAuth(true);
+                }
+            } else {
+                setIsAuthenticated(false);
+                setShowAuth(true);
+            }
+        };
+
+        checkAuth();
+    }, []);
+
     // Fetch schedules on component mount
     useEffect(() => {
-        fetchSchedules();
-        fetchAnnouncements();
-        fetchTasks();
-    }, []);
+        if (isAuthenticated) {
+            fetchSchedules();
+            fetchAnnouncements();
+            fetchTasks();
+        }
+    }, [isAuthenticated]);
+
+    // Handle authentication success
+    const handleAuthenticated = (authenticated) => {
+        setIsAuthenticated(authenticated);
+        setShowAuth(!authenticated);
+    };
+
+    // Handle logout
+    const handleLogout = () => {
+        sessionStorage.removeItem('adminAuth');
+        sessionStorage.removeItem('adminAuthTime');
+        setIsAuthenticated(false);
+        setShowAuth(true);
+    };
 
     const fetchSchedules = async () => {
         try {
@@ -474,11 +526,29 @@ const Manage = () => {
     };
 
     return(
-        <section id="manage">
-            <div className="manage-header">
-                <Settings size={24} />
-                <h2>Manage</h2>
-            </div>
+        <>
+            {/* Authentication Component */}
+            {showAuth && (
+                <SimpleAuth 
+                    onAuthenticated={handleAuthenticated}
+                    title="Admin Access Required"
+                />
+            )}
+            
+            {/* Main Manage Content - only show when authenticated */}
+            {isAuthenticated && (
+                <section id="manage">
+                    <div className="manage-header">
+                        <Settings size={24} />
+                        <h2>Manage</h2>
+                        <button 
+                            onClick={handleLogout}
+                            className="logout-button"
+                            title="Logout"
+                        >
+                            Logout
+                        </button>
+                    </div>
             <p className="manage-subtitle">Add and manage your schedules and announcements</p>
             
             <div className="action-cards-container">
@@ -1437,7 +1507,9 @@ const Manage = () => {
                 message={loadingMessage}
                 showServerWaking={showServerWaking}
             />
-        </section>
+                </section>
+            )}
+        </>
     )
 }
 
