@@ -182,7 +182,6 @@ app.get('/api', (req, res) => {
         'GET /api/tasks/status/:status': 'Get tasks by status (pending, in-progress, completed, overdue, cancelled)',
         'GET /api/tasks/filter/overdue': 'Get overdue tasks',
         'GET /api/tasks/filter/upcoming': 'Get upcoming tasks (next 7 days by default)',
-        'GET /api/tasks/class/:className': 'Get tasks by class/course',
         'PATCH /api/tasks/:id/status': 'Update task status only',
         'GET /api/tasks/stats/overview': 'Get task statistics and overview'
       }

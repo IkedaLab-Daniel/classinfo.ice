@@ -40,7 +40,7 @@ const taskSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Task status is required'],
     enum: {
-      values: ['pending', 'in-progress', 'completed', 'overdue', 'cancelled'],
+      values: ['pending', 'in-progress', 'overdue', 'cancelled'],
       message: 'Status must be one of: pending, in-progress, completed, overdue, cancelled'
     },
     default: 'pending'
@@ -74,20 +74,20 @@ taskSchema.virtual('daysUntilDue').get(function() {
   return diffDays;
 });
 
-// Virtual for overdue status
+// ? Virtual for overdue status
 taskSchema.virtual('isOverdue').get(function() {
   if (!this.dueDate || this.status === 'completed') return false;
   return new Date() > new Date(this.dueDate);
 });
 
-// Index for better query performance
+// ? Index for better query performance
 taskSchema.index({ dueDate: 1, status: 1 });
 taskSchema.index({ class: 1, dueDate: 1 });
 taskSchema.index({ status: 1, createdAt: -1 });
 
-// Pre-save middleware to auto-update status based on due date
+// ? Pre-save middleware to auto-update status based on due date
 taskSchema.pre('save', function(next) {
-  // Auto-set overdue status if past due date and not completed
+  // ? Auto-set overdue status if past due date and not completed
   if (this.dueDate && this.status !== 'completed' && this.status !== 'cancelled') {
     const now = new Date();
     if (now > this.dueDate && this.status !== 'overdue') {
@@ -95,7 +95,7 @@ taskSchema.pre('save', function(next) {
     }
   }
   
-  // Set completedAt when status changes to completed
+  // ? Set completedAt when status changes to completed
   if (this.status === 'completed' && !this.completedAt) {
     this.completedAt = new Date();
   } else if (this.status !== 'completed') {

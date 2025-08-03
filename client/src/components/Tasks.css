@@ -1,0 +1,104 @@
+#tasks {
+    padding: 0px 20px;
+}
+
+.tasks-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 200px;
+}
+
+.tasks-container .tasks-header{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.tasks-container .tasks-header svg{
+    color: #2c63eb;
+}
+
+.tasks-container .tasks-header h2{
+    font-size: 1.8rem;
+}
+
+.tasks-container .task-cards-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.tasks-container .task-cards-container .task-card{
+    width: 24%;
+    background-color: white;
+    border: 1.5px solid #d2d9e2;
+    border-radius: 8px;
+    padding: 14px;
+}
+
+.tasks-container .task-cards-container .task-card .head{
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    padding: 10px;
+    gap: 10px;
+    position: relative;
+    border-bottom: 1.5px solid #9c9ea2;
+}
+
+.tasks-container .task-cards-container .task-card .head .subject{
+    position: absolute;
+    right: 10px;
+    background-color: #d2d9e2;
+    color: black;
+    padding: 1px 10px;
+    border-radius: 30px;
+}
+
+.tasks-container .task-cards-container .task-card .content{
+    padding: 10px;
+}
+
+.tasks-container .task-cards-container .task-card .content .title{
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.tasks-container .task-cards-container .task-card .content .description, .due-date, .due-time{
+    color: #6b7280;
+}
+
+.tasks-container .task-cards-container .task-card .content .description{
+    margin-bottom: 10px;
+}
+
+.tasks-container .task-cards-container .task-card .foot{
+    border-top: .5px solid #9c9ea2;
+    padding-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tasks-container .task-cards-container .task-card .foot .priority.high{
+    background-color: #b80000;
+    color: #fff;
+    padding: 1px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+}
+
+.tasks-container .task-cards-container .task-card .foot .priority.low{
+    background-color: #f7e600;
+    color: #222;
+    padding: 1px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+}
