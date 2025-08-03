@@ -10,6 +10,7 @@ const { errorHandler } = require('./middleware/errorHandler');
 // Route imports
 const scheduleRoutes = require('./routes/schedules');
 const announcementRoutes = require('./routes/announcements');
+const taskRoutes = require('./routes/tasks');
 
 // Connect to database
 connectDB();
@@ -145,6 +146,7 @@ app.get('/health', (req, res) => {
 // Routes
 app.use('/api/schedules', scheduleRoutes);
 app.use('/api/announcements', announcementRoutes);
+app.use('/api/tasks', taskRoutes);
 
 // API documentation route
 app.get('/api', (req, res) => {
@@ -170,13 +172,35 @@ app.get('/api', (req, res) => {
         'DELETE /api/announcements/:id': 'Delete announcement',
         'GET /api/announcements/latest': 'Get latest announcements (default 5)',
         'GET /api/announcements/range/:startDate/:endDate': 'Get announcements in date range'
+      },
+      tasks: {
+        'GET /api/tasks': 'Get all tasks with optional filtering and pagination',
+        'GET /api/tasks/:id': 'Get specific task by ID',
+        'POST /api/tasks': 'Create new task',
+        'PUT /api/tasks/:id': 'Update task',
+        'DELETE /api/tasks/:id': 'Delete task',
+        'GET /api/tasks/status/:status': 'Get tasks by status (pending, in-progress, completed, overdue, cancelled)',
+        'GET /api/tasks/filter/overdue': 'Get overdue tasks',
+        'GET /api/tasks/filter/upcoming': 'Get upcoming tasks (next 7 days by default)',
+        'GET /api/tasks/class/:className': 'Get tasks by class/course',
+        'PATCH /api/tasks/:id/status': 'Update task status only',
+        'GET /api/tasks/stats/overview': 'Get task statistics and overview'
       }
     },
     queryParameters: {
       pagination: 'page, limit',
       sorting: 'sortBy, sortOrder (asc/desc)',
       filtering: 'Various filters based on endpoint',
-      search: 'search (text search where applicable)'
+      search: 'search (text search where applicable)',
+      tasks: {
+        status: 'pending, in-progress, completed, overdue, cancelled',
+        type: 'assignment, project, exam, quiz, presentation, homework, lab, reading, other',
+        priority: 'low, medium, high, urgent',
+        class: 'filter by class/course name',
+        dueBefore: 'tasks due before date (YYYY-MM-DD)',
+        dueAfter: 'tasks due after date (YYYY-MM-DD)',
+        days: 'number of days for upcoming tasks filter'
+      }
     }
   });
 });

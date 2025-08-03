@@ -1,6 +1,7 @@
 import Dashboard from '../components/Dashboard'
 import Today from '../components/Today'
 import Weekly from '../components/Weekly'
+import Tasks from '../components/Tasks'
 import Footer from '../components/Footer'
 import Announcement from '../components/Announcement'
 const Home = () => {
@@ -10,6 +11,7 @@ const Home = () => {
             <Announcement />
             <Today />
             <Weekly />
+            <Tasks />
             <Footer />
         </>
     )
