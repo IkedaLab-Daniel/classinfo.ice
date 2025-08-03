@@ -9,7 +9,8 @@ const useApiWithLoading = () => {
     const executeRequest = useCallback(async (apiCall, options = {}) => {
         const { 
             showLoading = true, 
-            serverWakeThreshold = 2000, // Reduced to 2 seconds for easier testing
+            serverWakeThreshold = 4000, // 4 seconds threshold for server wake detection
+            requestTimeout = 30000, // 30 seconds timeout for request
             loadingMessage: requestLoadingMessage = "Loading..."
         } = options;
 
@@ -29,20 +30,53 @@ const useApiWithLoading = () => {
         setError(null);
 
         const startTime = Date.now();
+        let wakeTimer;
+        let timeoutTimer;
+        let isRequestCompleted = false;
 
-        // Set up server wake detection
-        const wakeTimer = setTimeout(() => {
-            console.log('Wake timer triggered - showing server waking message');
-            setIsServerWaking(true);
+        // Create the API call with timeout wrapper
+        const apiCallWithTimeout = new Promise((resolve, reject) => {
+            // Set up request timeout
+            timeoutTimer = setTimeout(() => {
+                if (!isRequestCompleted) {
+                    isRequestCompleted = true;
+                    reject(new Error('Request timeout - server may be unresponsive'));
+                }
+            }, requestTimeout);
+
+            // Execute the actual API call
+            apiCall()
+                .then((result) => {
+                    if (!isRequestCompleted) {
+                        isRequestCompleted = true;
+                        clearTimeout(timeoutTimer);
+                        resolve(result);
+                    }
+                })
+                .catch((error) => {
+                    if (!isRequestCompleted) {
+                        isRequestCompleted = true;
+                        clearTimeout(timeoutTimer);
+                        reject(error);
+                    }
+                });
+        });
+
+        // Set up server wake detection - only trigger if request is still pending
+        wakeTimer = setTimeout(() => {
+            if (!isRequestCompleted) {
+                console.log('Request still pending after', serverWakeThreshold, 'ms - server likely sleeping');
+                setIsServerWaking(true);
+            }
         }, serverWakeThreshold);
 
         try {
-            const result = await apiCall();
-            clearTimeout(wakeTimer);
+            const result = await apiCallWithTimeout;
             
-            // If the request took longer than threshold, it was likely a cold start
+            // Calculate actual request duration
             const duration = Date.now() - startTime;
             console.log(`Request completed in ${duration}ms`);
+            
             if (duration > serverWakeThreshold) {
                 console.log(`Server was likely sleeping. Request took ${duration}ms`);
             }
@@ -50,11 +84,13 @@ const useApiWithLoading = () => {
             setError(null);
             return result;
         } catch (err) {
-            clearTimeout(wakeTimer);
             console.log('Request failed:', err.message);
             setError(err.message);
             throw err;
         } finally {
+            isRequestCompleted = true;
+            if (wakeTimer) clearTimeout(wakeTimer);
+            if (timeoutTimer) clearTimeout(timeoutTimer);
             console.log('Cleaning up loading states');
             setIsLoading(false);
             setIsServerWaking(false);
@@ -64,7 +100,8 @@ const useApiWithLoading = () => {
     return {
         isLoading,
         loadingMessage,
-        showServerWaking: isServerWaking,
+        isServerWaking,
+        showServerWaking: isServerWaking, // Keep backward compatibility
         error,
         executeRequest,
         clearError: () => setError(null)

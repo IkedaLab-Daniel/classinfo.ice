@@ -76,16 +76,19 @@ const Dashboard = () => {
         return () => clearInterval(weatherInterval);
     }, [executeRequest]);
 
-    // Helper function to check if a date is today
-    const isToday = (dateString) => {
-        const today = new Date();
-        const date = new Date(dateString);
+    // Helper function to check if a date is today (consistent with Tasks component)
+    const isToday = (dueDate) => {
+        const now = new Date();
+        const due = new Date(dueDate);
         
-        // For tasks with UTC dates, get the date in UTC
-        const todayUTC = new Date(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
-        const taskDateUTC = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+        // Get current date in local time (start of day)
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         
-        return todayUTC.getTime() === taskDateUTC.getTime();
+        // Get due date in UTC but treat as local date (start of day)
+        const dueDay = new Date(due.getUTCFullYear(), due.getUTCMonth(), due.getUTCDate());
+        
+        // Check if dates are the same
+        return today.getTime() === dueDay.getTime();
     };
 
     // Helper function to check if a schedule is today
@@ -115,11 +118,23 @@ const Dashboard = () => {
                 );
                 
                 if (tasksResponse && tasksResponse.success && Array.isArray(tasksResponse.data)) {
-                    const todayTasks = tasksResponse.data.filter(task => 
-                        isToday(task.dueDate) && task.status !== 'completed'
-                    );
+                    console.log('Dashboard: All tasks received:', tasksResponse.data.length);
+                    
+                    const todayTasks = tasksResponse.data.filter(task => {
+                        const isDueToday = isToday(task.dueDate);
+                        const isNotCompleted = task.status !== 'completed';
+                        
+                        if (isDueToday) {
+                            console.log(`Task "${task.title}" due today. Status: ${task.status}, Due: ${task.dueDate}`);
+                        }
+                        
+                        return isDueToday && isNotCompleted;
+                    });
+                    
+                    console.log(`Dashboard: Tasks due today (not completed): ${todayTasks.length}`);
                     setTasksDueToday(todayTasks.length);
                 } else {
+                    console.log('Dashboard: No valid tasks response');
                     setTasksDueToday(0);
                 }
 

@@ -20,23 +20,25 @@ const LoadingModal = ({ isOpen, message = "Loading...", isServerWaking = false }
         return () => clearInterval(interval);
     }, [isOpen]);
 
-    // Cycling wake up messages
+    // Cycling wake up messages with better UX
     useEffect(() => {
         if (!isServerWaking) return;
 
         const messages = [
-            'Waking up server',
-            'Starting services',
+            'Server is sleeping, waking it up',
+            'Starting server services',
             'Connecting to database',
-            'Almost ready',
-            'Loading your data'
+            'Loading your data',
+            'Almost ready'
         ];
 
         let index = 0;
+        setWakingMessage(messages[index]);
+        
         const interval = setInterval(() => {
-            setWakingMessage(messages[index]);
             index = (index + 1) % messages.length;
-        }, 2000);
+            setWakingMessage(messages[index]);
+        }, 3000); // Slower transitions for better readability
 
         return () => clearInterval(interval);
     }, [isServerWaking]);
@@ -60,7 +62,7 @@ const LoadingModal = ({ isOpen, message = "Loading...", isServerWaking = false }
                             <h3 className="loading-title">{wakingMessage}{dots}</h3>
                             <p className="loading-subtitle">
                                 <Clock size={16} />
-                                Server was sleeping, please wait a moment
+                                Server response is taking longer than usual - this may take up to 30 seconds
                             </p>
                             <div className="loading-progress">
                                 <div className="progress-bar">
