@@ -45,24 +45,36 @@
 .tasks-container .task-cards-container .task-card .head{
     display: flex;
     justify-content: left;
-    align-items: center;
+    flex-direction: column;
+    align-items: left;
     padding: 10px;
-    gap: 10px;
+    gap: 5px;
     position: relative;
     border-bottom: 1.5px solid #9c9ea2;
 }
 
+.status-icon-wrapper{
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    gap: 5px;
+}
+
 .tasks-container .task-cards-container .task-card .head .subject{
-    position: absolute;
-    right: 10px;
-    background-color: #d2d9e2;
     color: black;
-    padding: 1px 10px;
-    border-radius: 30px;
     display: flex;
     align-items: center;
     gap: 6px;
     font-size: 0.85rem;
+}
+
+.tasks-container .task-cards-container .task-card .head .subject p{
+    background-color: #d2d9e2;
+    border-radius: 30px;
+    padding: 1px 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .tasks-container .task-cards-container .task-card .content .task-title{
@@ -162,4 +174,74 @@
 
 .tasks-container .task-cards-container .task-card.in-progress .task-status-icon{
     color: #3b82f6;
+}
+
+/* Loading, Error, and Empty States */
+.loading-container, .error-container, .no-tasks {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #6b7280;
+    gap: 16px;
+    margin-top: 60px;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.loading-spinner {
+    animation: spin 1s linear infinite;
+    color: #2563eb;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.error-container svg {
+    color: #ef4444;
+}
+
+.retry-button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.retry-button:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+.no-tasks svg {
+    color: #d1d5db;
+}
+
+.no-tasks p:first-of-type {
+    font-size: 18px;
+    font-weight: 600;
+    color: #374151;
+    margin: 0;
+}
+
+.no-tasks p:last-of-type {
+    font-size: 14px;
+    color: #9ca3af;
+    margin: 0;
+}
+
+/* Priority urgent styling */
+.tasks-container .task-cards-container .task-card .foot .priority-container .priority.urgent{
+    background-color: #dc2626;
+    color: #fff;
+    padding: 1px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
 }

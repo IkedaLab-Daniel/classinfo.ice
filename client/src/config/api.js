@@ -14,6 +14,16 @@ export const API_ENDPOINTS = {
   ANNOUNCEMENTS_LATEST: '/announcements/latest',
   ANNOUNCEMENTS_RANGE: (startDate, endDate) => `/announcements/range/${startDate}/${endDate}`,
   ANNOUNCEMENT_BY_ID: (id) => `/announcements/${id}`,
+  
+  // Task endpoints
+  TASKS: '/tasks',
+  TASKS_BY_STATUS: (status) => `/tasks/status/${status}`,
+  TASKS_OVERDUE: '/tasks/filter/overdue',
+  TASKS_UPCOMING: '/tasks/filter/upcoming',
+  TASKS_BY_CLASS: (className) => `/tasks/class/${className}`,
+  TASK_BY_ID: (id) => `/tasks/${id}`,
+  TASK_UPDATE_STATUS: (id) => `/tasks/${id}/status`,
+  TASKS_STATS: '/tasks/stats/overview',
 };
 
 // Base API class for making requests
@@ -159,6 +169,52 @@ export const announcementAPI = {
   
   // Delete announcement
   delete: (id) => apiClient.delete(API_ENDPOINTS.ANNOUNCEMENT_BY_ID(id)),
+};
+
+// Convenience methods for task-related API calls
+export const taskAPI = {
+  // Get all tasks
+  getAll: (params = {}) => {
+    const queryParams = new URLSearchParams();
+    Object.keys(params).forEach(key => {
+      if (params[key] !== undefined && params[key] !== null) {
+        queryParams.append(key, params[key]);
+      }
+    });
+    const queryString = queryParams.toString();
+    const endpoint = queryString ? `${API_ENDPOINTS.TASKS}?${queryString}` : API_ENDPOINTS.TASKS;
+    return apiClient.get(endpoint);
+  },
+  
+  // Get tasks by status
+  getByStatus: (status) => apiClient.get(API_ENDPOINTS.TASKS_BY_STATUS(status)),
+  
+  // Get overdue tasks
+  getOverdue: () => apiClient.get(API_ENDPOINTS.TASKS_OVERDUE),
+  
+  // Get upcoming tasks
+  getUpcoming: (days = 7) => apiClient.get(`${API_ENDPOINTS.TASKS_UPCOMING}?days=${days}`),
+  
+  // Get tasks by class
+  getByClass: (className) => apiClient.get(API_ENDPOINTS.TASKS_BY_CLASS(className)),
+  
+  // Get task by ID
+  getById: (id) => apiClient.get(API_ENDPOINTS.TASK_BY_ID(id)),
+  
+  // Get task statistics
+  getStats: () => apiClient.get(API_ENDPOINTS.TASKS_STATS),
+  
+  // Create new task
+  create: (taskData) => apiClient.post(API_ENDPOINTS.TASKS, taskData),
+  
+  // Update task
+  update: (id, taskData) => apiClient.put(API_ENDPOINTS.TASK_BY_ID(id), taskData),
+  
+  // Update task status only
+  updateStatus: (id, status) => apiClient.patch(API_ENDPOINTS.TASK_UPDATE_STATUS(id), { status }),
+  
+  // Delete task
+  delete: (id) => apiClient.delete(API_ENDPOINTS.TASK_BY_ID(id)),
 };
 
 export default apiClient;
