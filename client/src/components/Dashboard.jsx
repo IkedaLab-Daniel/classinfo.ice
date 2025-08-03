@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import ice from '../assets/ice.jpeg'
 import LoadingModal from './LoadingModal';
 import useApiWithLoading from '../hooks/useApiWithLoading';
+import { taskAPI, scheduleAPI } from '../config/api';
 
 const Dashboard = () => {
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -14,6 +15,9 @@ const Dashboard = () => {
         description: 'Loading...',
         icon: '01d'
     });
+    const [tasksDueToday, setTasksDueToday] = useState(0);
+    const [classesToday, setClassesToday] = useState(0);
+    const [isDataLoading, setIsDataLoading] = useState(true);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -70,6 +74,88 @@ const Dashboard = () => {
         }, 10 * 60 * 1000);
         
         return () => clearInterval(weatherInterval);
+    }, [executeRequest]);
+
+    // Helper function to check if a date is today
+    const isToday = (dateString) => {
+        const today = new Date();
+        const date = new Date(dateString);
+        
+        // For tasks with UTC dates, get the date in UTC
+        const todayUTC = new Date(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+        const taskDateUTC = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+        
+        return todayUTC.getTime() === taskDateUTC.getTime();
+    };
+
+    // Helper function to check if a schedule is today
+    const isScheduleToday = (schedule) => {
+        const today = new Date();
+        const scheduleDate = new Date(schedule.date);
+        
+        return today.toDateString() === scheduleDate.toDateString();
+    };
+
+    // Fetch tasks and schedules data
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            try {
+                setIsDataLoading(true);
+                
+                // Fetch tasks due today
+                const tasksResponse = await executeRequest(
+                    () => taskAPI.getAll({ 
+                        sortBy: 'dueDate', 
+                        sortOrder: 'asc',
+                        limit: 100 
+                    }),
+                    { 
+                        showLoading: false // Don't show loading modal for dashboard updates
+                    }
+                );
+                
+                if (tasksResponse && tasksResponse.success && Array.isArray(tasksResponse.data)) {
+                    const todayTasks = tasksResponse.data.filter(task => 
+                        isToday(task.dueDate) && task.status !== 'completed'
+                    );
+                    setTasksDueToday(todayTasks.length);
+                } else {
+                    setTasksDueToday(0);
+                }
+
+                // Fetch schedules for today
+                const schedulesResponse = await executeRequest(
+                    () => scheduleAPI.getAll(),
+                    { 
+                        showLoading: false // Don't show loading modal for dashboard updates
+                    }
+                );
+                
+                if (schedulesResponse && Array.isArray(schedulesResponse.data || schedulesResponse)) {
+                    const schedules = schedulesResponse.data || schedulesResponse;
+                    const todaySchedules = schedules.filter(schedule => 
+                        isScheduleToday(schedule) && schedule.status === 'active'
+                    );
+                    setClassesToday(todaySchedules.length);
+                } else {
+                    setClassesToday(0);
+                }
+                
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+                setTasksDueToday(0);
+                setClassesToday(0);
+            } finally {
+                setIsDataLoading(false);
+            }
+        };
+
+        fetchDashboardData();
+        
+        // Refresh data every 5 minutes
+        const dataInterval = setInterval(fetchDashboardData, 5 * 60 * 1000);
+        
+        return () => clearInterval(dataInterval);
     }, [executeRequest]);
 
     const getGreeting = () => {
@@ -175,11 +261,11 @@ const Dashboard = () => {
                             </div>
                             <div className="data-item">
                                 <AlertCircle size={16} />
-                                <span>3</span>
+                                <span>{isDataLoading ? '--' : tasksDueToday}</span>
                             </div>
                             <div className="data-item">
                                 <Calendar size={16} />
-                                <span>3</span>
+                                <span>{isDataLoading ? '--' : classesToday}</span>
                             </div>
                             <button 
                                 className="expand-btn" 
@@ -203,8 +289,8 @@ const Dashboard = () => {
                                     <Sun size={16} className="weather-icon-fallback" style={{display: 'none'}} />
                                     {weather.temp}°C {weather.description}
                                 </p>
-                                <p><AlertCircle size={16} /> 3 Tasks Due Today</p>
-                                <p><Calendar size={16} /> 3 Classes Today</p>
+                                <p><AlertCircle size={16} /> {tasksDueToday} {tasksDueToday === 1 ? 'Task' : 'Tasks'} Due Today</p>
+                                <p><Calendar size={16} /> {classesToday} {classesToday === 1 ? 'Class' : 'Classes'} Today</p>
                             </div>
                         )}
                     </div>
@@ -250,7 +336,7 @@ const Dashboard = () => {
                         <div className="card-icon">
                             <AlertCircle size={28} />
                         </div>
-                        <span className="card-value">3</span>
+                        <span className="card-value">{isDataLoading ? '--' : tasksDueToday}</span>
                         <span className="card-label">Tasks Due</span>
                         <span className="card-description">Today</span>
                     </div>
@@ -258,9 +344,9 @@ const Dashboard = () => {
                         <div className="card-icon">
                             <Calendar size={28} />
                         </div>
-                        <span className="card-value">3</span>
+                        <span className="card-value">{isDataLoading ? '--' : classesToday}</span>
                         <span className="card-label">Classes</span>
-                        <span className="card-description">Remaining</span>
+                        <span className="card-description">Today</span>
                     </div>
                 </div>
                 V1.0

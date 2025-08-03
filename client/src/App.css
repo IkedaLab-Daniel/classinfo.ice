@@ -111,7 +111,7 @@ nav .wrapper .links a.active svg{
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
   nav {
-    bottom: 10px;
+    bottom: 25px;
     padding: 0 10px;
   }
   
@@ -890,7 +890,7 @@ nav .wrapper .links a.active svg{
 #manage {
   padding: 20px;
   min-height: calc(100vh - 100px);
-  margin-bottom: 300px;
+  margin-bottom: 100px;
 }
 
 .manage-header {
@@ -948,7 +948,11 @@ nav .wrapper .links a.active svg{
   transition: all 0.3s ease;
 }
 
-.schedule-cards-container .schedule-card::before {
+#add-schedule-card{
+  z-index: 1;
+}
+
+#add-schedule-card::before {
   background: linear-gradient(135deg, #3b82f6, #2563eb);
 }
 

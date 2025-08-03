@@ -482,7 +482,7 @@ const Manage = () => {
             <p className="manage-subtitle">Add and manage your schedules and announcements</p>
             
             <div className="action-cards-container">
-                <div className="action-card schedule-card" onClick={handleAddSchedule}>
+                <div className="action-card schedule-card" id='add-schedule-card' onClick={handleAddSchedule}>
                     <div className="action-card-icon">
                         <Calendar size={32} />
                     </div>
@@ -990,6 +990,7 @@ const Manage = () => {
                 )}
             </div>
 
+            {/* TODO:
             <div className="quick-stats">
                 <div className="stat-item">
                     <div className="stat-icon">
@@ -1018,7 +1019,7 @@ const Manage = () => {
                         <span className="stat-label">Total Students</span>
                     </div>
                 </div>
-            </div>
+            </div> */}
 
             {/* Schedule Modal */}
             {showScheduleModal && (
