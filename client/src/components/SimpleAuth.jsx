@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Lock, Eye, EyeOff, Shield, AlertTriangle } from 'lucide-react';
 import './SimpleAuth.css';
+import { debugAuth } from '../utils/authDebug';
 
 const SimpleAuth = ({ onAuthenticated, title = "Authentication Required" }) => {
     const [password, setPassword] = useState('');
@@ -13,21 +14,56 @@ const SimpleAuth = ({ onAuthenticated, title = "Authentication Required" }) => {
         setError('');
         setIsLoading(true);
 
+        // Debug logging for production
+        console.log('=== SimpleAuth Debug ===');
+        console.log('Environment check:');
+        console.log('- NODE_ENV:', import.meta.env.NODE_ENV);
+        console.log('- MODE:', import.meta.env.MODE);
+        console.log('- PROD:', import.meta.env.PROD);
+        console.log('- DEV:', import.meta.env.DEV);
+        
+        // Use debug utility
+        const envPassword = debugAuth.testEnvVar('VITE_ADMIN_PASSWORD');
+        
+        // Check all VITE environment variables
+        console.log('All VITE env vars:', Object.keys(import.meta.env).filter(key => key.startsWith('VITE_')));
+        
+        // Password debugging (careful with logging)
+        const defaultPassword = 'admin123';
+        const correctPassword = envPassword || defaultPassword;
+        
+        console.log('Password check:');
+        console.log('- VITE_ADMIN_PASSWORD exists:', !!envPassword);
+        console.log('- VITE_ADMIN_PASSWORD length:', envPassword ? envPassword.length : 0);
+        console.log('- Using default password:', !envPassword);
+        console.log('- Entered password length:', password.length);
+        console.log('- Passwords match:', password === correctPassword);
+        
         // Simple validation - in a real app this would be more secure
-        const correctPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'admin123';
         
         // Simulate a small delay for better UX
         setTimeout(() => {
+            console.log('Authentication result:', password === correctPassword);
+            
             if (password === correctPassword) {
+                console.log('✅ Authentication successful');
                 // Store authentication in sessionStorage (expires when browser closes)
                 sessionStorage.setItem('adminAuth', 'true');
                 sessionStorage.setItem('adminAuthTime', Date.now().toString());
+                console.log('Session data stored:', {
+                    adminAuth: sessionStorage.getItem('adminAuth'),
+                    adminAuthTime: sessionStorage.getItem('adminAuthTime')
+                });
                 onAuthenticated(true);
             } else {
+                console.log('❌ Authentication failed');
+                console.log('Expected:', correctPassword);
+                console.log('Received:', password);
                 setError('Incorrect password. Please try again.');
                 setPassword('');
             }
             setIsLoading(false);
+            console.log('=== End SimpleAuth Debug ===');
         }, 500);
     };
 
@@ -95,6 +131,22 @@ const SimpleAuth = ({ onAuthenticated, title = "Authentication Required" }) => {
                 <div className="auth-footer">
                     <p>This is a temporary authentication system.</p>
                     <p>Full account management will be implemented later.</p>
+                    {(import.meta.env.PROD && window.location.search.includes('debug=true')) && (
+                        <div style={{ 
+                            marginTop: '1rem', 
+                            padding: '0.5rem', 
+                            background: '#f8f9fa', 
+                            borderRadius: '4px',
+                            fontSize: '0.75rem',
+                            color: '#666',
+                            fontFamily: 'monospace'
+                        }}>
+                            <strong>Debug Info:</strong><br/>
+                            ENV: {import.meta.env.MODE}<br/>
+                            PWD_SET: {!!import.meta.env.VITE_ADMIN_PASSWORD ? 'YES' : 'NO'}<br/>
+                            STORAGE: {typeof Storage !== 'undefined' ? 'OK' : 'ERROR'}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

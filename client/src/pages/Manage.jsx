@@ -71,19 +71,41 @@ const Manage = () => {
     // Check authentication on component mount
     useEffect(() => {
         const checkAuth = () => {
+            console.log('=== Manage.jsx Auth Check ===');
+            console.log('Environment check:');
+            console.log('- NODE_ENV:', import.meta.env.NODE_ENV);
+            console.log('- MODE:', import.meta.env.MODE);
+            console.log('- PROD:', import.meta.env.PROD);
+            
             const authStatus = sessionStorage.getItem('adminAuth');
             const authTime = sessionStorage.getItem('adminAuthTime');
+            
+            console.log('Session check:');
+            console.log('- adminAuth:', authStatus);
+            console.log('- adminAuthTime:', authTime);
+            console.log('- sessionStorage available:', typeof Storage !== 'undefined');
             
             if (authStatus === 'true' && authTime) {
                 // Check if authentication is still valid (expires after 8 hours)
                 const authTimeMs = parseInt(authTime);
                 const now = Date.now();
                 const eightHours = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
+                const timeDiff = now - authTimeMs;
+                const hoursElapsed = timeDiff / (60 * 60 * 1000);
                 
-                if (now - authTimeMs < eightHours) {
+                console.log('Time validation:');
+                console.log('- Auth timestamp:', authTimeMs);
+                console.log('- Current timestamp:', now);
+                console.log('- Time difference (ms):', timeDiff);
+                console.log('- Hours elapsed:', hoursElapsed.toFixed(2));
+                console.log('- Is valid (< 8 hours):', timeDiff < eightHours);
+                
+                if (timeDiff < eightHours) {
+                    console.log('✅ Authentication valid, logging in');
                     setIsAuthenticated(true);
                     setShowAuth(false);
                 } else {
+                    console.log('⏰ Authentication expired, clearing session');
                     // Authentication expired
                     sessionStorage.removeItem('adminAuth');
                     sessionStorage.removeItem('adminAuthTime');
@@ -91,9 +113,15 @@ const Manage = () => {
                     setShowAuth(true);
                 }
             } else {
+                console.log('❌ No valid authentication found');
                 setIsAuthenticated(false);
                 setShowAuth(true);
             }
+            
+            console.log('Final state:');
+            console.log('- isAuthenticated will be set to:', authStatus === 'true' && authTime && (Date.now() - parseInt(authTime)) < 8 * 60 * 60 * 1000);
+            console.log('- showAuth will be set to:', !(authStatus === 'true' && authTime && (Date.now() - parseInt(authTime)) < 8 * 60 * 60 * 1000));
+            console.log('=== End Manage.jsx Auth Check ===');
         };
 
         checkAuth();
@@ -110,16 +138,30 @@ const Manage = () => {
 
     // Handle authentication success
     const handleAuthenticated = (authenticated) => {
+        console.log('=== handleAuthenticated called ===');
+        console.log('- authenticated parameter:', authenticated);
+        console.log('- Previous isAuthenticated state:', isAuthenticated);
+        console.log('- Previous showAuth state:', showAuth);
+        
         setIsAuthenticated(authenticated);
         setShowAuth(!authenticated);
+        
+        console.log('- New isAuthenticated state will be:', authenticated);
+        console.log('- New showAuth state will be:', !authenticated);
+        console.log('=== End handleAuthenticated ===');
     };
 
     // Handle logout
     const handleLogout = () => {
+        console.log('=== handleLogout called ===');
+        console.log('- Clearing session storage');
         sessionStorage.removeItem('adminAuth');
         sessionStorage.removeItem('adminAuthTime');
+        console.log('- Session storage cleared');
+        console.log('- Setting authentication states');
         setIsAuthenticated(false);
         setShowAuth(true);
+        console.log('=== End handleLogout ===');
     };
 
     const fetchSchedules = async () => {
