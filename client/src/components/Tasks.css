@@ -59,6 +59,45 @@
     color: black;
     padding: 1px 10px;
     border-radius: 30px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+}
+
+.tasks-container .task-cards-container .task-card .content .task-title{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.tasks-container .task-cards-container .task-card .content .task-title .title{
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+.tasks-container .task-cards-container .task-card .content .due-info{
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.tasks-container .task-cards-container .task-card .content .due-date-info,
+.tasks-container .task-cards-container .task-card .content .due-time-info{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.tasks-container .task-cards-container .task-card .foot .priority-container{
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .tasks-container .task-cards-container .task-card .content{
@@ -71,11 +110,8 @@
     margin-bottom: 10px;
 }
 
-.tasks-container .task-cards-container .task-card .content .description, .due-date, .due-time{
-    color: #6b7280;
-}
-
 .tasks-container .task-cards-container .task-card .content .description{
+    color: #6b7280;
     margin-bottom: 10px;
 }
 
@@ -87,7 +123,7 @@
     align-items: center;
 }
 
-.tasks-container .task-cards-container .task-card .foot .priority.high{
+.tasks-container .task-cards-container .task-card .foot .priority-container .priority.high{
     background-color: #b80000;
     color: #fff;
     padding: 1px 10px;
@@ -95,10 +131,35 @@
     font-size: 0.8rem;
 }
 
-.tasks-container .task-cards-container .task-card .foot .priority.low{
+.tasks-container .task-cards-container .task-card .foot .priority-container .priority.low{
     background-color: #f7e600;
     color: #222;
     padding: 1px 10px;
     border-radius: 15px;
     font-size: 0.8rem;
+}
+
+.tasks-container .task-cards-container .task-card .foot .priority-container .priority.medium{
+    background-color: #2563eb;
+    color: #fff;
+    padding: 1px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+}
+
+/* Task status styling */
+.tasks-container .task-cards-container .task-card.pending .task-status-icon{
+    color: #f59e0b;
+}
+
+.tasks-container .task-cards-container .task-card.overdue .task-status-icon{
+    color: #ef4444;
+}
+
+.tasks-container .task-cards-container .task-card.completed .task-status-icon{
+    color: #10b981;
+}
+
+.tasks-container .task-cards-container .task-card.in-progress .task-status-icon{
+    color: #3b82f6;
 }
