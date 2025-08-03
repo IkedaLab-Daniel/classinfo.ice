@@ -1,4 +1,4 @@
-import "./tasks.css"
+import "./Tasks.css"
 import { useState, useEffect } from 'react';
 import { taskAPI } from '../config/api';
 import useApiWithLoading from '../hooks/useApiWithLoading';
