@@ -201,7 +201,7 @@ const Weekly = () => {
     return(
         <section id="weekly">
             <div className="weekly-container">
-                <div className="weekly-header">
+                <div className="weekly-header" data-aos="fade-up">
                     <div className="week-navigation">
                         <button 
                             className="nav-button prev-button" 
@@ -244,7 +244,7 @@ const Weekly = () => {
                         const daySchedules = groupedSchedules[dayInfo.fullDate] || [];
                         
                         return (
-                            <div key={dayInfo.fullDate} className="day-card">
+                            <div key={dayInfo.fullDate} className="day-card" data-aos="fade-up">
                                 <div className="day-header">
                                     <p className="day">{dayInfo.name}</p>
                                     <p className="date">{dayInfo.date}</p>

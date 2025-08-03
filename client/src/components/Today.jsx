@@ -131,7 +131,7 @@ const Today = () => {
             <Calendar size={24} />
             <h2>Today's Schedule</h2>
         </div>
-        <p>{formatDate(today)}</p>
+        {/* <p>{formatDate(today)}</p> */}
         
         <div className="schedule-cards-container">
             {!isLoading && error ? (

@@ -262,7 +262,7 @@ const Tasks = () => {
     return(
         <section id="tasks">
             <div className="tasks-container">
-                <div className="tasks-header">
+                <div className="tasks-header" data-aos="fade-up">
                     <div className="heading-icon-wrapper">
                         <ClipboardList size={24} />
                         <h2>Tasks</h2>
@@ -285,7 +285,7 @@ const Tasks = () => {
                         const dueDateStatusClass = getDueDateStatusClass(task.dueDate);
                         
                         return (
-                            <div key={task._id} className={`task-card ${task.status}`}>
+                            <div key={task._id} className={`task-card ${task.status}`} data-aos="fade-up">
                                 <div className="head">
                                     <div className="status-icon-wrapper">
                                         <StatusIcon size={20} className="task-status-icon" />
