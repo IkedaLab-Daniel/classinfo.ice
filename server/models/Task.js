@@ -16,7 +16,7 @@ const taskSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Task type is required'],
     enum: {
-      values: ['assignment', 'project', 'exam', 'quiz', 'presentation', 'homework', 'lab', 'reading', 'payment', 'other'],
+      values: ['assignment', 'project', 'exam', 'quiz', 'presentation', 'homework', 'lab', 'reading', 'other'],
       message: 'Type must be one of: assignment, project, exam, quiz, presentation, homework, lab, reading, other'
     }
   },
