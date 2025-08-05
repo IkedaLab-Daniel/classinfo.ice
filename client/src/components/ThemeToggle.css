@@ -1,0 +1,121 @@
+/* Theme Toggle Component Styles */
+.theme-toggle {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+}
+
+.theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.theme-toggle-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+}
+
+.theme-icon {
+    transition: all 0.3s ease;
+    color: #ffffff;
+}
+
+.sun-icon {
+    animation: rotate 20s linear infinite;
+}
+
+.moon-icon {
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes glow {
+    from {
+        filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+    }
+    to {
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+    }
+}
+
+/* Dark mode styles */
+[data-theme="dark"] .theme-toggle {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Light mode styles */
+[data-theme="light"] .theme-toggle {
+    background: rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="light"] .theme-toggle:hover {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="light"] .theme-icon {
+    color: #374151;
+}
+
+/* Navigation specific styles */
+.nav-theme-toggle {
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid rgba(96, 96, 96, 0.3);
+    padding: 6px;
+}
+
+.nav-theme-toggle:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-2px);
+}
+
+.nav-theme-toggle .theme-icon {
+    color: #666;
+}
+
+[data-theme="dark"] .nav-theme-toggle {
+    background: rgba(31, 41, 55, 0.9);
+    border-color: rgba(156, 163, 175, 0.3);
+}
+
+[data-theme="dark"] .nav-theme-toggle:hover {
+    background: rgba(31, 41, 55, 1);
+}
+
+[data-theme="dark"] .nav-theme-toggle .theme-icon {
+    color: #d1d5db;
+}
+
+/* Dashboard specific styles */
+.dashboard-theme-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+}
