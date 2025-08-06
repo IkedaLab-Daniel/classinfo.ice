@@ -316,12 +316,27 @@ const Manage = () => {
     // Task handlers
     const handleEditTask = (task) => {
         setEditingTask(task);
+        
+        // Fix timezone issue when editing: convert stored UTC back to local time for form display
+        let formattedDueDate = '';
+        if (task.dueDate) {
+            const utcDate = new Date(task.dueDate);
+            // Get local time components
+            const year = utcDate.getFullYear();
+            const month = String(utcDate.getMonth() + 1).padStart(2, '0');
+            const day = String(utcDate.getDate()).padStart(2, '0');
+            const hours = String(utcDate.getHours()).padStart(2, '0');
+            const minutes = String(utcDate.getMinutes()).padStart(2, '0');
+            
+            formattedDueDate = `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+        
         setTaskForm({
             title: task.title || '',
             description: task.description || '',
             type: task.type || 'assignment',
             class: task.class || '',
-            dueDate: task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 16) : '',
+            dueDate: formattedDueDate,
             priority: task.priority || 'medium',
             status: task.status || 'pending'
         });
@@ -448,15 +463,32 @@ const Manage = () => {
     const handleTaskSubmit = async (e) => {
         e.preventDefault();
         try {
+            // Fix timezone issue: ensure local datetime is preserved
+            const taskData = { ...taskForm };
+            if (taskData.dueDate) {
+                // The datetime-local input gives us a string like "2025-08-07T10:00"
+                // We need to ensure this is treated as local time, not UTC
+                const dateTimeString = taskData.dueDate;
+                
+                // Parse the components manually to avoid timezone confusion
+                const [datePart, timePart] = dateTimeString.split('T');
+                const [year, month, day] = datePart.split('-').map(Number);
+                const [hours, minutes] = timePart.split(':').map(Number);
+                
+                // Create Date object using local timezone
+                const localDate = new Date(year, month - 1, day, hours, minutes);
+                taskData.dueDate = localDate.toISOString();
+            }
+            
             if (editingTask) {
                 await executeRequest(
-                    () => taskAPI.update(editingTask._id, taskForm),
+                    () => taskAPI.update(editingTask._id, taskData),
                     { loadingMessage: "Updating task..." }
                 );
                 setMessage({ type: 'success', text: 'Task updated successfully!' });
             } else {
                 await executeRequest(
-                    () => taskAPI.create(taskForm),
+                    () => taskAPI.create(taskData),
                     { loadingMessage: "Creating task..." }
                 );
                 setMessage({ type: 'success', text: 'Task created successfully!' });

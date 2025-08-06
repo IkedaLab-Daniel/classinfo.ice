@@ -85,8 +85,8 @@ const Dashboard = () => {
         // Get current date in local time (start of day)
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         
-        // Get due date in UTC but treat as local date (start of day)
-        const dueDay = new Date(due.getUTCFullYear(), due.getUTCMonth(), due.getUTCDate());
+        // Get due date in local time (start of day)
+        const dueDay = new Date(due.getFullYear(), due.getMonth(), due.getDate());
         
         // Check if dates are the same
         return today.getTime() === dueDay.getTime();
