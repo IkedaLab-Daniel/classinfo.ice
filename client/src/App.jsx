@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 import { NotificationProvider } from './contexts/NotificationContext'
+import { ThemeProvider } from './contexts/ThemeContext'
 import Navbar from './components/Navbar'
 import Home from './pages/Home'
 import Manage from './pages/Manage'
@@ -19,15 +20,17 @@ function App() {
   }, [])
 
   return (
-    <NotificationProvider>
-      <Router>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/manage" element={<Manage />} />
-        </Routes>
-      </Router>
-    </NotificationProvider>
+    <ThemeProvider>
+      <NotificationProvider>
+        <Router>
+          <Navbar />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/manage" element={<Manage />} />
+          </Routes>
+        </Router>
+      </NotificationProvider>
+    </ThemeProvider>
   )
 }
 
