@@ -1,15 +1,18 @@
 
-import { Cloud, CheckSquare, BookOpen, Sun, CloudRain, Snowflake, IceCream, AlertCircle, Calendar, Clock, MapPin, Users, ChevronDown, ChevronUp, Moon, Sunset } from 'lucide-react';
+import { Cloud, CheckSquare, BookOpen, Sun, CloudRain, Snowflake, IceCream, AlertCircle, Calendar, Clock, MapPin, Users, ChevronDown, ChevronUp, Moon, Sunset, Bell } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import ice from '../assets/ice.jpeg'
 import LoadingModal from './LoadingModal';
 import useApiWithLoading from '../hooks/useApiWithLoading';
 import { taskAPI, scheduleAPI } from '../config/api';
+import { useNotification } from '../contexts/NotificationContext';
+import { createTestNotifications, scheduleTestReminders } from '../utils/testNotifications';
 
 const Dashboard = () => {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [isDataExpanded, setIsDataExpanded] = useState(false);
     const { isLoading: isWeatherLoading, isServerWaking, executeRequest } = useApiWithLoading();
+    const { addNotification, scheduleNotification } = useNotification();
     const [weather, setWeather] = useState({
         temp: '--',
         description: 'Loading...',
@@ -258,6 +261,22 @@ const Dashboard = () => {
         return iconMap[iconCode] || Sun;
     };
     
+    const handleTestNotifications = () => {
+        // Test immediate notifications
+        createTestNotifications(addNotification);
+        
+        // Test scheduled notifications
+        scheduleTestReminders(scheduleNotification);
+        
+        // Show a confirmation
+        addNotification({
+            type: 'success',
+            title: 'Test Notifications',
+            message: 'Test notifications added! Some are scheduled for the next few minutes.',
+            priority: 'low'
+        });
+    };
+    
     return(
         <section id="dashboard">
             {/* Loading Modal */}
@@ -289,6 +308,16 @@ const Dashboard = () => {
                             <BookOpen size={20} />
                         </div>
                         <p className='class'>Class: BSIT - 3B</p>
+                    </div>
+                    <div className="test-section">
+                        <button 
+                            className="test-notifications-btn"
+                            onClick={handleTestNotifications}
+                            title="Test notification system"
+                        >
+                            <Bell size={16} />
+                            <span>Test Notifications</span>
+                        </button>
                     </div>
                     <div className="data-container-mobile">
                         <div className="data-summary">

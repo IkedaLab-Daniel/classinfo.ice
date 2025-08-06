@@ -27,9 +27,10 @@ nav{
 }
 
 nav .wrapper{
-  width: 400px;
+  width: 520px;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
   padding: 12px 20px;
   border-radius: 50px;
   border: 2px solid rgb(96, 96, 96);
@@ -45,8 +46,7 @@ nav .wrapper .logo{
 nav .wrapper .links{
   display: flex;
   gap: 20px;
-  width: 100%;
-  justify-content: space-evenly;
+  justify-content: center;
 }
 
 nav .wrapper .links a{
@@ -78,6 +78,12 @@ nav .wrapper .links a.active{
 nav .wrapper .links a:hover svg,
 nav .wrapper .links a.active svg{
   color: white;
+}
+
+nav .wrapper .navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 /* Today.jsx */
@@ -495,6 +501,36 @@ nav .wrapper .links a.active svg{
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.test-section {
+  margin-top: 16px;
+}
+
+.test-notifications-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.test-notifications-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.test-notifications-btn svg {
+  color: white;
 }
 
 .time-icon, .class-icon, .manager-icon {

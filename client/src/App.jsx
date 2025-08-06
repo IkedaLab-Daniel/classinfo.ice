@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
+import { NotificationProvider } from './contexts/NotificationContext'
 import Navbar from './components/Navbar'
 import Home from './pages/Home'
 import Manage from './pages/Manage'
@@ -18,13 +19,15 @@ function App() {
   }, [])
 
   return (
-    <Router>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/manage" element={<Manage />} />
-      </Routes>
-    </Router>
+    <NotificationProvider>
+      <Router>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/manage" element={<Manage />} />
+        </Routes>
+      </Router>
+    </NotificationProvider>
   )
 }
 

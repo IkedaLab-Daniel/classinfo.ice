@@ -1,6 +1,8 @@
 import { Calendar, CalendarDays, CheckSquare, Settings } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import NotificationCenter from './NotificationCenter';
+import ThemeToggle from './ThemeToggle';
 
 const NavBar = () => {
     const location = useLocation();
@@ -168,6 +170,10 @@ const NavBar = () => {
                         <Settings size={18} />
                         <span>Manage</span>
                     </Link>
+                </div>
+                <div className="navbar-actions">
+                    <NotificationCenter />
+                    <ThemeToggle variant="navbar" />
                 </div>
             </div>
             
