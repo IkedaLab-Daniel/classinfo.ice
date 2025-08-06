@@ -533,6 +533,50 @@ nav .wrapper .navbar-actions {
   color: white;
 }
 
+.notification-test-section {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sample-notification-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  border-radius: 16px;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.sample-notification-btn:hover {
+  background: rgba(37, 99, 235, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+}
+
+.sample-notification-btn.secondary {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.sample-notification-btn.secondary:hover {
+  background: rgba(16, 185, 129, 0.2);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+.sample-notification-btn svg {
+  color: white;
+  flex-shrink: 0;
+}
+
 .time-icon, .class-icon, .manager-icon {
   width: 35px;
   height: 35px;

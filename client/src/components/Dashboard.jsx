@@ -6,13 +6,12 @@ import LoadingModal from './LoadingModal';
 import useApiWithLoading from '../hooks/useApiWithLoading';
 import { taskAPI, scheduleAPI } from '../config/api';
 import { useNotification } from '../contexts/NotificationContext';
-import { createTestNotifications, scheduleTestReminders } from '../utils/testNotifications';
 
 const Dashboard = () => {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [isDataExpanded, setIsDataExpanded] = useState(false);
     const { isLoading: isWeatherLoading, isServerWaking, executeRequest } = useApiWithLoading();
-    const { addNotification, scheduleNotification } = useNotification();
+    const { addNotification, notifyTaskDue, notifyClassStarting, notifySuccess, notifyError, notifyInfo } = useNotification();
     const [weather, setWeather] = useState({
         temp: '--',
         description: 'Loading...',
@@ -21,6 +20,8 @@ const Dashboard = () => {
     const [tasksDueToday, setTasksDueToday] = useState(0);
     const [classesToday, setClassesToday] = useState(0);
     const [isDataLoading, setIsDataLoading] = useState(true);
+    const [allTasks, setAllTasks] = useState([]);
+    const [todaySchedules, setTodaySchedules] = useState([]);
 
     useEffect(() => {
         // Ensure we're always using the user's local time
@@ -88,8 +89,8 @@ const Dashboard = () => {
         // Get current date in local time (start of day)
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         
-        // Get due date in UTC but treat as local date (start of day)
-        const dueDay = new Date(due.getUTCFullYear(), due.getUTCMonth(), due.getUTCDate());
+        // Get due date in local time (start of day)
+        const dueDay = new Date(due.getFullYear(), due.getMonth(), due.getDate());
         
         // Check if dates are the same
         return today.getTime() === dueDay.getTime();
@@ -125,6 +126,9 @@ const Dashboard = () => {
                 if (tasksResponse && tasksResponse.success && Array.isArray(tasksResponse.data)) {
                     console.log('Dashboard: All tasks received:', tasksResponse.data.length);
                     
+                    // Store all tasks for notification checking
+                    setAllTasks(tasksResponse.data);
+                    
                     const todayTasks = tasksResponse.data.filter(task => {
                         const isDueToday = isToday(task.dueDate);
                         const isNotCompleted = task.status !== 'completed';
@@ -138,9 +142,13 @@ const Dashboard = () => {
                     
                     console.log(`Dashboard: Tasks due today (not completed): ${todayTasks.length}`);
                     setTasksDueToday(todayTasks.length);
+                    
+                    // Check for urgent tasks and send notifications
+                    checkTaskNotifications(tasksResponse.data);
                 } else {
                     console.log('Dashboard: No valid tasks response');
                     setTasksDueToday(0);
+                    setAllTasks([]);
                 }
 
                 // Fetch schedules for today
@@ -153,12 +161,19 @@ const Dashboard = () => {
                 
                 if (schedulesResponse && Array.isArray(schedulesResponse.data || schedulesResponse)) {
                     const schedules = schedulesResponse.data || schedulesResponse;
-                    const todaySchedules = schedules.filter(schedule => 
+                    const todaySchedulesFiltered = schedules.filter(schedule => 
                         isScheduleToday(schedule) && schedule.status === 'active'
                     );
-                    setClassesToday(todaySchedules.length);
+                    
+                    // Store today's schedules for notification checking
+                    setTodaySchedules(todaySchedulesFiltered);
+                    setClassesToday(todaySchedulesFiltered.length);
+                    
+                    // Check for upcoming classes and send notifications
+                    checkClassNotifications(todaySchedulesFiltered);
                 } else {
                     setClassesToday(0);
+                    setTodaySchedules([]);
                 }
                 
             } catch (error) {
@@ -175,8 +190,22 @@ const Dashboard = () => {
         // Refresh data every 5 minutes
         const dataInterval = setInterval(fetchDashboardData, 5 * 60 * 1000);
         
-        return () => clearInterval(dataInterval);
-    }, [executeRequest]);
+        // More frequent check for urgent notifications (every minute)
+        const notificationInterval = setInterval(() => {
+            // Re-check notifications without refetching all data
+            if (allTasks.length > 0) {
+                checkTaskNotifications(allTasks);
+            }
+            if (todaySchedules.length > 0) {
+                checkClassNotifications(todaySchedules);
+            }
+        }, 60 * 1000); // Check every minute
+        
+        return () => {
+            clearInterval(dataInterval);
+            clearInterval(notificationInterval);
+        };
+    }, [executeRequest, allTasks, todaySchedules]);
 
     const getGreeting = () => {
         const hour = currentTime.getHours();
@@ -261,19 +290,91 @@ const Dashboard = () => {
         return iconMap[iconCode] || Sun;
     };
     
-    const handleTestNotifications = () => {
-        // Test immediate notifications
-        createTestNotifications(addNotification);
+    // Automatic notification checking functions
+    const checkTaskNotifications = (tasks) => {
+        const now = new Date();
         
-        // Test scheduled notifications
-        scheduleTestReminders(scheduleNotification);
+        tasks.forEach(task => {
+            if (task.status === 'completed') return;
+            
+            const dueDate = new Date(task.dueDate);
+            const hoursUntilDue = (dueDate - now) / (1000 * 60 * 60);
+            
+            // Send notifications based on time remaining
+            if (hoursUntilDue <= 0 && hoursUntilDue > -24) {
+                // Overdue (but less than 24 hours)
+                notifyError(`Task "${task.title}" is overdue!`);
+            } else if (hoursUntilDue <= 1 && hoursUntilDue > 0) {
+                // Due within 1 hour
+                notifyTaskDue(task);
+            } else if (hoursUntilDue <= 24 && hoursUntilDue > 23) {
+                // Due within 24 hours (but more than 23 hours)
+                notifyInfo('Upcoming Deadline', `Task "${task.title}" is due tomorrow`);
+            }
+        });
+    };
+    
+    const checkClassNotifications = (schedules) => {
+        const now = new Date();
+        const currentTime = now.getHours() * 60 + now.getMinutes(); // Current time in minutes
         
-        // Show a confirmation
+        schedules.forEach(schedule => {
+            const [hours, minutes] = schedule.startTime.split(':').map(Number);
+            const classTime = hours * 60 + minutes; // Class time in minutes
+            const minutesUntilClass = classTime - currentTime;
+            
+            // Send notifications for upcoming classes
+            if (minutesUntilClass <= 15 && minutesUntilClass > 10) {
+                // 15 minutes before class
+                notifyClassStarting(schedule);
+            } else if (minutesUntilClass <= 5 && minutesUntilClass > 0) {
+                // 5 minutes before class
+                addNotification({
+                    type: 'warning',
+                    title: 'Class Starting Soon!',
+                    message: `${schedule.subject} starts in ${minutesUntilClass} minutes in ${schedule.room}`,
+                    priority: 'high'
+                });
+            }
+        });
+    };
+    
+    // Sample notification functions for testing
+    const handleSampleNotifications = () => {
+        // Test different types of notifications
+        notifySuccess('Task completed successfully!');
+        
+        setTimeout(() => {
+            notifyInfo('New Update', 'Your schedule has been updated for tomorrow.');
+        }, 1000);
+        
+        setTimeout(() => {
+            notifyTaskDue({
+                title: 'Sample Assignment',
+                dueDate: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes from now
+                priority: 'high'
+            });
+        }, 2000);
+        
+        setTimeout(() => {
+            notifyClassStarting({
+                subject: 'Advanced Web Development',
+                startTime: '14:30',
+                room: 'Room 301'
+            });
+        }, 3000);
+        
+        setTimeout(() => {
+            notifyError('Failed to save changes. Please try again.');
+        }, 4000);
+    };
+    
+    const handleQuickNotification = () => {
         addNotification({
-            type: 'success',
-            title: 'Test Notifications',
-            message: 'Test notifications added! Some are scheduled for the next few minutes.',
-            priority: 'low'
+            type: 'info',
+            title: 'Quick Test',
+            message: 'This is a quick test notification!',
+            priority: 'medium'
         });
     };
     
@@ -309,16 +410,27 @@ const Dashboard = () => {
                         </div>
                         <p className='class'>Class: BSIT - 3B</p>
                     </div>
-                    <div className="test-section">
+                    
+                    {/* Sample Notification Buttons for Testing */}
+                    <div className="notification-test-section">
                         <button 
-                            className="test-notifications-btn"
-                            onClick={handleTestNotifications}
-                            title="Test notification system"
+                            className="sample-notification-btn"
+                            onClick={handleQuickNotification}
+                            title="Send a quick test notification"
                         >
                             <Bell size={16} />
-                            <span>Test Notifications</span>
+                            <span>Quick Test</span>
+                        </button>
+                        <button 
+                            className="sample-notification-btn secondary"
+                            onClick={handleSampleNotifications}
+                            title="Send multiple sample notifications"
+                        >
+                            <Bell size={16} />
+                            <span>Sample Notifications</span>
                         </button>
                     </div>
+                    
                     <div className="data-container-mobile">
                         <div className="data-summary">
                             <div className="data-item">

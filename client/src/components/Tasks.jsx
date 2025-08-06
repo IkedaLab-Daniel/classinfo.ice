@@ -116,15 +116,7 @@ const Tasks = () => {
     // Helper function to format date
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        // Use UTC methods to avoid timezone conversion
-        const year = date.getUTCFullYear();
-        const month = date.getUTCMonth();
-        const day = date.getUTCDate();
-        
-        // Create a new date using local date components to avoid timezone issues
-        const localDate = new Date(year, month, day);
-        
-        return localDate.toLocaleDateString('en-US', { 
+        return date.toLocaleDateString('en-US', { 
             month: 'short', 
             day: 'numeric', 
             year: 'numeric' 
@@ -134,15 +126,7 @@ const Tasks = () => {
     // Helper function to format time
     const formatTime = (dateString) => {
         const date = new Date(dateString);
-        // Use UTC methods to get the intended time
-        const hours = date.getUTCHours();
-        const minutes = date.getUTCMinutes();
-        
-        // Create a new date with UTC time components
-        const timeDate = new Date();
-        timeDate.setHours(hours, minutes, 0, 0);
-        
-        return timeDate.toLocaleTimeString('en-US', { 
+        return date.toLocaleTimeString('en-US', { 
             hour: 'numeric', 
             minute: '2-digit',
             hour12: true 
@@ -157,8 +141,8 @@ const Tasks = () => {
         // Get current date in local time (start of day)
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         
-        // Get due date in UTC but treat as local date (start of day)
-        const dueDay = new Date(due.getUTCFullYear(), due.getUTCMonth(), due.getUTCDate());
+        // Get due date in local time (start of day)
+        const dueDay = new Date(due.getFullYear(), due.getMonth(), due.getDate());
         
         // Calculate difference in days
         const diffTime = dueDay.getTime() - today.getTime();
@@ -183,8 +167,8 @@ const Tasks = () => {
         // Get current date in local time (start of day)
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         
-        // Get due date in UTC but treat as local date (start of day)
-        const dueDay = new Date(due.getUTCFullYear(), due.getUTCMonth(), due.getUTCDate());
+        // Get due date in local time (start of day)
+        const dueDay = new Date(due.getFullYear(), due.getMonth(), due.getDate());
         
         // Calculate difference in days
         const diffTime = dueDay.getTime() - today.getTime();
