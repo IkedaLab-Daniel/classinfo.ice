@@ -63,6 +63,41 @@ const taskSchemas = {
   }).min(1)
 };
 
+// User Validation Schemas
+const userSchemas = {
+  subscribe: Joi.object({
+    email: Joi.string().email().trim().lowercase().required(),
+    name: Joi.string().trim().max(100).required(),
+    studentId: Joi.string().trim().max(50).allow(''),
+    className: Joi.string().trim().max(50).default('BSIT - 3B'),
+    pushSubscription: Joi.object({
+      endpoint: Joi.string().uri().required(),
+      keys: Joi.object({
+        p256dh: Joi.string().required(),
+        auth: Joi.string().required()
+      }).required()
+    }).allow(null),
+    preferences: Joi.object({
+      emailNotifications: Joi.boolean().default(true),
+      pushNotifications: Joi.boolean().default(true),
+      announcements: Joi.boolean().default(true),
+      scheduleUpdates: Joi.boolean().default(true),
+      taskReminders: Joi.boolean().default(true)
+    })
+  }),
+  
+  updatePreferences: Joi.object({
+    email: Joi.string().email().trim().lowercase().required(),
+    preferences: Joi.object({
+      emailNotifications: Joi.boolean(),
+      pushNotifications: Joi.boolean(),
+      announcements: Joi.boolean(),
+      scheduleUpdates: Joi.boolean(),
+      taskReminders: Joi.boolean()
+    }).min(1).required()
+  })
+};
+
 // Validation middleware function
 const validate = (schema) => {
   return (req, res, next) => {
@@ -93,6 +128,7 @@ module.exports = {
   classScheduleSchemas,
   announcementSchemas,
   taskSchemas,
+  userSchemas,
   validate,
   
   // Specific validation middleware functions

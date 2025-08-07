@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Announcement = require('../models/Announcement');
+const notificationService = require('../services/notificationService');
 const { announcementSchemas, validate } = require('../middleware/validation');
 const { asyncHandler, AppError } = require('../middleware/errorHandler');
 
@@ -99,7 +100,7 @@ router.get('/:id', asyncHandler(async (req, res) => {
 // @route   POST /api/announcements
 // @access  Private (you can add authentication middleware later)
 router.post('/', validate(announcementSchemas.create), asyncHandler(async (req, res) => {
-  const { title, description, postedBy } = req.body;
+  const { title, description, postedBy, sendNotifications = true } = req.body;
 
   const announcement = await Announcement.create({
     title,
@@ -107,10 +108,29 @@ router.post('/', validate(announcementSchemas.create), asyncHandler(async (req, 
     postedBy
   });
 
+  // Send notifications to all subscribed users if requested
+  let notificationResults = null;
+  if (sendNotifications) {
+    try {
+      console.log('📢 Sending notifications for new announcement:', announcement.title);
+      notificationResults = await notificationService.sendNotificationToAll(announcement);
+    } catch (error) {
+      console.error('❌ Error sending notifications:', error);
+      // Don't fail the announcement creation if notifications fail
+    }
+  }
+
   res.status(201).json({
     success: true,
     message: 'Announcement created successfully',
-    data: announcement
+    data: announcement,
+    notifications: notificationResults ? {
+      sent: true,
+      results: notificationResults
+    } : {
+      sent: false,
+      reason: 'Notifications disabled for this announcement'
+    }
   });
 }));
 
@@ -218,6 +238,34 @@ router.get('/range/:startDate/:endDate', asyncHandler(async (req, res) => {
     },
     data: announcements
   });
+}));
+
+// @desc    Send notification for existing announcement
+// @route   POST /api/announcements/:id/notify
+// @access  Private (admin only)
+router.post('/:id/notify', asyncHandler(async (req, res) => {
+  const announcement = await Announcement.findById(req.params.id);
+
+  if (!announcement) {
+    throw new AppError('Announcement not found', 404);
+  }
+
+  try {
+    console.log('📢 Sending notifications for announcement:', announcement.title);
+    const notificationResults = await notificationService.sendNotificationToAll(announcement);
+
+    res.status(200).json({
+      success: true,
+      message: 'Notifications sent successfully',
+      data: {
+        announcement: announcement.title,
+        results: notificationResults
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error sending notifications:', error);
+    throw new AppError('Failed to send notifications: ' + error.message, 500);
+  }
 }));
 
 module.exports = router;
