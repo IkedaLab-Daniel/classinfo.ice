@@ -262,6 +262,17 @@ const Dashboard = () => {
         };
         return iconMap[iconCode] || Sun;
     };
+
+    const formatWeatherDescription = (description) => {
+        if (!description) return 'Loading...';
+        
+        // Capitalize the first letter of each word
+        return description
+            .toLowerCase()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    };
     
     return(
         <section id="dashboard">
@@ -336,10 +347,10 @@ const Dashboard = () => {
                         </div>
                         {isDataExpanded && (
                             <div className="data-details">
-                                <p>
+                                <p style={{fontSize:"0.8rem"}}>
                                     <img 
                                         src={getWeatherIcon(weather.icon)} 
-                                        alt={weather.description}
+                                        alt={formatWeatherDescription(weather.description)}
                                         className="weather-icon-small"
                                         onError={(e) => {
                                             e.target.style.display = 'none';
@@ -347,7 +358,7 @@ const Dashboard = () => {
                                         }}
                                     />
                                     <Sun size={16} className="weather-icon-fallback" style={{display: 'none'}} />
-                                    {weather.temp}°C {weather.description}
+                                    {weather.temp}°C {formatWeatherDescription(weather.description)} at Mabalacat
                                 </p>
                                 <p><AlertCircle size={16} /> {tasksDueToday} {tasksDueToday === 1 ? 'Task' : 'Tasks'} Due Today</p>
                                 <p><Calendar size={16} /> {classesToday} {classesToday === 1 ? 'Class' : 'Classes'} Today</p>
@@ -378,7 +389,7 @@ const Dashboard = () => {
                                 <>
                                     <img 
                                         src={getWeatherIcon(weather.icon)} 
-                                        alt={weather.description}
+                                        alt={formatWeatherDescription(weather.description)}
                                         className="weather-icon-large"
                                         onError={(e) => {
                                             e.target.style.display = 'none';
@@ -391,7 +402,7 @@ const Dashboard = () => {
                         </div>
                         <span className="card-value">{weather.temp}°C</span>
                         <span className="card-label">Weather</span>
-                        <span className="card-description">{weather.description}</span>
+                        <span className="card-description">{formatWeatherDescription(weather.description)}</span>
                     </div>
                     <div className="card tasks-card">
                         <div className="card-icon">
