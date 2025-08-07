@@ -71,6 +71,7 @@ class ContextManager:
             # Fetch tasks
             tasks_response = requests.get(f"{NODE_API_URL}/api/tasks", timeout=10)
             tasks = tasks_response.json().get('data', []) if tasks_response.status_code == 200 else []
+            print(f"DEBUG - Fetched {len(tasks)} tasks from API")
             
             # Fetch announcements
             announcements_response = requests.get(f"{NODE_API_URL}/api/announcements", timeout=10)
@@ -91,7 +92,11 @@ class ContextManager:
         message_lower = message.lower()
         relevant_context = []
         
+        print(f"DEBUG - Processing message: '{message}' (lower: '{message_lower}')")
+        print(f"DEBUG - Available data: {len(data['schedules'])} schedules, {len(data['tasks'])} tasks, {len(data['announcements'])} announcements")
+        
         # Check schedules
+        schedule_matches = 0
         for schedule in data['schedules']:
             if any(keyword in message_lower for keyword in [
                 schedule.get('subject', '').lower(),
@@ -103,22 +108,42 @@ class ContextManager:
                     'type': 'schedule',
                     'content': f"{schedule.get('subject')} class on {schedule.get('day')} from {schedule.get('startTime')} to {schedule.get('endTime')} in room {schedule.get('room')}"
                 })
+                schedule_matches += 1
         
-        # Check tasks
+        print(f"DEBUG - Found {schedule_matches} relevant schedules")
+        
+        # Check tasks - prioritize tasks for assignment-related queries
+        task_matches = 0
+        assignment_query = any(word in message_lower for word in ['task', 'assignment', 'homework', 'project', 'due'])
+        
         for task in data['tasks']:
-            if any(keyword in message_lower for keyword in [
+            # Print first task for debugging
+            if task_matches == 0:
+                print(f"DEBUG - Sample task: {task}")
+            
+            task_keywords = [
                 task.get('title', '').lower(),
                 task.get('class', '').lower(),
                 task.get('type', '').lower(),
                 'task', 'assignment', 'homework', 'project', 'due'
-            ]):
+            ]
+            
+            if any(keyword in message_lower for keyword in task_keywords):
                 due_date = task.get('dueDate', '')
+                status = task.get('status', '')
+                priority = task.get('priority', '')
+                
                 relevant_context.append({
                     'type': 'task',
-                    'content': f"Task: {task.get('title')} for {task.get('class')} (Type: {task.get('type')}, Priority: {task.get('priority')}, Due: {due_date})"
+                    'content': f"Assignment: '{task.get('title')}' for {task.get('class')} - Type: {task.get('type')}, Priority: {priority}, Status: {status}, Due: {due_date}. Description: {task.get('description', '')[:100]}..."
                 })
+                task_matches += 1
+                print(f"DEBUG - Found relevant task: {task.get('title')} for {task.get('class')}")
+        
+        print(f"DEBUG - Found {task_matches} relevant tasks")
         
         # Check announcements
+        announcement_matches = 0
         for announcement in data['announcements']:
             if any(keyword in message_lower for keyword in [
                 announcement.get('title', '').lower(),
@@ -128,8 +153,23 @@ class ContextManager:
                     'type': 'announcement',
                     'content': f"Announcement: {announcement.get('title')} - {announcement.get('description')}"
                 })
+                announcement_matches += 1
         
-        return relevant_context[:10]  # Limit to 10 most relevant items
+        print(f"DEBUG - Found {announcement_matches} relevant announcements")
+        print(f"DEBUG - Total context items: {len(relevant_context)}")
+        
+        # For assignment queries, prioritize task context
+        if assignment_query:
+            # Sort so tasks come first
+            relevant_context.sort(key=lambda x: 0 if x['type'] == 'task' else 1)
+            print("DEBUG - Prioritizing task context for assignment query")
+        
+        limited_context = relevant_context[:10]
+        print(f"DEBUG - Final context items after limit: {len(limited_context)}")
+        for i, item in enumerate(limited_context):
+            print(f"DEBUG - Context item {i+1}: {item['type']} - {item['content'][:100]}...")
+        
+        return limited_context  # Limit to 10 most relevant items
 
 class ChatService:
     """Handles chat responses using AI or fallbacks"""
@@ -145,6 +185,9 @@ class ChatService:
             # Build context string
             context_text = "\n".join([item['content'] for item in context])
             
+            print(f"DEBUG - Context being sent to AI ({len(context)} items):")
+            print(f"DEBUG - Context text (first 800 chars):\n{context_text[:800]}...")
+            
             # Build conversation history
             history_text = ""
             if conversation_history:
@@ -152,7 +195,7 @@ class ChatService:
                     f"User: {msg['user']}\nAssistant: {msg['assistant']}"
                     for msg in conversation_history[-3:]  # Last 3 exchanges
                 ])
-            
+
             prompt = f"""
 You are a helpful academic schedule assistant for a student. You have access to their schedule, tasks, and announcements.
 
@@ -176,6 +219,7 @@ Instructions:
 Response:
 """
 
+            print(f"DEBUG - Full prompt length: {len(prompt)} characters")
             print(f"Sending prompt to Gemini AI...")
             response = model.generate_content(prompt)
             print(f"✅ AI response received: {len(response.text)} characters")
