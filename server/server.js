@@ -11,6 +11,7 @@ const { errorHandler } = require('./middleware/errorHandler');
 const scheduleRoutes = require('./routes/schedules');
 const announcementRoutes = require('./routes/announcements');
 const taskRoutes = require('./routes/tasks');
+const chatRoutes = require('./routes/chat');
 
 // Connect to database
 connectDB();
@@ -147,6 +148,7 @@ app.get('/health', (req, res) => {
 app.use('/api/schedules', scheduleRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api', chatRoutes);
 
 // API documentation route
 app.get('/api', (req, res) => {
