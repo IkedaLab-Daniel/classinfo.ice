@@ -90,6 +90,26 @@ const Tasks = () => {
         return GraduationCap;
     };
 
+    // Helper function to get dynamic task status
+    const getTaskStatus = (task) => {
+        // If manually set to completed or cancelled, respect that
+        if (task.status === 'completed' || task.status === 'cancelled') {
+            return task.status;
+        }
+        
+        // Calculate dynamic status based on due date
+        const now = new Date();
+        const dueDate = new Date(task.dueDate);
+        
+        if (now > dueDate) {
+            return 'overdue';
+        } else if (task.status === 'in-progress') {
+            return 'in-progress';
+        } else {
+            return 'pending';
+        }
+    };
+
     // Helper function to get status icon
     const getStatusIcon = (status) => {
         const iconMap = {
@@ -153,7 +173,7 @@ const Tasks = () => {
         } else if (diffDays === 0) {
             return 'Due Today';
         } else if (diffDays === 1) {
-            return 'Due tommorow';
+            return 'Due tomorrow';
         } else {
             return `${diffDays} Days remaining`;
         }
@@ -254,7 +274,7 @@ const Tasks = () => {
                     
                     <p className="tasks-subtitle">
                         {tasks.length > 0 
-                            ? `Managing ${tasks.length} task${tasks.length === 1 ? '' : 's'} • ${tasks.filter(t => t.status === 'pending').length} pending`
+                            ? `Managing ${tasks.length} task${tasks.length === 1 ? '' : 's'} • ${tasks.filter(t => getTaskStatus(t) === 'pending').length} pending`
                             : 'Stay organized with your assignments and deadlines'
                         }
                     </p>
@@ -262,18 +282,19 @@ const Tasks = () => {
 
                 <div className="task-cards-container">
                     {tasks.map((task) => {
-                        const StatusIcon = getStatusIcon(task.status);
+                        const dynamicStatus = getTaskStatus(task);
+                        const StatusIcon = getStatusIcon(dynamicStatus);
                         const TaskTypeIcon = getTaskTypeIcon(task.type);
                         const SubjectIcon = getSubjectIcon(task.class);
                         const PriorityIcon = getPriorityIcon(task.priority);
                         const dueDateStatusClass = getDueDateStatusClass(task.dueDate);
                         
                         return (
-                            <div key={task._id} className={`task-card ${task.status}`} data-aos="fade-up">
+                            <div key={task._id} className={`task-card ${dynamicStatus}`} data-aos="fade-up">
                                 <div className="head">
                                     <div className="status-icon-wrapper">
                                         <StatusIcon size={20} className="task-status-icon" />
-                                        <p className="task-status">{task.status.charAt(0).toUpperCase() + task.status.slice(1)}</p>
+                                        <p className="task-status">{dynamicStatus.charAt(0).toUpperCase() + dynamicStatus.slice(1).replace('-', ' ')}</p>
                                     </div>
                                     
                                     <div className="subject">
