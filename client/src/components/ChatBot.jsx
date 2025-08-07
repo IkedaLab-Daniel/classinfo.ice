@@ -23,7 +23,7 @@ const ChatBot = () => {
 
     // API base URL - Direct Flask service
     const API_BASE = process.env.NODE_ENV === 'production' 
-        ? 'https://your-flask-chat-service.onrender.com' 
+        ? 'https://dailyclass-rag.onrender.com' 
         : 'http://localhost:5002';
 
     // Auto-scroll to bottom when new messages arrive
