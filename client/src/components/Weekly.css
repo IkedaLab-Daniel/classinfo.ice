@@ -306,10 +306,6 @@
 
 /* Desktop styles - min-width: 768px */
 @media (min-width: 768px) {
-    #weekly {
-        padding: 20px;
-    }
-    
     .week-navigation {
         gap: 20px;
         flex-wrap: nowrap;
@@ -428,6 +424,10 @@
 }
 
 @media (max-width: 480px) {
+    #weekly{
+        padding: 5px;
+    }
+
     .week-navigation {
         gap: 8px;
     }
@@ -451,6 +451,7 @@
     
     .day-card {
         padding: 12px;
+        border: 1.5px solid #d2d9e2;
     }
     
     .schedule-card {

@@ -1432,15 +1432,17 @@ nav .wrapper .links a.active svg{
 /* Mobile responsiveness for Today component */
 @media (max-width: 768px) {
   #today {
-    padding: 15px;
+    padding: 7px;
   }
   
   .today-header h2 {
     font-size: 1.5rem;
   }
   
-  .schedule-card {
+  .schedule-cards-container .schedule-card {
     padding: 16px;
+    border: 1.5px solid #d2d9e2;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   }
   
   .schedule-card .head .subject {
