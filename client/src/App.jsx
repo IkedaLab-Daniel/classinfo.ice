@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 import Navbar from './components/Navbar'
+import ChatBot from './components/ChatBot'
 import Home from './pages/Home'
 import Manage from './pages/Manage'
 import './App.css'
@@ -24,6 +25,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/manage" element={<Manage />} />
       </Routes>
+      <ChatBot />
     </Router>
   )
 }
