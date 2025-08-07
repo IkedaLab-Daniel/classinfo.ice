@@ -793,7 +793,7 @@ nav .wrapper .links a.active svg{
   background-color: #ffffff;
   margin: 20px 20px 20px 20px;
   border-left: 4px solid #4B44F6;
-  border-radius: 12px;
+  border-radius: 8px;
   color: #111827;
   box-shadow: 0 8px 10px rgba(0, 0, 0, 0.17);
   padding: 10px;
@@ -859,6 +859,7 @@ nav .wrapper .links a.active svg{
 
 .announcement-container .announcement-content p{
   margin-bottom: 10px;
+  white-space: pre-line;
 }
 
 .announcement-container .announcement-content .announcement-meta{

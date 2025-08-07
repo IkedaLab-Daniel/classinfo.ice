@@ -194,6 +194,7 @@
 .tasks-container .task-cards-container .task-card .content .description{
     color: #6b7280;
     margin-bottom: 10px;
+    white-space: pre-line;
 }
 
 .tasks-container .task-cards-container .task-card .foot{
