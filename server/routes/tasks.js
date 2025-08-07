@@ -3,6 +3,34 @@ const router = express.Router();
 const Task = require('../models/Task');
 const { validateTask } = require('../middleware/validation');
 
+// Middleware to add calculated status to task responses
+const addCalculatedStatus = (req, res, next) => {
+  const originalJson = res.json;
+  
+  res.json = function(data) {
+    if (data && data.data) {
+      // Handle single task
+      if (data.data._id || data.data.id) {
+        data.data.status = data.data.calculatedStatus || data.data.status;
+      }
+      // Handle array of tasks
+      else if (Array.isArray(data.data)) {
+        data.data = data.data.map(task => ({
+          ...task.toObject(),
+          status: task.calculatedStatus || task.status
+        }));
+      }
+    }
+    
+    return originalJson.call(this, data);
+  };
+  
+  next();
+};
+
+// Apply middleware to all routes
+router.use(addCalculatedStatus);
+
 // @desc    Get all tasks with filtering and pagination
 // @route   GET /api/tasks
 // @access  Public
@@ -293,12 +321,12 @@ router.get('/class/:className', async (req, res, next) => {
 router.patch('/:id/status', async (req, res, next) => {
   try {
     const { status } = req.body;
-    const validStatuses = ['pending', 'in-progress', 'completed', 'overdue', 'cancelled'];
+    const validStatuses = ['pending', 'in-progress', 'completed', 'cancelled'];
     
     if (!status || !validStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
-        message: `Invalid status. Must be one of: ${validStatuses.join(', ')}`
+        message: `Invalid status. Must be one of: ${validStatuses.join(', ')}. Note: 'overdue' is calculated automatically.`
       });
     }
 

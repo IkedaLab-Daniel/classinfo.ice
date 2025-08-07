@@ -179,7 +179,7 @@ app.get('/api', (req, res) => {
         'POST /api/tasks': 'Create new task',
         'PUT /api/tasks/:id': 'Update task',
         'DELETE /api/tasks/:id': 'Delete task',
-        'GET /api/tasks/status/:status': 'Get tasks by status (pending, in-progress, completed, overdue, cancelled)',
+        'GET /api/tasks/status/:status': 'Get tasks by status (pending, in-progress, completed, cancelled, overdue - overdue is calculated dynamically)',
         'GET /api/tasks/filter/overdue': 'Get overdue tasks',
         'GET /api/tasks/filter/upcoming': 'Get upcoming tasks (next 7 days by default)',
         'PATCH /api/tasks/:id/status': 'Update task status only',
@@ -192,7 +192,7 @@ app.get('/api', (req, res) => {
       filtering: 'Various filters based on endpoint',
       search: 'search (text search where applicable)',
       tasks: {
-        status: 'pending, in-progress, completed, overdue, cancelled',
+        status: 'pending, in-progress, completed, cancelled (overdue is calculated dynamically)',
         type: 'assignment, project, exam, quiz, presentation, homework, lab, reading, other',
         priority: 'low, medium, high, urgent',
         class: 'filter by class/course name',
