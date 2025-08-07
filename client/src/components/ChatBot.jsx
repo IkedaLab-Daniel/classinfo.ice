@@ -21,9 +21,9 @@ const ChatBot = () => {
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
 
-    // API base URL
+    // API base URL - Direct Flask service
     const API_BASE = process.env.NODE_ENV === 'production' 
-        ? 'https://your-node-service.onrender.com/api' 
+        ? 'https://your-flask-chat-service.onrender.com' 
         : 'http://localhost:5002';
 
     // Auto-scroll to bottom when new messages arrive
@@ -48,7 +48,8 @@ const ChatBot = () => {
         try {
             const response = await fetch(`${API_BASE}/health`);
             const data = await response.json();
-            setIsServiceHealthy(data.success && data.data.chat_service_status === 'healthy');
+            // Flask service returns { status: 'healthy', ai_available: true, ... }
+            setIsServiceHealthy(data.status === 'healthy');
         } catch (error) {
             setIsServiceHealthy(false);
         }
@@ -81,22 +82,24 @@ const ChatBot = () => {
 
             const data = await response.json();
 
-            if (data.success) {
-                // Add bot response
+            // Check if response is successful (either with success field or direct Flask response)
+            if (data.success || data.response) {
+                // Add bot response - handle both Node.js proxy format and direct Flask format
                 setMessages(prev => [...prev, {
                     id: Date.now() + 1,
                     type: 'bot',
-                    content: data.data.response,
+                    content: data.success ? data.data.response : data.response,
                     timestamp: new Date(),
-                    contextItemsUsed: data.data.context_items_used,
-                    aiPowered: data.data.ai_powered
+                    contextItemsUsed: data.success ? data.data.context_items_used : data.context_items_used,
+                    aiPowered: data.success ? data.data.ai_powered : data.ai_powered,
+                    isThrottled: data.success ? data.data.is_throttled : data.is_throttled
                 }]);
             } else {
                 // Add error message with fallback if available
                 setMessages(prev => [...prev, {
                     id: Date.now() + 1,
                     type: 'bot',
-                    content: data.response || data.error || 'Sorry, I encountered an error.',
+                    content: data.error || 'Sorry, I encountered an error.',
                     timestamp: new Date(),
                     isError: true
                 }]);
@@ -118,7 +121,8 @@ const ChatBot = () => {
     // Clear chat history
     const clearChat = async () => {
         try {
-            await fetch(`${API_BASE}/chat/clear`, { method: 'POST' });
+            // Flask service uses different endpoint format
+            await fetch(`${API_BASE}/chat/clear/anonymous`, { method: 'POST' });
             setMessages([]);
         } catch (error) {
             console.error('Clear chat error:', error);
@@ -151,6 +155,8 @@ const ChatBot = () => {
         return content
             // Bold text: **text** -> <strong>text</strong>
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            // Italic text: *text* -> <em>text</em> (but not bullet points)
+            .replace(/(?<!\n)\*([^*\n]+)\*/g, '<em>$1</em>')
             // Bullet points: * text -> • text
             .replace(/^\* /gm, '• ')
             // Line breaks
@@ -260,7 +266,8 @@ const ChatBot = () => {
                                                 </span>
                                                 {message.type === 'bot' && !message.isError && (
                                                     <span className="message-info">
-                                                        {message.aiPowered ? '🤖 AI' : '📝 Rule-based'}
+                                                        {message.isThrottled ? '⚡ Backup Mode' : 
+                                                         message.aiPowered ? '🤖 AI' : '📝 Rule-based'}
                                                         {message.contextItemsUsed > 0 && 
                                                             ` • ${message.contextItemsUsed} context items`
                                                         }

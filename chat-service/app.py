@@ -4,7 +4,7 @@ import requests
 import os
 import json
 import google.generativeai as genai
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, timezone
 import threading
 import time
 from dotenv import load_dotenv
@@ -26,33 +26,107 @@ CORS(app, origins=[
 # Configuration
 NODE_API_URL = os.getenv('NODE_API_URL', 'https://your-node-service.onrender.com')
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
 
-# Initialize Gemini AI
+print("OPENROUTER_API_KEY:", "***" + str(OPENROUTER_API_KEY)[-4:] if OPENROUTER_API_KEY else "Not set")
+
+# Model configuration with fallback chain
+MODEL_CHAIN = [
+    {
+        "provider": "openrouter",
+        "model": "meta-llama/llama-3.1-8b-instruct:free",
+        "name": "Llama 3.1 8B (Free)",
+        "available": bool(OPENROUTER_API_KEY)
+    },
+    {
+        "provider": "openrouter", 
+        "model": "mistralai/mistral-7b-instruct:free",
+        "name": "Mistral 7B (Free)",
+        "available": bool(OPENROUTER_API_KEY)
+    },
+    {
+        "provider": "gemini",
+        "model": "gemini-1.5-flash",
+        "name": "Gemini 1.5 Flash",
+        "available": bool(GEMINI_API_KEY)
+    }
+]
+
+# Filter available models
+AVAILABLE_MODELS = [model for model in MODEL_CHAIN if model["available"]]
+print(f"🚀 Available models: {[model['name'] for model in AVAILABLE_MODELS]}")
+
+# OpenRouter API configuration
+OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1/chat/completions"
+
+# Initialize Gemini AI (as backup)
+gemini_model = None
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
+    try:
+        gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+        print("✅ Gemini AI initialized as backup")
+    except Exception as e:
+        print(f"❌ Gemini AI initialization failed: {e}")
+
+# OpenRouter API helper function
+def call_openrouter_api(model, messages, max_tokens=1000):
+    """Call OpenRouter API with the specified model"""
+    try:
+        headers = {
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "HTTP-Referer": "http://localhost:5002",  # Optional
+            "X-Title": "Academic Schedule Assistant",   # Optional
+            "Content-Type": "application/json"
+        }
+        
+        data = {
+            "model": model,
+            "messages": messages,
+            "max_tokens": max_tokens,
+            "temperature": 0.7
+        }
+        
+        response = requests.post(OPENROUTER_BASE_URL, headers=headers, json=data, timeout=30)
+        response.raise_for_status()
+        
+        result = response.json()
+        if 'choices' in result and len(result['choices']) > 0:
+            return result['choices'][0]['message']['content']
+        else:
+            raise Exception(f"Unexpected response format: {result}")
+            
+    except Exception as e:
+        raise Exception(f"OpenRouter API error: {e}")
+
+# Test available models on startup
+def test_models():
+    """Test which models are actually working"""
+    working_models = []
+    test_messages = [{"role": "user", "content": "Hello, respond with just 'OK'"}]
     
-    # Try different model names in order of preference
-    model_names = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro', 'models/gemini-pro']
-    model = None
-    
-    for model_name in model_names:
+    for model_config in AVAILABLE_MODELS:
         try:
-            print(f"Trying model: {model_name}")
-            model = genai.GenerativeModel(model_name)
-            # Test with a simple prompt
-            test_response = model.generate_content("Hello")
-            print(f"✅ Successfully initialized Gemini AI with model: {model_name}")
-            break
+            if model_config["provider"] == "openrouter":
+                response = call_openrouter_api(model_config["model"], test_messages)
+                working_models.append(model_config)
+                print(f"✅ {model_config['name']} is working")
+            elif model_config["provider"] == "gemini" and gemini_model:
+                response = gemini_model.generate_content("Hello")
+                working_models.append(model_config)
+                print(f"✅ {model_config['name']} is working")
         except Exception as e:
-            print(f"❌ Model {model_name} failed: {e}")
-            model = None
-            continue
+            print(f"❌ {model_config['name']} failed test: {e}")
     
-    if not model:
-        print("❌ All Gemini models failed - using fallback responses")
-else:
-    model = None
-    print("❌ GEMINI_API_KEY not found - using fallback responses")
+    return working_models
+
+# Test models and update available list
+print("🧪 Testing available models...")
+WORKING_MODELS = test_models()
+print(f"🚀 Working models: {[model['name'] for model in WORKING_MODELS]}")
+
+if not WORKING_MODELS:
+    print("⚠️ No AI models available - will use rule-based responses only")
 
 # In-memory conversation storage (use Redis in production)
 conversations = {}
@@ -202,28 +276,35 @@ class ChatService:
     
     @staticmethod
     def generate_ai_response(message, context, conversation_history):
-        """Generate response using Gemini AI"""
-        if not model:
-            print("No AI model available, using fallback")
+        """Generate response using multi-model fallback chain"""
+        if not WORKING_MODELS:
+            print("No AI models available, using rule-based fallback")
             return ChatService.generate_fallback_response(message, context)
         
-        try:
-            # Build context string
-            context_text = "\n".join([item['content'] for item in context])
-            
-            print(f"DEBUG - Context being sent to AI ({len(context)} items):")
-            print(f"DEBUG - Context text (first 800 chars):\n{context_text[:800]}...")
-            
-            # Build conversation history
-            history_text = ""
-            if conversation_history:
-                history_text = "\n".join([
-                    f"User: {msg['user']}\nAssistant: {msg['assistant']}"
-                    for msg in conversation_history[-3:]  # Last 3 exchanges
-                ])
+        # Build context string
+        context_text = "\n".join([item['content'] for item in context])
+        
+        print(f"DEBUG - Context being sent to AI ({len(context)} items):")
+        print(f"DEBUG - Context text (first 800 chars):\n{context_text[:800]}...")
+        
+        # Build conversation history
+        history_text = ""
+        if conversation_history:
+            history_text = "\n".join([
+                f"User: {msg['user']}\nAssistant: {msg['assistant']}"
+                for msg in conversation_history[-3:]  # Last 3 exchanges
+            ])
 
-            prompt = f"""
-You are a helpful academic schedule assistant for a student. You have access to their schedule, tasks, and announcements.
+        # Get current date and time
+        current_datetime = datetime.now()
+        current_date = current_datetime.strftime("%A, %B %d, %Y")
+        current_time = current_datetime.strftime("%I:%M %p")
+
+        # Build prompt
+        prompt_content = f"""
+You are a helpful and hilariously witty academic schedule assistant for a student. You have access to their schedule, tasks, and announcements. Your personality is like a friendly, slightly sarcastic best friend who loves to make jokes while still being genuinely helpful.
+
+Current Date and Time: {current_date} at {current_time}
 
 Previous conversation:
 {history_text}
@@ -234,42 +315,85 @@ Current relevant information:
 User's current question: {message}
 
 Instructions:
-- Answer helpfully and conversationally
+- Reponse in Filipino language
+- Be funny and entertaining while still being helpful
+- Use humor, wit, and playful sarcasm appropriately
+- Make jokes about procrastination, student life, deadlines, etc.
+- Add emojis and casual language to make it fun
+- Today is {current_date}
 - Use the provided schedule/task/announcement information when relevant
-- If you can't find specific information, acknowledge it politely
-- Keep responses concise but informative
-- Be friendly and supportive
+- When tasks are overdue, make gentle jokes about procrastination
+- When classes are coming up, add encouraging or funny comments
+- Be supportive but in a humorous way
 - Format times and dates clearly
-- If asked about deadlines, calculate days remaining when possible
+- Calculate days remaining for deadlines and make it dramatic/funny
+- When referring to "today", use {current_date}
+- Keep responses concise but entertaining
+- Use double (*) for bold: **bold**
 
 Response:
 """
 
-            print(f"DEBUG - Full prompt length: {len(prompt)} characters")
-            print(f"Sending prompt to Gemini AI...")
-            response = model.generate_content(prompt)
-            print(f"✅ AI response received: {len(response.text)} characters")
-            return response.text.strip()
-            
-        except Exception as e:
-            print(f"❌ AI response error: {e}")
-            print(f"Falling back to rule-based response")
-            return ChatService.generate_fallback_response(message, context)
+        print(f"DEBUG - Full prompt length: {len(prompt_content)} characters")
+        
+        # Try each model in the chain
+        for model_config in WORKING_MODELS:
+            try:
+                print(f"🔄 Trying {model_config['name']}...")
+                
+                if model_config["provider"] == "openrouter":
+                    messages = [{"role": "user", "content": prompt_content}]
+                    response = call_openrouter_api(model_config["model"], messages, max_tokens=1500)
+                    print(f"✅ {model_config['name']} response received: {len(response)} characters")
+                    return response.strip()
+                
+                elif model_config["provider"] == "gemini" and gemini_model:
+                    response = gemini_model.generate_content(prompt_content)
+                    print(f"✅ {model_config['name']} response received: {len(response.text)} characters")
+                    return response.text.strip()
+                    
+            except Exception as e:
+                error_str = str(e)
+                print(f"❌ {model_config['name']} error: {e}")
+                
+                # Check for throttling errors
+                if "429" in error_str or "quota" in error_str.lower() or "rate limit" in error_str.lower():
+                    print(f"🚨 {model_config['name']} throttled - trying next model")
+                    continue
+                else:
+                    print(f"💥 {model_config['name']} failed - trying next model")
+                    continue
+        
+        # All AI models failed, use enhanced fallback
+        print("🚨 All AI models failed or throttled - using enhanced fallback")
+        return ChatService.generate_throttled_response(message, context)
+    
+    @staticmethod
+    def generate_throttled_response(message, context):
+        """Generate response when AI service is throttled"""
+        message_lower = message.lower()
+        
+        # Add throttling notice to the regular fallback response
+        base_response = ChatService.generate_fallback_response(message, context)
+        
+        throttle_notice = "\n\n⚡ *Psst!* Mukhang sobrang busy ng AI ko ngayon - naka-reach na niya ang daily limit! 😅 Pero hindi ako susuko! Ginagawa ko pa rin ang best ko para sa'yo gamit ang aking *backup brain*! 🧠✨"
+        
+        return base_response + throttle_notice
     
     @staticmethod
     def generate_fallback_response(message, context):
-        """Generate rule-based fallback responses"""
+        """Generate rule-based fallback responses with humor"""
         message_lower = message.lower()
         
         if not context:
             if any(word in message_lower for word in ['schedule', 'class', 'subject']):
-                return "I'd be happy to help with your schedule! However, I couldn't find specific schedule information for your question. Could you be more specific about which class or day you're asking about?"
+                return "Hmm, I'd love to spill the tea on your schedule, but I'm coming up empty! 🤔 Maybe try asking about a specific class or day? I promise I'm not usually this useless! 😅"
             elif any(word in message_lower for word in ['task', 'assignment', 'homework', 'due']):
-                return "I can help with your tasks and assignments! Could you specify which task or subject you're asking about?"
+                return "Ah, the eternal student question about assignments! 📚 I can definitely help with your academic doom- I mean, tasks! Could you be more specific about which subject you're procrastinating on? 😏"
             elif any(word in message_lower for word in ['announcement', 'news', 'update']):
-                return "I can help with announcements! What specific information are you looking for?"
+                return "Looking for the latest academic gossip? 📢 I'm your bot! What kind of announcements are you hunting for? Please tell me it's not about another surprise quiz! 😱"
             else:
-                return "I'm here to help with your academic schedule, tasks, and announcements. What would you like to know?"
+                return "Hey there, fellow academic survivor! 🎓 I'm here to help with your schedule, tasks, and announcements. What chaos can I help you organize today? 😄"
         
         # Generate response based on context type
         schedule_count = len([c for c in context if c['type'] == 'schedule'])
@@ -279,21 +403,21 @@ Response:
         response_parts = []
         
         if schedule_count > 0:
-            response_parts.append(f"I found {schedule_count} relevant schedule item{'s' if schedule_count > 1 else ''}:")
+            response_parts.append(f"🎯 Found {schedule_count} schedule item{'s' if schedule_count > 1 else ''} (your day just got busier!):")
             for item in [c for c in context if c['type'] == 'schedule'][:3]:
                 response_parts.append(f"• {item['content']}")
         
         if task_count > 0:
-            response_parts.append(f"I found {task_count} relevant task{'s' if task_count > 1 else ''}:")
+            response_parts.append(f"📋 Discovered {task_count} task{'s' if task_count > 1 else ''} (the procrastination station!):")
             for item in [c for c in context if c['type'] == 'task'][:3]:
                 response_parts.append(f"• {item['content']}")
         
         if announcement_count > 0:
-            response_parts.append(f"I found {announcement_count} relevant announcement{'s' if announcement_count > 1 else ''}:")
+            response_parts.append(f"📣 Spotted {announcement_count} announcement{'s' if announcement_count > 1 else ''} (hope it's good news!):")
             for item in [c for c in context if c['type'] == 'announcement'][:2]:
                 response_parts.append(f"• {item['content']}")
         
-        return "\n\n".join(response_parts) if response_parts else "I'm here to help! What specific information are you looking for?"
+        return "\n\n".join(response_parts) if response_parts else "I'm here to make your academic life less chaotic! 🚀 What can I help you with today? 😊"
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -302,7 +426,8 @@ def health_check():
         'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
         'service': 'chat-service',
-        'ai_available': model is not None
+        'ai_available': len(WORKING_MODELS) > 0,
+        'working_models': [model['name'] for model in WORKING_MODELS]
     })
 
 @app.route('/chat', methods=['POST'])
@@ -328,6 +453,9 @@ def chat():
         # Generate response
         response = ChatService.generate_ai_response(message, context, conversation_history)
         
+        # Check if response contains throttling notice
+        is_throttled = "daily limit" in response and "backup brain" in response
+        
         # Store conversation
         if user_id not in conversations:
             conversations[user_id] = []
@@ -346,7 +474,9 @@ def chat():
         return jsonify({
             'response': response,
             'context_items_used': len(context),
-            'ai_powered': model is not None,
+            'ai_powered': len(WORKING_MODELS) > 0 and not is_throttled,
+            'is_throttled': is_throttled,
+            'model_used': WORKING_MODELS[0]['name'] if WORKING_MODELS and not is_throttled else 'Rule-based',
             'timestamp': datetime.now().isoformat()
         })
         

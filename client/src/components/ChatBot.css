@@ -276,6 +276,11 @@
     color: inherit;
 }
 
+.message-text em {
+    font-style: italic;
+    color: inherit;
+}
+
 .message-text br {
     margin-bottom: 4px;
 }
@@ -314,6 +319,10 @@
     display: flex;
     align-items: center;
     gap: 4px;
+}
+
+.message-info:has-text('⚡ Backup Mode') {
+    color: #f59e0b;
 }
 
 .message-error {
