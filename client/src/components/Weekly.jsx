@@ -7,6 +7,7 @@ import useApiWithLoading from '../hooks/useApiWithLoading';
 const Weekly = () => {
     const [weeklySchedules, setWeeklySchedules] = useState([]);
     const [currentWeekOffset, setCurrentWeekOffset] = useState(0); // 0 = current week, -1 = previous week, +1 = next week
+    const [isNavigating, setIsNavigating] = useState(false); // Track navigation loading state
     const { executeRequest, isLoading, error } = useApiWithLoading();
 
     // Helper function to get current week's date range
@@ -154,10 +155,18 @@ const Weekly = () => {
     useEffect(() => {
         const fetchWeeklySchedules = async () => {
             try {
+                // Set loading state when navigating
+                if (currentWeekOffset !== 0) {
+                    setIsNavigating(true);
+                }
+                
                 const weekRange = getCurrentWeekRange(currentWeekOffset);
                 const schedulesData = await executeRequest(
                     () => scheduleAPI.getRange(weekRange.start, weekRange.end),
-                    { loadingMessage: "Loading weekly schedule..." }
+                    { 
+                        loadingMessage: currentWeekOffset === 0 ? "Loading weekly schedule..." : "Loading week data...",
+                        showLoading: currentWeekOffset === 0 // Only show full loading modal for initial load
+                    }
                 );
                 
                 console.log("API Response:", schedulesData);
@@ -176,6 +185,9 @@ const Weekly = () => {
             } catch (error) {
                 console.error('Failed to fetch weekly schedules:', error);
                 setWeeklySchedules([]);
+            } finally {
+                // Clear navigation loading state
+                setIsNavigating(false);
             }
         };
 
@@ -184,14 +196,17 @@ const Weekly = () => {
 
     // Navigation functions
     const goToPreviousWeek = () => {
+        setIsNavigating(true);
         setCurrentWeekOffset(prev => prev - 1);
     };
 
     const goToNextWeek = () => {
+        setIsNavigating(true);
         setCurrentWeekOffset(prev => prev + 1);
     };
 
     const goToCurrentWeek = () => {
+        setIsNavigating(true);
         setCurrentWeekOffset(0);
     };
 
@@ -206,6 +221,7 @@ const Weekly = () => {
                         <button 
                             className="nav-button prev-button" 
                             onClick={goToPreviousWeek}
+                            disabled={isNavigating || isLoading}
                             aria-label="Previous week"
                         >
                             <ChevronLeft size={20} />
@@ -218,6 +234,7 @@ const Weekly = () => {
                                 <button 
                                     className="current-week-button" 
                                     onClick={goToCurrentWeek}
+                                    disabled={isNavigating || isLoading}
                                 >
                                     Go to Current Week
                                 </button>
@@ -227,6 +244,7 @@ const Weekly = () => {
                         <button 
                             className="nav-button next-button" 
                             onClick={goToNextWeek}
+                            disabled={isNavigating || isLoading}
                             aria-label="Next week"
                         >
                             <ChevronRight size={20} />
@@ -250,7 +268,12 @@ const Weekly = () => {
                                     <p className="date">{dayInfo.date}</p>
                                 </div>
                                 <div className="day-content">
-                                    {daySchedules.length === 0 ? (
+                                    {isNavigating ? (
+                                        <div className="loading-class">
+                                            <div className="loading-spinner"></div>
+                                            <p>Loading...</p>
+                                        </div>
+                                    ) : daySchedules.length === 0 ? (
                                         <div className="no-class">
                                             <Coffee size={50}/>
                                             <p>No Class</p>
