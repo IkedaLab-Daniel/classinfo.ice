@@ -16,19 +16,22 @@ print("GEMINI_API_KEY:", os.getenv('GEMINI_API_KEY'))
 
 app = Flask(__name__)
 
-# Enable CORS for your Netlify frontend
-CORS(app, origins=[
-    "http://localhost:5173",  # Vite dev server
-    "https://your-netlify-app.netlify.app",  # Replace with your actual Netlify URL
-    "https://*.netlify.app"
-])
-
 # Configuration
 NODE_API_URL = os.getenv('NODE_API_URL', 'https://your-node-service.onrender.com')
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
+
+# Enable CORS for your Netlify frontend
+CORS(app, origins=[
+    "http://localhost:5173",  # Vite dev server  
+    FRONTEND_URL,  # Dynamic frontend URL from environment
+    "https://dailyclass.netlify.app",  # Your actual Netlify URL
+    "https://*.netlify.app"  # Wildcard for any Netlify subdomain
+])
 
 print("OPENROUTER_API_KEY:", "***" + str(OPENROUTER_API_KEY)[-4:] if OPENROUTER_API_KEY else "Not set")
+print("FRONTEND_URL:", FRONTEND_URL)
 
 # Model configuration with fallback chain
 MODEL_CHAIN = [
