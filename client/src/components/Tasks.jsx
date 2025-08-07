@@ -292,9 +292,8 @@ const Tasks = () => {
                         return (
                             <div key={task._id} className={`task-card ${dynamicStatus}`} data-aos="fade-up">
                                 <div className="head">
-                                    <div className="status-icon-wrapper">
-                                        <StatusIcon size={20} className="task-status-icon" />
-                                        <p className="task-status">{dynamicStatus.charAt(0).toUpperCase() + dynamicStatus.slice(1).replace('-', ' ')}</p>
+                                    <div className="task-title-wrapper">
+                                        <p className="task-title-main">{task.title}</p>
                                     </div>
                                     
                                     <div className="subject">
@@ -303,9 +302,6 @@ const Tasks = () => {
                                 </div>
 
                                 <div className="content">
-                                    <div className="task-title">
-                                        <p className="title">{task.title}</p>
-                                    </div>
                                     <div className="task-type">
                                         <span className={`type-badge ${task.type}`}>
                                             <TaskTypeIcon size={12} />

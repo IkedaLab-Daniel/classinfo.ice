@@ -134,6 +134,10 @@ nav .wrapper .links a.active svg{
   nav .wrapper .links a span {
     font-size: 10px;
   }
+
+  #announcement{
+    margin-bottom: 20px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -180,6 +184,7 @@ nav .wrapper .links a.active svg{
 
 .today-header {
   display: flex;
+  justify-content: center;
   align-items: center;
   gap: 12px;
   margin-bottom: 8px;
@@ -786,7 +791,7 @@ nav .wrapper .links a.active svg{
   display: flex;
   flex-direction: column;
   background-color: #ffffff;
-  margin: 20px 20px;
+  margin: 20px 20px 20px 20px;
   border-left: 4px solid #4B44F6;
   border-radius: 12px;
   color: #111827;
