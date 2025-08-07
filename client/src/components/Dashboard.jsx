@@ -1,10 +1,15 @@
 
 import { Cloud, CheckSquare, BookOpen, Sun, CloudRain, Snowflake, IceCream, AlertCircle, Calendar, Clock, MapPin, Users, ChevronDown, ChevronUp, Moon, Sunset } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
-import ice from '../assets/ice.jpeg'
 import LoadingModal from './LoadingModal';
 import useApiWithLoading from '../hooks/useApiWithLoading';
 import { taskAPI, scheduleAPI } from '../config/api';
+
+// > images
+import ice from '../assets/ice.jpeg'
+import alvin from '../assets/alvin.jpg'
+import matthew from '../assets/matthew.jpg'
+import brix from '../assets/brix2.jpeg'
 
 const Dashboard = () => {
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -356,10 +361,11 @@ const Dashboard = () => {
                         <div className="manager-info">
                             <div className="img-wrapper">
                                 <img src={ice} alt="" />
-                                <img src={ice} alt="" />
-                                <img src={ice} alt="" />
+                                <img src={alvin} alt="" />
+                                <img src={matthew} alt="" />
+                                <img src={brix} alt="" />
                             </div>
-                            <p>Managed by: <span className='name'>Ice, Ice, Baby</span></p>
+                            <p>Managed by: <span className='name'>Daniel, Alvin, Matthew, Brix</span></p>
                         </div>
                     </div>
                 </div>
