@@ -12,7 +12,7 @@ function App() {
     AOS.init({
       duration: 800, // Animation duration in milliseconds
       easing: 'ease-in-out', // Easing function
-      once: false, // Whether animation should happen only once
+      once: true, // Whether animation should happen only once
       offset: 100, // Offset (in px) from the original trigger point
     })
   }, [])

@@ -14,41 +14,75 @@ const NavBar = () => {
         }
 
         let observer;
+        let ticking = false;
 
         const createObserver = () => {
-            // Dynamic observer settings based on screen size
+            // More lenient observer settings
             const isMobile = window.innerWidth <= 768;
             const observerConfig = {
-                threshold: [0.1, 0.2, 0.3, 0.4, 0.5], // Multiple thresholds for better detection
-                rootMargin: isMobile ? '-60px 0px -60% 0px' : '-80px 0px -50% 0px'
+                threshold: [0, 0.1, 0.25, 0.5, 0.75, 1.0],
+                rootMargin: isMobile ? '-20px 0px -40% 0px' : '-40px 0px -30% 0px'
             };
 
             observer = new IntersectionObserver(
                 (entries) => {
-                    // Find the entry with the highest intersection ratio
-                    let maxEntry = null;
-                    let maxRatio = 0;
-                    
-                    entries.forEach((entry) => {
-                        if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
-                            maxRatio = entry.intersectionRatio;
-                            maxEntry = entry;
-                        }
-                    });
-                    
-                    // Only update if we found a highly intersecting element
-                    if (maxEntry && maxRatio > (isMobile ? 0.05 : 0.1)) {
-                        setActiveSection(maxEntry.target.id);
+                    if (!ticking) {
+                        requestAnimationFrame(() => {
+                            // Sort entries by their position in the document
+                            const visibleSections = entries
+                                .filter(entry => entry.isIntersecting)
+                                .map(entry => ({
+                                    id: entry.target.id,
+                                    ratio: entry.intersectionRatio,
+                                    top: entry.boundingClientRect.top,
+                                    element: entry.target
+                                }))
+                                .sort((a, b) => a.top - b.top);
+
+                            if (visibleSections.length > 0) {
+                                // Choose the section that's most prominently visible
+                                let bestSection = visibleSections[0];
+                                
+                                // If multiple sections are visible, prefer the one with higher intersection ratio
+                                // or the one that's closer to the center of the viewport
+                                for (let section of visibleSections) {
+                                    const viewportCenter = window.innerHeight / 2;
+                                    const sectionCenter = Math.abs(section.top + section.element.offsetHeight / 2 - viewportCenter);
+                                    const bestSectionCenter = Math.abs(bestSection.top + bestSection.element.offsetHeight / 2 - viewportCenter);
+                                    
+                                    if (section.ratio > bestSection.ratio || 
+                                        (section.ratio >= bestSection.ratio * 0.8 && sectionCenter < bestSectionCenter)) {
+                                        bestSection = section;
+                                    }
+                                }
+                                
+                                if (bestSection.id !== activeSection) {
+                                    console.log('🔍 Navigation: Switching to section:', bestSection.id, 'from:', activeSection);
+                                    setActiveSection(bestSection.id);
+                                }
+                            }
+                            
+                            ticking = false;
+                        });
+                        ticking = true;
                     }
                 },
                 observerConfig
             );
 
-            const sections = ['today-page', 'weekly', 'tasks'];
-            sections.forEach((id) => {
-                const element = document.getElementById(id);
-                if (element) observer.observe(element);
-            });
+            // Wait for AOS animations to complete before observing
+            const startObserving = () => {
+                const sections = ['today-page', 'weekly', 'tasks'];
+                sections.forEach((id) => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        observer.observe(element);
+                    }
+                });
+            };
+
+            // Delay observation to account for AOS animations
+            setTimeout(startObserving, 500);
         };
 
         createObserver();
@@ -61,13 +95,47 @@ const NavBar = () => {
             createObserver();
         };
 
+        // Backup scroll listener for better reliability
+        const handleScroll = () => {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    const sections = ['today-page', 'weekly', 'tasks'];
+                    const scrollPosition = window.scrollY + 100; // Offset for navbar
+                    
+                    let currentSection = 'today-page'; // Default
+                    
+                    sections.forEach(sectionId => {
+                        const element = document.getElementById(sectionId);
+                        if (element) {
+                            const elementTop = element.offsetTop;
+                            const elementBottom = elementTop + element.offsetHeight;
+                            
+                            if (scrollPosition >= elementTop && scrollPosition < elementBottom) {
+                                currentSection = sectionId;
+                            }
+                        }
+                    });
+                    
+                    if (currentSection !== activeSection) {
+                        console.log('📜 Scroll: Switching to section:', currentSection, 'from:', activeSection);
+                        setActiveSection(currentSection);
+                    }
+                    
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        };
+
         window.addEventListener('resize', handleResize);
+        window.addEventListener('scroll', handleScroll, { passive: true });
 
         return () => {
             if (observer) {
                 observer.disconnect();
             }
             window.removeEventListener('resize', handleResize);
+            window.removeEventListener('scroll', handleScroll);
         };
     }, [location.pathname]);
 
@@ -78,7 +146,13 @@ const NavBar = () => {
             setTimeout(() => scrollToSection(sectionId), 100); // Small delay to ensure DOM is ready
         } else if (location.pathname === '/') {
             // Set default active section when on home page without hash
-            setActiveSection('today-page');
+            // Use a more robust check
+            setTimeout(() => {
+                if (!activeSection || activeSection === '') {
+                    console.log('🏠 Setting default active section to today-page');
+                    setActiveSection('today-page');
+                }
+            }, 1000); // Wait for AOS and other animations
         }
     }, [location.pathname, location.hash]);
 
