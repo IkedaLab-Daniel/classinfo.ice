@@ -4,7 +4,7 @@ import requests
 import os
 import json
 import google.generativeai as genai
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import threading
 import time
 from dotenv import load_dotenv
@@ -97,18 +97,44 @@ class ContextManager:
         
         # Check schedules
         schedule_matches = 0
+        today_query = any(word in message_lower for word in ['today', 'today?'])
+        
         for schedule in data['schedules']:
+            # Check if this is a date-specific query (like "today")
+            if today_query:
+                # Get today's date in UTC
+                today_utc = datetime.now(timezone.utc).date()
+                
+                # Parse schedule date
+                schedule_date_str = schedule.get('date', '')
+                if schedule_date_str:
+                    try:
+                        # Parse ISO date string and convert to date
+                        schedule_date = datetime.fromisoformat(schedule_date_str.replace('Z', '+00:00')).date()
+                        
+                        print(f"DEBUG - Schedule: {schedule.get('subject')} on {schedule_date}, Today: {today_utc}")
+                        
+                        # Only include if it's actually today
+                        if schedule_date != today_utc:
+                            continue
+                            
+                    except Exception as e:
+                        print(f"DEBUG - Error parsing date {schedule_date_str}: {e}")
+                        continue
+            
+            # Check if schedule matches query keywords
             if any(keyword in message_lower for keyword in [
                 schedule.get('subject', '').lower(),
                 schedule.get('room', '').lower(),
                 schedule.get('day', '').lower(),
-                'schedule', 'class', 'subject'
+                'schedule', 'class', 'subject', 'today'
             ]):
                 relevant_context.append({
                     'type': 'schedule',
-                    'content': f"{schedule.get('subject')} class on {schedule.get('day')} from {schedule.get('startTime')} to {schedule.get('endTime')} in room {schedule.get('room')}"
+                    'content': f"{schedule.get('subject')} class from {schedule.get('startTime')} to {schedule.get('endTime')} in room {schedule.get('room')}"
                 })
                 schedule_matches += 1
+                print(f"DEBUG - Including schedule: {schedule.get('subject')} on {schedule.get('date', 'unknown date')}")
         
         print(f"DEBUG - Found {schedule_matches} relevant schedules")
         

@@ -271,6 +271,15 @@
     word-wrap: break-word;
 }
 
+.message-text strong {
+    font-weight: 600;
+    color: inherit;
+}
+
+.message-text br {
+    margin-bottom: 4px;
+}
+
 .message.user .message-text {
     background: linear-gradient(135deg, #3b82f6, #2563eb);
     color: white;

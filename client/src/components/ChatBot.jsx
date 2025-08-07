@@ -24,7 +24,7 @@ const ChatBot = () => {
     // API base URL
     const API_BASE = process.env.NODE_ENV === 'production' 
         ? 'https://your-node-service.onrender.com/api' 
-        : 'http://localhost:3000/api';
+        : 'http://localhost:5002';
 
     // Auto-scroll to bottom when new messages arrive
     const scrollToBottom = () => {
@@ -46,7 +46,7 @@ const ChatBot = () => {
     // Check chat service health
     const checkServiceHealth = async () => {
         try {
-            const response = await fetch(`${API_BASE}/chat/health`);
+            const response = await fetch(`${API_BASE}/health`);
             const data = await response.json();
             setIsServiceHealthy(data.success && data.data.chat_service_status === 'healthy');
         } catch (error) {
@@ -96,7 +96,7 @@ const ChatBot = () => {
                 setMessages(prev => [...prev, {
                     id: Date.now() + 1,
                     type: 'bot',
-                    content: data.fallback_response || data.error || 'Sorry, I encountered an error.',
+                    content: data.response || data.error || 'Sorry, I encountered an error.',
                     timestamp: new Date(),
                     isError: true
                 }]);
@@ -142,6 +142,19 @@ const ChatBot = () => {
             minute: '2-digit',
             hour12: true 
         });
+    };
+
+    // Format bot message with basic markdown support
+    const formatBotMessage = (content) => {
+        if (!content) return content;
+        
+        return content
+            // Bold text: **text** -> <strong>text</strong>
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            // Bullet points: * text -> • text
+            .replace(/^\* /gm, '• ')
+            // Line breaks
+            .replace(/\n/g, '<br>');
     };
 
     return (
@@ -231,7 +244,15 @@ const ChatBot = () => {
                                         </div>
                                         <div className="message-content">
                                             <div className="message-text">
-                                                {message.content}
+                                                {message.type === 'bot' ? (
+                                                    <div 
+                                                        dangerouslySetInnerHTML={{ 
+                                                            __html: formatBotMessage(message.content) 
+                                                        }} 
+                                                    />
+                                                ) : (
+                                                    message.content
+                                                )}
                                             </div>
                                             <div className="message-meta">
                                                 <span className="message-time">
