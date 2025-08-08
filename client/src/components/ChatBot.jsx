@@ -8,7 +8,9 @@ import {
     Loader2,
     AlertCircle,
     Trash2,
-    RefreshCw
+    RefreshCw,
+    Wifi,
+    WifiOff
 } from 'lucide-react';
 import './ChatBot.css';
 import hunnibee from '../assets/HunniBee.gif'
@@ -36,6 +38,11 @@ const ChatBot = () => {
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    // Check service health on component mount
+    useEffect(() => {
+        checkServiceHealth();
+    }, []);
 
     // Focus input when chat opens
     useEffect(() => {
@@ -173,10 +180,15 @@ const ChatBot = () => {
                 onClick={() => setIsOpen(true)}
                 title="Ask about your schedule"
             >
-                <MessageCircle size={24} />
-                {!isServiceHealthy && (
-                    <div className="service-ai-status-indicator offline" />
-                )}
+                {/* <MessageCircle size={24} /> */}
+                <div className={`service-status-indicator ${isServiceHealthy ? 'online' : 'offline'}`}>
+                    {isServiceHealthy ? (
+                        <Wifi size={16} />
+                    ) : (
+                        <WifiOff size={16} />
+                    )}
+                </div>
+                <img src={hunnibee} alt="" />
             </div>
 
             {/* Chat Modal */}
@@ -191,7 +203,7 @@ const ChatBot = () => {
                                 <div>
                                     <h3>HunniBee</h3>
                                     <span className={`ai-status ${isServiceHealthy ? 'online' : 'offline'}`}>
-                                        {isServiceHealthy ? 'Online' : 'Limited Mode'}
+                                        {isServiceHealthy ? 'Online' : 'Offline'}
                                     </span>
                                 </div>
                             </div>
@@ -229,6 +241,13 @@ const ChatBot = () => {
                                     {/* <Bot size={40} /> */}
                                     <h4>Hi! I'm HunniBee</h4>
                                     <p>Ask me about your schedule, tasks, or announcements!</p>
+                                    {process.env.NODE_ENV === 'production' && (
+                                        <div className="production-notice">
+                                            <p style={{ fontSize: '0.85rem', color: '#f59e0b', fontStyle: 'italic', marginTop: '8px' }}>
+                                                ⚡ <strong>Production Note:</strong> I'm using lighter AI models for memory efficiency, so I might occasionally hallucinate or provide less accurate responses. For critical information, please double-check! 🐝
+                                            </p>
+                                        </div>
+                                    )}
                                     <div className="example-questions">
                                         <span>Try asking:</span>
                                         <button onClick={() => setInputMessage("What classes do I have today?")}>

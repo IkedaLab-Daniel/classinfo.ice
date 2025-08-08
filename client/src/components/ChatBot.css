@@ -2,17 +2,17 @@
 
 .chat-trigger {
     position: fixed;
-    bottom: 90px;
-    right: 20px;
+    bottom: 50px;
+    right: 50px;
     width: 56px;
     height: 56px;
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    /* background: linear-gradient(135deg, #2563eb, #1d4ed8); */
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+    /* box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3); */
     transition: all 0.3s ease;
     z-index: 998;
     color: white;
@@ -28,19 +28,39 @@
     pointer-events: none;
 }
 
-.service-ai-status-indicator {
+.service-status-indicator {
     position: absolute;
-    top: 4px;
-    right: 4px;
-    width: 12px;
-    height: 12px;
+    bottom: -10px;
+    right: 0px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border: 2px solid white;
+    background: white;
+    animation: float-up-down 2s ease-in-out infinite;
 }
 
-.service-ai-status-indicator.offline {
-    background-color: #ef4444;
-    animation: pulse-red 2s infinite;
+.service-status-indicator.online {
+    background: #10b981;
+    color: white;
+}
+
+.service-status-indicator.offline {
+    background: #ef4444;
+    color: white;
+    animation: float-up-down 1.5s ease-in-out infinite, pulse-red 2s infinite;
+}
+
+@keyframes float-up-down {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-3px);
+    }
 }
 
 @keyframes pulse-red {
@@ -436,6 +456,10 @@
         right: 16px;
         width: 52px;
         height: 52px;
+    }
+
+    .chat-trigger img{
+        width: 70px;
     }
     
     .chat-header {
