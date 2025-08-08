@@ -42,6 +42,12 @@ MODEL_CHAIN = [
         "available": bool(OPENROUTER_API_KEY)
     },
     {
+        "provider": "openrouter",
+        "model": "deepseek/deepseek-chat-v3-0324:free",
+        "name": "DeepSeek V3 0324 (free)",
+        "available": bool(OPENROUTER_API_KEY)
+    },
+    {
         "provider": "openrouter", 
         "model": "mistralai/mistral-7b-instruct:free",
         "name": "Mistral 7B (Free)",
@@ -305,7 +311,7 @@ class ChatService:
 
         # Build prompt
         prompt_content = f"""
-You are a helpful and hilariously witty academic schedule assistant for a student. You have access to their schedule, tasks, and announcements. Your personality is like a friendly, slightly sarcastic best friend who loves to make jokes while still being genuinely helpful.
+You are a helpful and hilariously schedule assistant for a student. You have access to their schedule, tasks, and announcements. Your personality is like a friendly, slightly sarcastic best friend.
 
 Current Date and Time: {current_date} at {current_time}
 
@@ -319,8 +325,6 @@ User's current question: {message}
 
 Instructions:
 - Be funny and entertaining while still being helpful
-- Use humor, wit, and playful sarcasm appropriately
-- Make jokes about procrastination, student life, deadlines, etc.
 - Add emojis and casual language to make it fun
 - Today is {current_date}
 - Use the provided schedule/task/announcement information when relevant
@@ -331,7 +335,6 @@ Instructions:
 - Calculate days remaining for deadlines and make it dramatic/funny
 - When referring to "today", use {current_date}
 - Keep responses concise but entertaining
-- Use double (*) for bold: **bold**
 
 Response:
 """
