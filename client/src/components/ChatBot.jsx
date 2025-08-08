@@ -80,35 +80,73 @@ const ChatBot = () => {
             timestamp: new Date()
         }]);
 
+        await sendChatRequest(userMessage);
+    };
+
+    // Handle offline button actions
+    const handleOfflineAction = async (action) => {
+        if (isLoading) return;
+
+        let actionMessage = '';
+        switch (action) {
+            case 'schedules':
+                actionMessage = 'Show my schedules for this week';
+                break;
+            case 'tasks':
+                actionMessage = 'Show my tasks';
+                break;
+            case 'announcements':
+                actionMessage = 'Show announcements';
+                break;
+            default:
+                return;
+        }
+
+        setIsLoading(true);
+
+        // Add user action message to chat
+        setMessages(prev => [...prev, {
+            id: Date.now(),
+            type: 'user',
+            content: actionMessage,
+            timestamp: new Date(),
+            isOfflineAction: true
+        }]);
+
+        await sendChatRequest(actionMessage);
+    };
+
+    // Common function to send chat requests
+    const sendChatRequest = async (message) => {
         try {
             const response = await fetch(`${API_BASE}/chat`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ message: userMessage })
+                body: JSON.stringify({ message: message })
             });
 
-            const data = await response.json();
+            const responseData = await response.json();
 
             // Check if response is successful (either with success field or direct Flask response)
-            if (data.success || data.response) {
+            if (responseData.success || responseData.response) {
                 // Add bot response - handle both Node.js proxy format and direct Flask format
                 setMessages(prev => [...prev, {
                     id: Date.now() + 1,
                     type: 'bot',
-                    content: data.success ? data.data.response : data.response,
+                    content: responseData.success ? responseData.data.response : responseData.response,
                     timestamp: new Date(),
-                    contextItemsUsed: data.success ? data.data.context_items_used : data.context_items_used,
-                    aiPowered: data.success ? data.data.ai_powered : data.ai_powered,
-                    isThrottled: data.success ? data.data.is_throttled : data.is_throttled
+                    contextItemsUsed: responseData.success ? responseData.data.context_items_used : responseData.context_items_used,
+                    aiPowered: responseData.success ? responseData.data.ai_powered : responseData.ai_powered,
+                    isThrottled: responseData.success ? responseData.data.is_throttled : responseData.is_throttled
                 }]);
             } else {
                 // Add error message with fallback if available
                 setMessages(prev => [...prev, {
                     id: Date.now() + 1,
                     type: 'bot',
-                    content: data.error || 'Sorry, I encountered an error.',
+                    content: responseData.error || 'Sorry, I encountered an error.',
                     timestamp: new Date(),
                     isError: true
                 }]);
@@ -325,28 +363,60 @@ const ChatBot = () => {
                         </div>
 
                         {/* Input Area */}
-                        <div className="chat-input-area">
-                            <div className="chat-input-container">
-                                <textarea
-                                    ref={inputRef}
-                                    value={inputMessage}
-                                    onChange={(e) => setInputMessage(e.target.value)}
-                                    onKeyPress={handleKeyPress}
-                                    placeholder="Send a message.."
-                                    className="chat-input"
-                                    rows="1"
-                                    disabled={isLoading}
-                                />
-                                <button 
-                                    onClick={sendMessage}
-                                    disabled={!inputMessage.trim() || isLoading}
-                                    className="send-btn"
-                                    title="Send message"
-                                >
-                                    <Send size={18} />
-                                </button>
+                        {isServiceHealthy ? (
+                            <div className="chat-input-area">
+                                <div className="chat-input-container">
+                                    <textarea
+                                        ref={inputRef}
+                                        value={inputMessage}
+                                        onChange={(e) => setInputMessage(e.target.value)}
+                                        onKeyPress={handleKeyPress}
+                                        placeholder="Send a message.."
+                                        className="chat-input"
+                                        rows="1"
+                                        disabled={isLoading}
+                                    />
+                                    <button 
+                                        onClick={sendMessage}
+                                        disabled={!inputMessage.trim() || isLoading}
+                                        className="send-btn"
+                                        title="Send message"
+                                    >
+                                        <Send size={18} />
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        ) : (
+                            <div className="offline-buttons-area">
+                                <div className="offline-notice">
+                                    <WifiOff size={20} />
+                                    <span>AI is offline. Use quick actions below:</span>
+                                </div>
+                                <div className="offline-buttons">
+                                    <button 
+                                        className="offline-btn"
+                                        onClick={() => handleOfflineAction("schedules")}
+                                        disabled={isLoading}
+                                    >
+                                        📅 Schedules (This Week)
+                                    </button>
+                                    <button 
+                                        className="offline-btn"
+                                        onClick={() => handleOfflineAction("tasks")}
+                                        disabled={isLoading}
+                                    >
+                                        📋 Tasks
+                                    </button>
+                                    <button 
+                                        className="offline-btn"
+                                        onClick={() => handleOfflineAction("announcements")}
+                                        disabled={isLoading}
+                                    >
+                                        📢 Announcements
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

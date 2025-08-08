@@ -390,6 +390,17 @@ Response:
         """Generate rule-based fallback responses"""
         message_lower = message.lower()
         
+        # Handle specific offline button requests with better formatting
+        if 'show my schedules for this week' in message_lower or 'schedules for this week' in message_lower:
+            return ChatService.format_weekly_schedule_response(context)
+        
+        elif 'show my tasks' in message_lower or 'show tasks' in message_lower:
+            return ChatService.format_tasks_response(context)
+        
+        elif 'show announcements' in message_lower:
+            return ChatService.format_announcements_response(context)
+        
+        # Original fallback logic for other messages
         if not context:
             if any(word in message_lower for word in ['schedule', 'class', 'subject']):
                 return "I don't have specific schedule information matching your query. 📅 Could you try asking about a particular class, subject, or day? I'll do my best to help you find what you need."
@@ -418,17 +429,124 @@ Response:
                 response_parts.append(f"• {item['content']}")
         
         if announcement_count > 0:
-            response_parts.append(f"� Found {announcement_count} announcement{'s' if announcement_count > 1 else ''}:")
+            response_parts.append(f"📢 Found {announcement_count} announcement{'s' if announcement_count > 1 else ''}:")
             for item in [c for c in context if c['type'] == 'announcement'][:2]:
                 response_parts.append(f"• {item['content']}")
         
-        return "\n\n".join(response_parts) if response_parts else "I'm here to help you stay organized with your academic schedule and assignments. What can I assist you with today? �"
+        return "\n\n".join(response_parts) if response_parts else "I'm here to help you stay organized with your academic schedule and assignments. What can I assist you with today? 🎓"
+    
+    @staticmethod
+    def format_weekly_schedule_response(context):
+        """Format weekly schedule response with day-by-day breakdown"""
+        schedules = [c for c in context if c['type'] == 'schedule']
+        
+        if not schedules:
+            return "📅 **Your Schedule This Week**\n\nNo scheduled classes found for this week. Your calendar is clear!"
+        
+        # Get current week date range
+        today = datetime.now()
+        # Find Monday of current week
+        days_since_monday = today.weekday()  # Monday is 0
+        monday = today - timedelta(days=days_since_monday)
+        sunday = monday + timedelta(days=6)
+        
+        week_range = f"{monday.strftime('%B %d')} - {sunday.strftime('%B %d, %Y')}"
+        
+        response_parts = [f"📅 **Your Schedule This Week**"]
+        response_parts.append(f"*Week of {week_range}*")
+        response_parts.append("")
+        
+        # Group schedules by day
+        days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        schedule_by_day = {day: [] for day in days_of_week}
+        
+        # Parse and organize schedules by day
+        for schedule_context in schedules:
+            content = schedule_context['content']
+            # Try to extract day information from the schedule content or use a more detailed approach
+            # For now, we'll create a simple day-based display
+            
+            # You might need to adjust this based on your actual schedule data structure
+            # This is a simplified version that assumes the day information is available
+            day_found = False
+            for day in days_of_week:
+                if day.lower() in content.lower():
+                    schedule_by_day[day].append(content)
+                    day_found = True
+                    break
+            
+            # If no day found, add to a general list
+            if not day_found:
+                # Add to today if no specific day mentioned
+                today_name = days_of_week[today.weekday()]
+                schedule_by_day[today_name].append(content)
+        
+        # Display each day
+        for day in days_of_week:
+            if schedule_by_day[day]:
+                response_parts.append(f"**{day}:**")
+                for schedule in schedule_by_day[day]:
+                    response_parts.append(f"  • {schedule}")
+                response_parts.append("")
+            else:
+                response_parts.append(f"**{day}:** No classes scheduled")
+                response_parts.append("")
+        
+        return "\n".join(response_parts).strip()
+    
+    @staticmethod
+    def format_tasks_response(context):
+        """Format tasks response showing up to 3 tasks with navigation hint"""
+        tasks = [c for c in context if c['type'] == 'task']
+        
+        if not tasks:
+            return "📋 **Your Tasks**\n\nNo tasks found. You're all caught up! 🎉"
+        
+        response_parts = [f"📋 **Your Tasks** (Showing {min(3, len(tasks))} of {len(tasks)}):"]
+        response_parts.append("")
+        
+        # Show up to 3 tasks
+        for task in tasks[:3]:
+            response_parts.append(f"• {task['content']}")
+        
+        # Add navigation hint if there are more tasks
+        if len(tasks) > 3:
+            response_parts.append("")
+            response_parts.append(f"📋 *You have {len(tasks) - 3} more tasks. Navigate to the **Tasks** section to see all your assignments.*")
+        
+        return "\n".join(response_parts)
+    
+    @staticmethod
+    def format_announcements_response(context):
+        """Format announcements response showing up to 3 announcements with navigation hint"""
+        announcements = [c for c in context if c['type'] == 'announcement']
+        
+        if not announcements:
+            return "📢 **Announcements**\n\nNo announcements at this time. Check back later!"
+        
+        response_parts = [f"📢 **Announcements** (Showing {min(3, len(announcements))} of {len(announcements)}):"]
+        response_parts.append("")
+        
+        # Show up to 3 announcements
+        for announcement in announcements[:3]:
+            response_parts.append(f"• {announcement['content']}")
+        
+        # Add navigation hint if there are more announcements
+        if len(announcements) > 3:
+            response_parts.append("")
+            response_parts.append(f"📢 *You have {len(announcements) - 3} more announcements. Navigate to the **Announcements** section to see all updates.*")
+        
+        return "\n".join(response_parts)
 
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
+    # Consider service unhealthy if no AI models are available
+    is_healthy = len(WORKING_MODELS) > 0
+    status = 'healthy' if is_healthy else 'unhealthy'
+    
     return jsonify({
-        'status': 'healthy',
+        'status': status,
         'timestamp': datetime.now().isoformat(),
         'service': 'chat-service',
         'ai_available': len(WORKING_MODELS) > 0,

@@ -386,6 +386,60 @@
     align-items: flex-end;
 }
 
+/* Offline Buttons Area */
+.offline-buttons-area {
+    padding: 20px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+}
+
+.offline-notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+}
+
+.offline-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.offline-btn {
+    width: 100%;
+    padding: 14px 20px;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.offline-btn:hover:not(:disabled) {
+    border-color: #cbd5e1;
+    background: #f9fafb;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.offline-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
 .chat-input {
     flex: 1;
     resize: none;
