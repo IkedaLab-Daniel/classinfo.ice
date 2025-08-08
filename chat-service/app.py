@@ -182,6 +182,52 @@ class ContextManager:
         print(f"DEBUG - Processing message: '{message}' (lower: '{message_lower}')")
         print(f"DEBUG - Available data: {len(data['schedules'])} schedules, {len(data['tasks'])} tasks, {len(data['announcements'])} announcements")
         
+        # Check if this is a specific content type query
+        is_announcement_query = any(word in message_lower for word in ['announcement', 'announcements', 'news', 'update'])
+        is_task_query = any(word in message_lower for word in ['task', 'tasks', 'assignment', 'assignments', 'homework', 'project', 'due'])
+        is_schedule_query = any(word in message_lower for word in ['schedule', 'class', 'classes', 'subject', 'today'])
+        
+        print(f"DEBUG - Query type detection: announcement={is_announcement_query}, task={is_task_query}, schedule={is_schedule_query}")
+        
+        # If asking specifically for announcements, prioritize announcements
+        if is_announcement_query and not is_task_query and not is_schedule_query:
+            print("DEBUG - Detected specific announcement query - focusing on announcements only")
+            announcement_matches = 0
+            for announcement in data['announcements']:
+                relevant_context.append({
+                    'type': 'announcement',
+                    'content': f"Announcement: {announcement.get('title')} - {announcement.get('description')}"
+                })
+                announcement_matches += 1
+            
+            print(f"DEBUG - Found {announcement_matches} announcements for specific query")
+            limited_context = relevant_context[:10]
+            print(f"DEBUG - Final context items after limit: {len(limited_context)}")
+            for i, item in enumerate(limited_context):
+                print(f"DEBUG - Context item {i+1}: {item['type']} - {item['content'][:100]}...")
+            return limited_context
+        
+        # If asking specifically for tasks, prioritize tasks
+        if is_task_query and not is_announcement_query and not is_schedule_query:
+            print("DEBUG - Detected specific task query - focusing on tasks only")
+            task_matches = 0
+            for task in data['tasks']:
+                due_date = task.get('dueDate', '')
+                formatted_due_date = ChatService.format_date(due_date)
+                
+                relevant_context.append({
+                    'type': 'task',
+                    'content': f"Assignment: '{task.get('title')}' for {task.get('class')} - Type: {task.get('type')}, Priority: {task.get('priority')}, Status: {task.get('status')}, Due: {formatted_due_date}. Description: {task.get('description', '')[:100]}..."
+                })
+                task_matches += 1
+            
+            print(f"DEBUG - Found {task_matches} tasks for specific query")
+            limited_context = relevant_context[:10]
+            print(f"DEBUG - Final context items after limit: {len(limited_context)}")
+            for i, item in enumerate(limited_context):
+                print(f"DEBUG - Context item {i+1}: {item['type']} - {item['content'][:100]}...")
+            return limited_context
+        
         # Check schedules
         schedule_matches = 0
         today_query = any(word in message_lower for word in ['today', 'today?'])
@@ -227,7 +273,6 @@ class ContextManager:
         
         # Check tasks - prioritize tasks for assignment-related queries
         task_matches = 0
-        assignment_query = any(word in message_lower for word in ['task', 'assignment', 'homework', 'project', 'due'])
         
         for task in data['tasks']:
             # Print first task for debugging
@@ -246,9 +291,12 @@ class ContextManager:
                 status = task.get('status', '')
                 priority = task.get('priority', '')
                 
+                # Format the due date
+                formatted_due_date = ChatService.format_date(due_date)
+                
                 relevant_context.append({
                     'type': 'task',
-                    'content': f"Assignment: '{task.get('title')}' for {task.get('class')} - Type: {task.get('type')}, Priority: {priority}, Status: {status}, Due: {due_date}. Description: {task.get('description', '')[:100]}..."
+                    'content': f"Assignment: '{task.get('title')}' for {task.get('class')} - Type: {task.get('type')}, Priority: {priority}, Status: {status}, Due: {formatted_due_date}. Description: {task.get('description', '')[:100]}..."
                 })
                 task_matches += 1
                 print(f"DEBUG - Found relevant task: {task.get('title')} for {task.get('class')}")
@@ -272,7 +320,7 @@ class ContextManager:
         print(f"DEBUG - Total context items: {len(relevant_context)}")
         
         # For assignment queries, prioritize task context
-        if assignment_query:
+        if is_task_query:
             # Sort so tasks come first
             relevant_context.sort(key=lambda x: 0 if x['type'] == 'task' else 1)
             print("DEBUG - Prioritizing task context for assignment query")
@@ -286,6 +334,38 @@ class ContextManager:
 
 class ChatService:
     """Handles chat responses using AI or fallbacks"""
+    
+    @staticmethod
+    def format_date(date_str):
+        """Format ISO date string to user-friendly format"""
+        if not date_str:
+            return "No due date"
+        
+        try:
+            # Parse ISO date string
+            date_obj = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+            
+            # Format as "Sep 30, 2025 at 4:00 PM"
+            formatted_date = date_obj.strftime("%b %d, %Y at %I:%M %p")
+            
+            # Calculate days from now using local dates for comparison
+            now = datetime.now()
+            days_diff = (date_obj.date() - now.date()).days
+            
+            if days_diff == 0:
+                return f"{formatted_date} (Today)"
+            elif days_diff == 1:
+                return f"{formatted_date} (Tomorrow)"
+            elif days_diff == -1:
+                return f"{formatted_date} (Yesterday)"
+            elif days_diff > 1:
+                return f"{formatted_date} (in {days_diff} days)"
+            else:
+                return f"{formatted_date} ({abs(days_diff)} days overdue)"
+                
+        except Exception as e:
+            print(f"Error formatting date {date_str}: {e}")
+            return date_str  # Return original if parsing fails
     
     @staticmethod
     def generate_ai_response(message, context, conversation_history):
@@ -451,9 +531,15 @@ Response:
     @staticmethod
     def format_weekly_schedule_response(context):
         """Format weekly schedule response with day-by-day breakdown"""
-        schedules = [c for c in context if c['type'] == 'schedule']
+        # Get fresh schedule data to properly organize by day
+        try:
+            user_data = ContextManager.fetch_user_data()
+            raw_schedules = user_data.get('schedules', [])
+        except Exception as e:
+            print(f"Error fetching fresh schedule data: {e}")
+            raw_schedules = []
         
-        if not schedules:
+        if not raw_schedules:
             return "📅 **Your Schedule This Week**\n\nNo scheduled classes found for this week. Your calendar is clear!"
         
         # Get current week date range
@@ -473,26 +559,42 @@ Response:
         days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         schedule_by_day = {day: [] for day in days_of_week}
         
-        # Parse and organize schedules by day
-        for schedule_context in schedules:
-            content = schedule_context['content']
-            # Try to extract day information from the schedule content or use a more detailed approach
-            # For now, we'll create a simple day-based display
+        # Parse and organize schedules by day using actual schedule data
+        for schedule in raw_schedules:
+            # First try to use the 'day' field if available
+            schedule_day = schedule.get('day', '').strip()
             
-            # You might need to adjust this based on your actual schedule data structure
-            # This is a simplified version that assumes the day information is available
+            # If no day field, try to extract from date
+            if not schedule_day:
+                schedule_date_str = schedule.get('date', '')
+                if schedule_date_str:
+                    try:
+                        # Parse ISO date string and get day name
+                        schedule_date = datetime.fromisoformat(schedule_date_str.replace('Z', '+00:00'))
+                        schedule_day = schedule_date.strftime('%A')  # Gets day name like "Monday"
+                    except Exception as e:
+                        print(f"DEBUG - Error parsing date {schedule_date_str}: {e}")
+                        continue
+            
+            # Normalize day name and find match
             day_found = False
-            for day in days_of_week:
-                if day.lower() in content.lower():
-                    schedule_by_day[day].append(content)
-                    day_found = True
-                    break
+            if schedule_day:
+                # Handle different day formats (Mon, Monday, etc.)
+                schedule_day_lower = schedule_day.lower()
+                for day in days_of_week:
+                    if (day.lower() == schedule_day_lower or 
+                        day.lower().startswith(schedule_day_lower[:3]) or
+                        schedule_day_lower.startswith(day.lower()[:3])):
+                        
+                        # Format the schedule entry
+                        schedule_entry = f"{schedule.get('subject', 'Unknown Class')} class from {schedule.get('startTime', 'TBA')} to {schedule.get('endTime', 'TBA')} in room {schedule.get('room', 'TBA')}"
+                        schedule_by_day[day].append(schedule_entry)
+                        day_found = True
+                        print(f"DEBUG - Assigned {schedule.get('subject')} to {day} (from '{schedule_day}')")
+                        break
             
-            # If no day found, add to a general list
             if not day_found:
-                # Add to today if no specific day mentioned
-                today_name = days_of_week[today.weekday()]
-                schedule_by_day[today_name].append(content)
+                print(f"DEBUG - Could not assign day for schedule: {schedule.get('subject')} (day field: '{schedule_day}')")
         
         # Display each day
         for day in days_of_week:
@@ -510,22 +612,52 @@ Response:
     @staticmethod
     def format_tasks_response(context):
         """Format tasks response showing up to 3 tasks with navigation hint"""
-        tasks = [c for c in context if c['type'] == 'task']
+        # Get fresh task data to properly format dates
+        try:
+            user_data = ContextManager.fetch_user_data()
+            raw_tasks = user_data.get('tasks', [])
+        except Exception as e:
+            print(f"Error fetching fresh task data: {e}")
+            raw_tasks = []
         
-        if not tasks:
+        if not raw_tasks:
             return "📋 **Your Tasks**\n\nNo tasks found. You're all caught up! 🎉"
         
-        response_parts = [f"📋 **Your Tasks** (Showing {min(3, len(tasks))} of {len(tasks)}):"]
+        response_parts = [f"📋 **Your Tasks** (Showing {min(3, len(raw_tasks))} of {len(raw_tasks)}):"]
         response_parts.append("")
         
-        # Show up to 3 tasks
-        for task in tasks[:3]:
-            response_parts.append(f"• {task['content']}")
+        # Show up to 3 tasks with properly formatted layout
+        for i, task in enumerate(raw_tasks[:3], 1):
+            due_date = task.get('dueDate', '')
+            formatted_due_date = ChatService.format_date(due_date)
+            
+            # Create a clean, multi-line format for each task
+            task_title = task.get('title', 'Untitled')
+            task_class = task.get('class', 'Unknown Class')
+            task_type = task.get('type', 'N/A')
+            task_priority = task.get('priority', 'N/A')
+            task_status = task.get('status', 'N/A')
+            
+            response_parts.append(f"**{i}. {task_title}**")
+            response_parts.append(f"   📚 **Class:** {task_class}")
+            response_parts.append(f"   📝 **Type:** {task_type} | **Priority:** {task_priority} | **Status:** {task_status}")
+            response_parts.append(f"   📅 **Due:** {formatted_due_date}")
+            
+            # Add description if available
+            description = task.get('description', '')
+            if description:
+                # Truncate description and format nicely
+                desc_text = description[:80] + ('...' if len(description) > 80 else '')
+                response_parts.append(f"   💭 **Description:** {desc_text}")
+            
+            # Add spacing between tasks (except for the last one)
+            if i < min(3, len(raw_tasks)):
+                response_parts.append("")
         
         # Add navigation hint if there are more tasks
-        if len(tasks) > 3:
+        if len(raw_tasks) > 3:
             response_parts.append("")
-            response_parts.append(f"📋 *You have {len(tasks) - 3} more tasks. Navigate to the **Tasks** section to see all your assignments.*")
+            response_parts.append(f"📋 *You have {len(raw_tasks) - 3} more tasks. Navigate to the **Tasks** section to see all your assignments.*")
         
         return "\n".join(response_parts)
     
