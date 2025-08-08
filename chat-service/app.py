@@ -140,6 +140,10 @@ if not WORKING_MODELS:
 # In-memory conversation storage (use Redis in production)
 conversations = {}
 
+# Global throttling state tracker
+throttled_models = set()
+last_throttle_check = datetime.now()
+
 class ContextManager:
     """Handles context retrieval and processing"""
     
@@ -288,7 +292,7 @@ class ChatService:
         """Generate response using multi-model fallback chain"""
         if not WORKING_MODELS:
             print("No AI models available, using rule-based fallback")
-            return ChatService.generate_fallback_response(message, context)
+            return ChatService.generate_fallback_response(message, context), True
         
         # Build context string
         context_text = "\n".join([item['content'] for item in context])
@@ -350,12 +354,16 @@ Response:
                     messages = [{"role": "user", "content": prompt_content}]
                     response = call_openrouter_api(model_config["model"], messages, max_tokens=1500)
                     print(f"✅ {model_config['name']} response received: {len(response)} characters")
-                    return response.strip()
+                    # Remove from throttled list if successful
+                    throttled_models.discard(model_config['name'])
+                    return response.strip(), False
                 
                 elif model_config["provider"] == "gemini" and gemini_model:
                     response = gemini_model.generate_content(prompt_content)
                     print(f"✅ {model_config['name']} response received: {len(response.text)} characters")
-                    return response.text.strip()
+                    # Remove from throttled list if successful
+                    throttled_models.discard(model_config['name'])
+                    return response.text.strip(), False
                     
             except Exception as e:
                 error_str = str(e)
@@ -364,6 +372,8 @@ Response:
                 # Check for throttling errors
                 if "429" in error_str or "quota" in error_str.lower() or "rate limit" in error_str.lower():
                     print(f"🚨 {model_config['name']} throttled - trying next model")
+                    # Track this model as throttled
+                    throttled_models.add(model_config['name'])
                     continue
                 else:
                     print(f"💥 {model_config['name']} failed - trying next model")
@@ -371,7 +381,10 @@ Response:
         
         # All AI models failed, use enhanced fallback
         print("🚨 All AI models failed or throttled - using enhanced fallback")
-        return ChatService.generate_throttled_response(message, context)
+        # Mark all models as potentially throttled if they all failed
+        for model in WORKING_MODELS:
+            throttled_models.add(model['name'])
+        return ChatService.generate_throttled_response(message, context), True
     
     @staticmethod
     def generate_throttled_response(message, context):
@@ -381,7 +394,7 @@ Response:
         # Add throttling notice to the regular fallback response
         base_response = ChatService.generate_fallback_response(message, context)
         
-        throttle_notice = "\n\n⚡ *Please note:* The AI service is currently experiencing high demand and has reached its usage limit. I'm using my backup system to assist you with the best information available. The full AI features will be restored shortly."
+        throttle_notice = "\n\n⚡ *Please note:* The AI service is currently experiencing high demand or has reached usage limits. I'm using my structured response system to provide you with the best information available."
         
         return base_response + throttle_notice
     
@@ -541,16 +554,25 @@ Response:
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
-    # Consider service unhealthy if no AI models are available
-    is_healthy = len(WORKING_MODELS) > 0
+    global last_throttle_check
+    
+    # Clear throttle status every 30 minutes to allow retry
+    if datetime.now() - last_throttle_check > timedelta(minutes=30):
+        throttled_models.clear()
+        last_throttle_check = datetime.now()
+    
+    # Consider service unhealthy if no AI models are available OR all are throttled
+    available_models = [model for model in WORKING_MODELS if model['name'] not in throttled_models]
+    is_healthy = len(available_models) > 0
     status = 'healthy' if is_healthy else 'unhealthy'
     
     return jsonify({
         'status': status,
         'timestamp': datetime.now().isoformat(),
         'service': 'chat-service',
-        'ai_available': len(WORKING_MODELS) > 0,
-        'working_models': [model['name'] for model in WORKING_MODELS]
+        'ai_available': len(available_models) > 0,
+        'working_models': [model['name'] for model in available_models],
+        'throttled_models': list(throttled_models)
     })
 
 @app.route('/chat', methods=['POST'])
@@ -616,10 +638,16 @@ def chat():
         context = ContextManager.find_relevant_context(message, user_data)
         
         # Generate response
-        response = ChatService.generate_ai_response(message, context, conversation_history)
+        response_result = ChatService.generate_ai_response(message, context, conversation_history)
         
-        # Check if response contains throttling notice
-        is_throttled = "daily limit" in response and "backup brain" in response
+        # Handle tuple return (response, is_fallback) or just response string
+        if isinstance(response_result, tuple):
+            response, is_fallback = response_result
+        else:
+            response, is_fallback = response_result, False
+        
+        # Check available models for metadata
+        available_models = [model for model in WORKING_MODELS if model['name'] not in throttled_models]
         
         # Store conversation
         if user_id not in conversations:
@@ -639,9 +667,9 @@ def chat():
         return jsonify({
             'response': response,
             'context_items_used': len(context),
-            'ai_powered': len(WORKING_MODELS) > 0 and not is_throttled,
-            'is_throttled': is_throttled,
-            'model_used': WORKING_MODELS[0]['name'] if WORKING_MODELS and not is_throttled else 'Rule-based',
+            'ai_powered': len(available_models) > 0 and not is_fallback,
+            'is_throttled': is_fallback and len(WORKING_MODELS) > 0,
+            'model_used': available_models[0]['name'] if available_models and not is_fallback else 'Rule-based',
             'timestamp': datetime.now().isoformat()
         })
         
