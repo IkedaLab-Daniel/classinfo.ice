@@ -325,12 +325,12 @@ class ContextManager:
             relevant_context.sort(key=lambda x: 0 if x['type'] == 'task' else 1)
             print("DEBUG - Prioritizing task context for assignment query")
         
-        limited_context = relevant_context[:10]
+        limited_context = relevant_context[:15]
         print(f"DEBUG - Final context items after limit: {len(limited_context)}")
         for i, item in enumerate(limited_context):
             print(f"DEBUG - Context item {i+1}: {item['type']} - {item['content'][:100]}...")
         
-        return limited_context  # Limit to 10 most relevant items
+        return limited_context  # Limit to 15 most relevant items
 
 class ChatService:
     """Handles chat responses using AI or fallbacks"""
@@ -471,7 +471,13 @@ Response:
         """Generate response when AI service is throttled"""
         message_lower = message.lower()
         
-        # Add throttling notice to the regular fallback response
+        # For Smart Mode button requests, don't add throttle notice - just return clean response
+        if ('show my schedules for this week' in message_lower or 
+            'show my tasks' in message_lower or 
+            'show announcements' in message_lower):
+            return ChatService.generate_fallback_response(message, context)
+        
+        # Add throttling notice to other responses
         base_response = ChatService.generate_fallback_response(message, context)
         
         throttle_notice = "\n\n⚡ *Please note:* The AI service is currently experiencing high demand or has reached usage limits. I'm using my structured response system to provide you with the best information available."
@@ -530,7 +536,7 @@ Response:
     
     @staticmethod
     def format_weekly_schedule_response(context):
-        """Format weekly schedule response with day-by-day breakdown"""
+        """Format weekly schedule response with day-by-day breakdown for CURRENT WEEK ONLY"""
         # Get fresh schedule data to properly organize by day
         try:
             user_data = ContextManager.fetch_user_data()
@@ -538,9 +544,6 @@ Response:
         except Exception as e:
             print(f"Error fetching fresh schedule data: {e}")
             raw_schedules = []
-        
-        if not raw_schedules:
-            return "📅 **Your Schedule This Week**\n\nNo scheduled classes found for this week. Your calendar is clear!"
         
         # Get current week date range
         today = datetime.now()
@@ -550,53 +553,61 @@ Response:
         sunday = monday + timedelta(days=6)
         
         week_range = f"{monday.strftime('%B %d')} - {sunday.strftime('%B %d, %Y')}"
+        print(f"DEBUG - Current week range: {monday.date()} to {sunday.date()}")
+        
+        # Filter schedules to only include those from the current week
+        current_week_schedules = []
+        for schedule in raw_schedules:
+            schedule_date_str = schedule.get('date', '')
+            if schedule_date_str:
+                try:
+                    # Parse ISO date string and convert to date
+                    schedule_date = datetime.fromisoformat(schedule_date_str.replace('Z', '+00:00')).date()
+                    
+                    # Check if this schedule falls within the current week
+                    if monday.date() <= schedule_date <= sunday.date():
+                        current_week_schedules.append(schedule)
+                        print(f"DEBUG - Including schedule: {schedule.get('subject')} on {schedule_date} (current week)")
+                    else:
+                        print(f"DEBUG - Excluding schedule: {schedule.get('subject')} on {schedule_date} (not current week)")
+                        
+                except Exception as e:
+                    print(f"DEBUG - Error parsing schedule date {schedule_date_str}: {e}")
+                    # If we can't parse the date, try to match by day name as fallback
+                    schedule_day = schedule.get('day', '').strip()
+                    if schedule_day:
+                        print(f"DEBUG - Fallback: trying to match by day name '{schedule_day}' for {schedule.get('subject')}")
+                        # Only include if we can't determine the date, but this is risky
+                        # Better to exclude uncertain schedules for weekly view
+        
+        print(f"DEBUG - Found {len(current_week_schedules)} schedules for current week out of {len(raw_schedules)} total")
         
         response_parts = [f"📅 **Your Schedule This Week**"]
         response_parts.append(f"*Week of {week_range}*")
         response_parts.append("")
         
-        # Group schedules by day
+        # Group schedules by day for the current week
         days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         schedule_by_day = {day: [] for day in days_of_week}
         
-        # Parse and organize schedules by day using actual schedule data
-        for schedule in raw_schedules:
-            # First try to use the 'day' field if available
-            schedule_day = schedule.get('day', '').strip()
-            
-            # If no day field, try to extract from date
-            if not schedule_day:
-                schedule_date_str = schedule.get('date', '')
-                if schedule_date_str:
-                    try:
-                        # Parse ISO date string and get day name
-                        schedule_date = datetime.fromisoformat(schedule_date_str.replace('Z', '+00:00'))
-                        schedule_day = schedule_date.strftime('%A')  # Gets day name like "Monday"
-                    except Exception as e:
-                        print(f"DEBUG - Error parsing date {schedule_date_str}: {e}")
-                        continue
-            
-            # Normalize day name and find match
-            day_found = False
-            if schedule_day:
-                # Handle different day formats (Mon, Monday, etc.)
-                schedule_day_lower = schedule_day.lower()
-                for day in days_of_week:
-                    if (day.lower() == schedule_day_lower or 
-                        day.lower().startswith(schedule_day_lower[:3]) or
-                        schedule_day_lower.startswith(day.lower()[:3])):
-                        
-                        # Format the schedule entry
-                        schedule_entry = f"{schedule.get('subject', 'Unknown Class')} class from {schedule.get('startTime', 'TBA')} to {schedule.get('endTime', 'TBA')} in room {schedule.get('room', 'TBA')}"
-                        schedule_by_day[day].append(schedule_entry)
-                        day_found = True
-                        print(f"DEBUG - Assigned {schedule.get('subject')} to {day} (from '{schedule_day}')")
-                        break
-            
-            if not day_found:
-                print(f"DEBUG - Could not assign day for schedule: {schedule.get('subject')} (day field: '{schedule_day}')")
+        # Organize current week schedules by day
+        for schedule in current_week_schedules:
+            schedule_date_str = schedule.get('date', '')
+            if schedule_date_str:
+                try:
+                    # Parse ISO date string and get day name
+                    schedule_date = datetime.fromisoformat(schedule_date_str.replace('Z', '+00:00'))
+                    schedule_day = schedule_date.strftime('%A')  # Gets day name like "Monday"
+                    
+                    # Format the schedule entry
+                    schedule_entry = f"{schedule.get('subject', 'Unknown Class')} from {schedule.get('startTime', 'TBA')} to {schedule.get('endTime', 'TBA')} in room {schedule.get('room', 'TBA')}"
+                    schedule_by_day[schedule_day].append(schedule_entry)
+                    print(f"DEBUG - Assigned {schedule.get('subject')} to {schedule_day}")
+                    
+                except Exception as e:
+                    print(f"DEBUG - Error processing schedule date {schedule_date_str}: {e}")
         
-        # Display each day
+        # Display each day - show "No classes scheduled" for empty days
         for day in days_of_week:
             if schedule_by_day[day]:
                 response_parts.append(f"**{day}:**")
@@ -606,6 +617,12 @@ Response:
             else:
                 response_parts.append(f"**{day}:** No classes scheduled")
                 response_parts.append("")
+        
+        # If no schedules found for the entire week, add a helpful note
+        if not current_week_schedules:
+            response_parts.append("🎉 **You have a free week!** No classes scheduled for this week.")
+            response_parts.append("")
+            response_parts.append("💡 *Tip: Use this time to catch up on assignments or prepare for upcoming classes.*")
         
         return "\n".join(response_parts).strip()
     
@@ -825,13 +842,40 @@ def chat():
         if len(conversations[user_id]) > 10:
             conversations[user_id] = conversations[user_id][-10:]
         
+        # Determine if this is a Smart Mode button action for navigation
+        navigation_action = None
+        message_lower = message.lower().strip()
+        if ('show my schedules for this week' in message_lower or 
+            'schedules for this week' in message_lower):
+            navigation_action = {
+                'type': 'navigate',
+                'action': 'schedule',
+                'label': '📅 View Full Schedule',
+                'url': '/#weekly'
+            }
+        elif ('show my tasks' in message_lower or 'show tasks' in message_lower):
+            navigation_action = {
+                'type': 'navigate',
+                'action': 'tasks',
+                'label': '📚 View All Tasks',
+                'url': '/#tasks' 
+            }
+        elif 'show announcements' in message_lower:
+            navigation_action = {
+                'type': 'navigate',
+                'action': 'announcements',
+                'label': '📢 View All Announcements',
+                'url': '/#dashboard'  
+            }
+        
         return jsonify({
             'response': response,
             'context_items_used': len(context),
             'ai_powered': len(available_models) > 0 and not is_fallback,
             'is_throttled': is_fallback and len(WORKING_MODELS) > 0,
             'model_used': available_models[0]['name'] if available_models and not is_fallback else 'Rule-based',
-            'timestamp': datetime.now().isoformat()
+            'timestamp': datetime.now().isoformat(),
+            'navigation_action': navigation_action
         })
         
     except Exception as e:

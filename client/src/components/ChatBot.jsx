@@ -152,7 +152,8 @@ const ChatBot = () => {
                     timestamp: new Date(),
                     contextItemsUsed: responseData.success ? responseData.data.context_items_used : responseData.context_items_used,
                     aiPowered: responseData.success ? responseData.data.ai_powered : responseData.ai_powered,
-                    isThrottled: responseData.success ? responseData.data.is_throttled : responseData.is_throttled
+                    isThrottled: responseData.success ? responseData.data.is_throttled : responseData.is_throttled,
+                    navigationAction: responseData.success ? responseData.data.navigation_action : responseData.navigation_action
                 }]);
             } else {
                 // Add error message with fallback if available
@@ -188,6 +189,22 @@ const ChatBot = () => {
             console.error('Clear chat error:', error);
             // Clear locally even if API call fails
             setMessages([]);
+        }
+    };
+
+    // Handle navigation actions
+    const handleNavigationAction = (action) => {
+        console.log('Navigation action:', action);
+        // Close the chat modal first
+        setIsOpen(false);
+        
+        // Navigate to the specified URL/section
+        if (action.url) {
+            // Use a small delay to allow modal close animation
+            setTimeout(() => {
+                // Perform actual navigation using window.location
+                window.location.href = action.url;
+            }, 200);
         }
     };
 
@@ -371,19 +388,32 @@ const ChatBot = () => {
                                                     message.content
                                                 )}
                                             </div>
+                                            
+                                            {/* Navigation Action Button */}
+                                            {message.navigationAction && (
+                                                <div className="navigation-action">
+                                                    <button 
+                                                        className="navigation-btn"
+                                                        onClick={() => handleNavigationAction(message.navigationAction)}
+                                                    >
+                                                        {message.navigationAction.label}
+                                                    </button>
+                                                </div>
+                                            )}
+                                            
                                             <div className="message-meta">
                                                 <span className="message-time">
                                                     {formatTime(message.timestamp)}
                                                 </span>
-                                                {message.type === 'bot' && !message.isError && (
+                                                {/* {message.type === 'bot' && !message.isError && (
                                                     <span className="message-info">
-                                                        {message.isThrottled ? '⚡ Backup Mode' : 
+                                                        {message.isThrottled ? '⚡ Smart RAG' : 
                                                          message.aiPowered ? '🐝 HunniBee' : '📝 Rule-based'}
                                                         {message.contextItemsUsed > 0 && 
                                                             ` • ${message.contextItemsUsed} context items`
                                                         }
                                                     </span>
-                                                )}
+                                                )} */}
                                                 {message.isError && (
                                                     <span className="message-error">
                                                         <AlertCircle size={12} /> Error

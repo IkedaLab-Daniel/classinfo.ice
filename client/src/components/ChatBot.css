@@ -536,6 +536,35 @@
     color: #1e293b;
 }
 
+/* Navigation Action Button */
+.navigation-action {
+    margin-top: 12px;
+    display: flex;
+    justify-content: center;
+}
+
+.navigation-btn {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.navigation-btn:hover {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+}
+
 .message-meta {
     display: flex;
     align-items: center;
