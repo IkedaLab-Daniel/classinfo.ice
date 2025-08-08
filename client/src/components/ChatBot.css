@@ -28,7 +28,7 @@
     pointer-events: none;
 }
 
-.service-status-indicator {
+.service-ai-status-indicator {
     position: absolute;
     top: 4px;
     right: 4px;
@@ -38,7 +38,7 @@
     border: 2px solid white;
 }
 
-.service-status-indicator.offline {
+.service-ai-status-indicator.offline {
     background-color: #ef4444;
     animation: pulse-red 2s infinite;
 }
@@ -99,6 +99,10 @@
     gap: 12px;
 }
 
+.chat-header-info .hunnibee{
+    width: 70px;
+}
+
 .chat-header-info svg {
     color: #2563eb;
 }
@@ -110,16 +114,16 @@
     color: #1e293b;
 }
 
-.chat-header-info .status {
+.chat-header-info .ai-status {
     font-size: 0.8rem;
     font-weight: 500;
 }
 
-.chat-header-info .status.online {
+.chat-header-info .ai-status.online {
     color: #059669;
 }
 
-.chat-header-info .status.offline {
+.chat-header-info .ai-status.offline {
     color: #dc2626;
 }
 
@@ -251,9 +255,8 @@
     color: white;
 }
 
-.message.bot .message-avatar {
-    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-    color: #475569;
+.message.bot .message-avatar .hunnibee-avatar{
+    width: 50px;
 }
 
 .message-content {
@@ -436,7 +439,7 @@
     }
     
     .chat-header {
-        padding: 16px;
+        padding: 5px 20px;
     }
     
     .chat-messages {
@@ -470,7 +473,7 @@
         font-size: 1rem;
     }
     
-    .chat-header-info .status {
+    .chat-header-info .ai-status {
         font-size: 0.75rem;
     }
     

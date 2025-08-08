@@ -11,6 +11,7 @@ import {
     RefreshCw
 } from 'lucide-react';
 import './ChatBot.css';
+import hunnibee from '../assets/HunniBee.gif'
 
 const ChatBot = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -48,7 +49,7 @@ const ChatBot = () => {
         try {
             const response = await fetch(`${API_BASE}/health`);
             const data = await response.json();
-            // Flask service returns { status: 'healthy', ai_available: true, ... }
+            // Flask service returns { ai-status: 'healthy', ai_available: true, ... }
             setIsServiceHealthy(data.status === 'healthy');
         } catch (error) {
             setIsServiceHealthy(false);
@@ -173,7 +174,7 @@ const ChatBot = () => {
             >
                 <MessageCircle size={24} />
                 {!isServiceHealthy && (
-                    <div className="service-status-indicator offline" />
+                    <div className="service-ai-status-indicator offline" />
                 )}
             </div>
 
@@ -184,10 +185,11 @@ const ChatBot = () => {
                         {/* Header */}
                         <div className="chat-header">
                             <div className="chat-header-info">
-                                <Bot size={20} />
+                                {/* <Bot size={20} /> */}
+                                <img src={hunnibee} className='hunnibee' />
                                 <div>
-                                    <h3>Academic Assistant</h3>
-                                    <span className={`status ${isServiceHealthy ? 'online' : 'offline'}`}>
+                                    <h3>HunniBee</h3>
+                                    <span className={`ai-status ${isServiceHealthy ? 'online' : 'offline'}`}>
                                         {isServiceHealthy ? 'Online' : 'Limited Mode'}
                                     </span>
                                 </div>
@@ -202,13 +204,13 @@ const ChatBot = () => {
                                         <Trash2 size={18} />
                                     </button>
                                 )}
-                                <button 
+                                {/* <button 
                                     className="refresh-btn" 
                                     onClick={checkServiceHealth}
-                                    title="Check service status"
+                                    title="Check service ai-status"
                                 >
                                     <RefreshCw size={18} />
-                                </button>
+                                </button> */}
                                 <button 
                                     className="close-btn" 
                                     onClick={() => setIsOpen(false)}
@@ -223,8 +225,8 @@ const ChatBot = () => {
                         <div className="chat-messages">
                             {messages.length === 0 ? (
                                 <div className="welcome-message">
-                                    <Bot size={40} />
-                                    <h4>Hi! I'm your academic assistant</h4>
+                                    {/* <Bot size={40} /> */}
+                                    <h4>Hi! I'm HunniBee</h4>
                                     <p>Ask me about your schedule, tasks, or announcements!</p>
                                     <div className="example-questions">
                                         <span>Try asking:</span>
@@ -245,7 +247,8 @@ const ChatBot = () => {
                                         <div className="message-avatar">
                                             {message.type === 'user' ? 
                                                 <User size={18} /> : 
-                                                <Bot size={18} />
+                                                // <Bot size={18} />
+                                                <img className='hunnibee-avatar' src={hunnibee} />
                                             }
                                         </div>
                                         <div className="message-content">
@@ -309,7 +312,7 @@ const ChatBot = () => {
                                     value={inputMessage}
                                     onChange={(e) => setInputMessage(e.target.value)}
                                     onKeyPress={handleKeyPress}
-                                    placeholder="Ask about your schedule, tasks, or announcements..."
+                                    placeholder="Send a message.."
                                     className="chat-input"
                                     rows="1"
                                     disabled={isLoading}
