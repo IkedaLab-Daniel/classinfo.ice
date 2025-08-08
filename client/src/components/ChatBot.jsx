@@ -10,7 +10,10 @@ import {
     Trash2,
     RefreshCw,
     Wifi,
-    WifiOff
+    WifiOff,
+    Calendar,
+    CheckSquare,
+    Megaphone
 } from 'lucide-react';
 import './ChatBot.css';
 import hunnibee from '../assets/HunniBee.gif'
@@ -23,6 +26,7 @@ const ChatBot = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [serviceMode, setServiceMode] = useState('ai_enhanced'); // 'ai_enhanced', 'smart_mode', or 'error'
     const [serviceDescription, setServiceDescription] = useState('');
+    const [aiAvailable, setAiAvailable] = useState(true); // Track AI availability separately
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
 
@@ -62,12 +66,14 @@ const ChatBot = () => {
             // Update service mode based on enhanced health response
             setServiceMode(data.mode || 'error');
             setServiceDescription(data.description || 'Unknown status');
+            setAiAvailable(data.ai_available !== false); // Default to true if not specified
             
-            console.log('Service status:', data.mode, '-', data.description);
+            console.log('Service status:', data.mode, '-', data.description, '- AI Available:', data.ai_available);
         } catch (error) {
             console.error('Health check failed:', error);
             setServiceMode('error');
             setServiceDescription('Unable to connect to service');
+            setAiAvailable(false);
         }
     };
 
@@ -295,8 +301,9 @@ const ChatBot = () => {
                                                 <span className="mode-icon">🤖</span>
                                                 <strong>AI Enhanced Mode</strong>
                                                 {serviceMode === 'ai_enhanced' && <span className="current-badge">CURRENT</span>}
+                                                {!aiAvailable && <span className="unavailable-badge">UNAVAILABLE</span>}
                                             </div>
-                                            <p>Natural conversations with contextual understanding. Ask anything about your schedule, tasks, and announcements in your own words!</p>
+                                            <p>Chat with natural conversations with contextual understanding. Ask anything about your schedule, tasks, and announcements in your own words!</p>
                                         </div>
                                         
                                         <div className={`mode-card ${serviceMode === 'smart_mode' ? 'active' : ''}`}>
@@ -437,21 +444,24 @@ const ChatBot = () => {
                                         onClick={() => handleOfflineAction("schedules")}
                                         disabled={isLoading}
                                     >
-                                        📅 Weekly Schedule
+                                        <Calendar size={18} />
+                                        Schedule
                                     </button>
                                     <button 
                                         className="smart-mode-btn"
                                         onClick={() => handleOfflineAction("tasks")}
                                         disabled={isLoading}
                                     >
-                                        📋 My Tasks
+                                        <CheckSquare size={18} />
+                                        Tasks
                                     </button>
                                     <button 
                                         className="smart-mode-btn"
                                         onClick={() => handleOfflineAction("announcements")}
                                         disabled={isLoading}
                                     >
-                                        📢 Announcements
+                                        <Megaphone size={18} />
+                                        News
                                     </button>
                                 </div>
                             </div>

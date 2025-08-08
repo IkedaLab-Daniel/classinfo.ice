@@ -94,6 +94,7 @@
     justify-content: center;
     z-index: 999;
     padding: 20px;
+    animation: fadeIn 0.3s ease-out;
 }
 
 .chat-modal {
@@ -107,6 +108,28 @@
     flex-direction: column;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
     overflow: hidden;
+    animation: slideInUp 0.4s ease-out;
+    transform-origin: center bottom;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 /* Header */
@@ -208,6 +231,18 @@
     height: 100%;
     color: #64748b;
     gap: 16px;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .welcome-message svg {
@@ -249,6 +284,26 @@
     cursor: pointer;
     transition: all 0.2s ease;
     text-align: left;
+    animation: slideInRight 0.4s ease-out;
+}
+
+.example-questions button:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.example-questions button:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 .example-questions button:hover {
@@ -303,6 +358,22 @@
     border-radius: 12px;
     background: #f8fafc;
     transition: all 0.2s ease;
+    animation: slideInFromLeft 0.5s ease-out;
+}
+
+.mode-card:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+@keyframes slideInFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 .mode-card.active {
@@ -329,6 +400,16 @@
 
 .current-badge {
     background: #2563eb;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-left: auto;
+}
+
+.unavailable-badge {
+    background: #ef4444;
     color: white;
     font-size: 0.7rem;
     font-weight: 600;
@@ -376,6 +457,18 @@
     display: flex;
     gap: 12px;
     max-width: 85%;
+    animation: messageSlideIn 0.3s ease-out;
+}
+
+@keyframes messageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .message.user {
@@ -531,43 +624,81 @@
 
 /* Smart Mode Buttons Area */
 .smart-mode-buttons-area {
-    padding: 20px;
+    padding: 16px 20px;
     background: #f8fafc;
     border-top: 1px solid #e2e8f0;
 }
 
 .smart-mode-buttons {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
+    flex-direction: row;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .smart-mode-btn {
-    width: 100%;
-    padding: 16px 20px;
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    border: none;
-    border-radius: 12px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: white;
+    flex: 1;
+    min-width: 100px;
+    padding: 14px 12px;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #374151;
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
+    gap: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    animation: bounceIn 0.4s ease-out;
+}
+
+.smart-mode-btn:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.smart-mode-btn:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+@keyframes bounceIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.8);
+    }
+    60% {
+        transform: translateY(-5px) scale(1.05);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.smart-mode-btn svg {
+    flex-shrink: 0;
+    color: #64748b;
 }
 
 .smart-mode-btn:hover:not(:disabled) {
-    background: linear-gradient(135deg, #d97706, #b45309);
+    border-color: #cbd5e1;
+    background: #f9fafb;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    color: #1e293b;
+}
+
+.smart-mode-btn:hover:not(:disabled) svg {
+    color: #475569;
 }
 
 .smart-mode-btn:disabled {
-    background: #d1d5db;
+    background: #f9fafb;
+    border-color: #f1f5f9;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
@@ -711,6 +842,23 @@
     box-shadow: none;
 }
 
+/* Medium Mobile Responsive */
+@media (max-width: 600px) {
+    .chat-modal {
+        max-width: 500px;
+    }
+    
+    .smart-mode-btn {
+        min-width: 85px;
+        font-size: 0.8rem;
+        padding: 12px 10px;
+    }
+    
+    .modes-explanation {
+        max-width: 350px;
+    }
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
     .chat-modal-overlay {
@@ -745,6 +893,31 @@
     
     .chat-input-area {
         padding: 16px;
+    }
+    
+    .smart-mode-buttons-area {
+        padding: 12px 16px;
+    }
+    
+    .smart-mode-buttons {
+        flex-direction: row;
+        gap: 6px;
+        justify-content: space-between;
+    }
+    
+    .smart-mode-btn {
+        flex: 1;
+        min-width: 90px;
+        font-size: 0.75rem;
+        padding: 10px 8px;
+        flex-direction: column;
+        gap: 4px;
+        border-radius: 8px;
+    }
+    
+    .smart-mode-btn svg {
+        width: 16px;
+        height: 16px;
     }
     
     .message {
@@ -787,6 +960,42 @@
     .send-btn {
         width: 40px;
         height: 40px;
+    }
+    
+    .smart-mode-buttons-area {
+        padding: 10px 12px;
+    }
+    
+    .smart-mode-buttons {
+        gap: 4px;
+    }
+    
+    .smart-mode-btn {
+        min-width: 80px;
+        font-size: 0.7rem;
+        padding: 8px 6px;
+        gap: 3px;
+    }
+    
+    .smart-mode-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+    
+    .modes-explanation {
+        max-width: 100%;
+    }
+    
+    .mode-card {
+        padding: 12px;
+    }
+    
+    .mode-header strong {
+        font-size: 0.85rem;
+    }
+    
+    .mode-card p {
+        font-size: 0.8rem;
     }
 }
 
