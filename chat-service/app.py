@@ -311,7 +311,7 @@ class ChatService:
 
         # Build prompt
         prompt_content = f"""
-You are a helpful and hilariously schedule assistant for a student. You have access to their schedule, tasks, and announcements. Your personality is like a friendly, slightly sarcastic best friend.
+You are a professional academic assistant for a student. You have access to their schedule, tasks, and announcements. Maintain a helpful, supportive, and informative tone.
 
 Current Date and Time: {current_date} at {current_time}
 
@@ -324,17 +324,17 @@ Current relevant information:
 User's current question: {message}
 
 Instructions:
-- Be funny and entertaining while still being helpful
-- Add emojis and casual language to make it fun
+- Provide clear, accurate, and helpful information
+- Use appropriate emojis sparingly for clarity and organization
 - Today is {current_date}
 - Use the provided schedule/task/announcement information when relevant
-- When tasks are overdue, make gentle jokes about procrastination
-- When classes are coming up, add encouraging or funny comments
-- Be supportive but in a humorous way
-- Format times and dates clearly
-- Calculate days remaining for deadlines and make it dramatic/funny
+- For overdue tasks, provide gentle reminders and practical advice
+- For upcoming classes or deadlines, offer helpful preparation suggestions
+- Be encouraging and supportive in your responses
+- Format times and dates clearly and professionally
+- Calculate days remaining for deadlines accurately
 - When referring to "today", use {current_date}
-- Keep responses concise but entertaining
+- Keep responses concise, organized, and actionable
 
 Response:
 """
@@ -381,24 +381,24 @@ Response:
         # Add throttling notice to the regular fallback response
         base_response = ChatService.generate_fallback_response(message, context)
         
-        throttle_notice = "\n\n⚡ *Psst!* Mukhang sobrang busy ng AI ko ngayon - naka-reach na niya ang daily limit! 😅 Pero hindi ako susuko! Ginagawa ko pa rin ang best ko para sa'yo gamit ang aking *backup brain*! 🧠✨"
+        throttle_notice = "\n\n⚡ *Please note:* The AI service is currently experiencing high demand and has reached its usage limit. I'm using my backup system to assist you with the best information available. The full AI features will be restored shortly."
         
         return base_response + throttle_notice
     
     @staticmethod
     def generate_fallback_response(message, context):
-        """Generate rule-based fallback responses with humor"""
+        """Generate rule-based fallback responses"""
         message_lower = message.lower()
         
         if not context:
             if any(word in message_lower for word in ['schedule', 'class', 'subject']):
-                return "Hmm, I'd love to spill the tea on your schedule, but I'm coming up empty! 🤔 Maybe try asking about a specific class or day? I promise I'm not usually this useless! 😅"
+                return "I don't have specific schedule information matching your query. 📅 Could you try asking about a particular class, subject, or day? I'll do my best to help you find what you need."
             elif any(word in message_lower for word in ['task', 'assignment', 'homework', 'due']):
-                return "Ah, the eternal student question about assignments! 📚 I can definitely help with your academic doom- I mean, tasks! Could you be more specific about which subject you're procrastinating on? 😏"
+                return "I'd be happy to help you with your assignments and tasks! 📚 Could you provide more details about the specific subject or type of assignment you're asking about?"
             elif any(word in message_lower for word in ['announcement', 'news', 'update']):
-                return "Looking for the latest academic gossip? 📢 I'm your bot! What kind of announcements are you hunting for? Please tell me it's not about another surprise quiz! 😱"
+                return "I can help you find announcements and updates. 📢 What type of announcements are you looking for? Academic notices, course updates, or general information?"
             else:
-                return "Hey there, fellow academic survivor! 🎓 I'm here to help with your schedule, tasks, and announcements. What chaos can I help you organize today? 😄"
+                return "Hello! I'm your academic assistant. 🎓 I can help you with your class schedule, assignments, tasks, and announcements. What would you like to know about today?"
         
         # Generate response based on context type
         schedule_count = len([c for c in context if c['type'] == 'schedule'])
@@ -408,21 +408,21 @@ Response:
         response_parts = []
         
         if schedule_count > 0:
-            response_parts.append(f"🎯 Found {schedule_count} schedule item{'s' if schedule_count > 1 else ''} (your day just got busier!):")
+            response_parts.append(f"📅 Found {schedule_count} schedule item{'s' if schedule_count > 1 else ''}:")
             for item in [c for c in context if c['type'] == 'schedule'][:3]:
                 response_parts.append(f"• {item['content']}")
         
         if task_count > 0:
-            response_parts.append(f"📋 Discovered {task_count} task{'s' if task_count > 1 else ''} (the procrastination station!):")
+            response_parts.append(f"📋 Found {task_count} task{'s' if task_count > 1 else ''}:")
             for item in [c for c in context if c['type'] == 'task'][:3]:
                 response_parts.append(f"• {item['content']}")
         
         if announcement_count > 0:
-            response_parts.append(f"📣 Spotted {announcement_count} announcement{'s' if announcement_count > 1 else ''} (hope it's good news!):")
+            response_parts.append(f"� Found {announcement_count} announcement{'s' if announcement_count > 1 else ''}:")
             for item in [c for c in context if c['type'] == 'announcement'][:2]:
                 response_parts.append(f"• {item['content']}")
         
-        return "\n\n".join(response_parts) if response_parts else "I'm here to make your academic life less chaotic! 🚀 What can I help you with today? 😊"
+        return "\n\n".join(response_parts) if response_parts else "I'm here to help you stay organized with your academic schedule and assignments. What can I assist you with today? �"
 
 @app.route('/health', methods=['GET'])
 def health_check():
