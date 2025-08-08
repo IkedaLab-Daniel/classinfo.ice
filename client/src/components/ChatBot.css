@@ -43,12 +43,18 @@
     animation: float-up-down 2s ease-in-out infinite;
 }
 
-.service-status-indicator.online {
+.service-status-indicator.ai_enhanced {
     background: #10b981;
     color: white;
 }
 
-.service-status-indicator.offline {
+.service-status-indicator.smart_mode {
+    background: #f59e0b;
+    color: white;
+    animation: float-up-down 2s ease-in-out infinite;
+}
+
+.service-status-indicator.error {
     background: #ef4444;
     color: white;
     animation: float-up-down 1.5s ease-in-out infinite, pulse-red 2s infinite;
@@ -94,9 +100,9 @@
     background: white;
     border-radius: 16px;
     width: 100%;
-    max-width: 480px;
-    height: 80vh;
-    max-height: 600px;
+    max-width: 600px;
+    height: 90vh;
+    max-height: 800px;
     display: flex;
     flex-direction: column;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
@@ -139,11 +145,15 @@
     font-weight: 500;
 }
 
-.chat-header-info .ai-status.online {
+.chat-header-info .ai-status.ai_enhanced {
     color: #059669;
 }
 
-.chat-header-info .ai-status.offline {
+.chat-header-info .ai-status.smart_mode {
+    color: #d97706;
+}
+
+.chat-header-info .ai-status.error {
     color: #dc2626;
 }
 
@@ -212,9 +222,13 @@
 }
 
 .welcome-message p {
-    margin: 0;
+    margin: 0 0 16px 0;
     font-size: 0.95rem;
     line-height: 1.5;
+}
+
+.welcome-message p strong {
+    color: #1e293b;
 }
 
 .example-questions {
@@ -222,19 +236,14 @@
     flex-direction: column;
     gap: 8px;
     margin-top: 8px;
-}
-
-.example-questions span {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: #475569;
+    width: 100%;
 }
 
 .example-questions button {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
-    padding: 8px 12px;
+    padding: 10px 14px;
     font-size: 0.85rem;
     color: #475569;
     cursor: pointer;
@@ -246,6 +255,120 @@
     background: #f1f5f9;
     border-color: #cbd5e1;
     color: #334155;
+    transform: translateY(-1px);
+}
+
+/* Smart Mode Welcome Info */
+.smart-mode-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+    text-align: left;
+    max-width: 300px;
+}
+
+.smart-mode-info span {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #d97706;
+}
+
+.smart-mode-info ul {
+    margin: 8px 0 0 0;
+    padding-left: 16px;
+    list-style: none;
+}
+
+.smart-mode-info li {
+    font-size: 0.85rem;
+    color: #475569;
+    margin-bottom: 6px;
+    line-height: 1.4;
+}
+
+/* Modes Explanation Cards */
+.modes-explanation {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 16px 0;
+    width: 100%;
+    max-width: 400px;
+}
+
+.mode-card {
+    padding: 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    transition: all 0.2s ease;
+}
+
+.mode-card.active {
+    border-color: #2563eb;
+    background: #eff6ff;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+}
+
+.mode-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.mode-icon {
+    font-size: 1.1rem;
+}
+
+.mode-header strong {
+    color: #1e293b;
+    font-size: 0.9rem;
+}
+
+.current-badge {
+    background: #2563eb;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-left: auto;
+}
+
+.mode-card p {
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #64748b;
+}
+
+.mode-card.active p {
+    color: #475569;
+}
+
+/* Current Mode Actions */
+.current-mode-actions {
+    margin-top: 16px;
+    width: 100%;
+}
+
+.current-mode-actions > span {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #475569;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.error-message {
+    margin-top: 16px;
+}
+
+.error-message p {
+    color: #dc2626;
+    font-size: 0.9rem;
 }
 
 /* Message Styles */
@@ -386,7 +509,72 @@
     align-items: flex-end;
 }
 
-/* Offline Buttons Area */
+/* Smart Mode Notice */
+.smart-mode-notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 16px;
+    padding: 10px 16px;
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    color: #92400e;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.smart-mode-notice svg {
+    color: #d97706;
+}
+
+/* Smart Mode Buttons Area */
+.smart-mode-buttons-area {
+    padding: 20px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+}
+
+.smart-mode-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.smart-mode-btn {
+    width: 100%;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border: none;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
+}
+
+.smart-mode-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.smart-mode-btn:disabled {
+    background: #d1d5db;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    color: #9ca3af;
+}
+
+/* Offline/Error Buttons Area */
 .offline-buttons-area {
     padding: 20px;
     background: #f8fafc;
@@ -435,6 +623,37 @@
 
 .offline-btn:disabled {
     opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Retry Button */
+.retry-btn {
+    width: 100%;
+    padding: 14px 20px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    border: none;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.retry-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.retry-btn:disabled {
+    background: #d1d5db;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;

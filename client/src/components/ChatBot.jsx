@@ -21,7 +21,8 @@ const ChatBot = () => {
     const [messages, setMessages] = useState([]);
     const [inputMessage, setInputMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [isServiceHealthy, setIsServiceHealthy] = useState(true);
+    const [serviceMode, setServiceMode] = useState('ai_enhanced'); // 'ai_enhanced', 'smart_mode', or 'error'
+    const [serviceDescription, setServiceDescription] = useState('');
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
 
@@ -52,15 +53,21 @@ const ChatBot = () => {
         }
     }, [isOpen]);
 
-    // Check chat service health
+    // Check chat service health and mode
     const checkServiceHealth = async () => {
         try {
             const response = await fetch(`${API_BASE}/health`);
             const data = await response.json();
-            // Flask service returns { ai-status: 'healthy', ai_available: true, ... }
-            setIsServiceHealthy(data.status === 'healthy');
+            
+            // Update service mode based on enhanced health response
+            setServiceMode(data.mode || 'error');
+            setServiceDescription(data.description || 'Unknown status');
+            
+            console.log('Service status:', data.mode, '-', data.description);
         } catch (error) {
-            setIsServiceHealthy(false);
+            console.error('Health check failed:', error);
+            setServiceMode('error');
+            setServiceDescription('Unable to connect to service');
         }
     };
 
@@ -218,10 +225,11 @@ const ChatBot = () => {
                 onClick={() => setIsOpen(true)}
                 title="Ask about your schedule"
             >
-                {/* <MessageCircle size={24} /> */}
-                <div className={`service-status-indicator ${isServiceHealthy ? 'online' : 'offline'}`}>
-                    {isServiceHealthy ? (
+                <div className={`service-status-indicator ${serviceMode}`}>
+                    {serviceMode === 'ai_enhanced' ? (
                         <Wifi size={16} />
+                    ) : serviceMode === 'smart_mode' ? (
+                        <Bot size={16} />
                     ) : (
                         <WifiOff size={16} />
                     )}
@@ -240,8 +248,10 @@ const ChatBot = () => {
                                 <img src={hunnibee} className='hunnibee' />
                                 <div>
                                     <h3>HunniBee</h3>
-                                    <span className={`ai-status ${isServiceHealthy ? 'online' : 'offline'}`}>
-                                        {isServiceHealthy ? 'Online' : 'Offline'}
+                                    <span className={`ai-status ${serviceMode}`} title={serviceDescription}>
+                                        {serviceMode === 'ai_enhanced' ? '🤖 AI Enhanced' :
+                                         serviceMode === 'smart_mode' ? '⚡ Smart Mode' :
+                                         '❌ Service Error'}
                                     </span>
                                 </div>
                             </div>
@@ -276,28 +286,61 @@ const ChatBot = () => {
                         <div className="chat-messages">
                             {messages.length === 0 ? (
                                 <div className="welcome-message">
-                                    {/* <Bot size={40} /> */}
-                                    <h4>Hi! I'm HunniBee</h4>
-                                    <p>Ask me about your schedule, tasks, or announcements!</p>
-                                    {process.env.NODE_ENV === 'production' && (
+                                    <h4>Hi! I'm HunniBee 🐝</h4>
+                                    <p>Your AI-powered academic assistant with two intelligent modes:</p>
+                                    
+                                    <div className="modes-explanation">
+                                        <div className={`mode-card ${serviceMode === 'ai_enhanced' ? 'active' : ''}`}>
+                                            <div className="mode-header">
+                                                <span className="mode-icon">🤖</span>
+                                                <strong>AI Enhanced Mode</strong>
+                                                {serviceMode === 'ai_enhanced' && <span className="current-badge">CURRENT</span>}
+                                            </div>
+                                            <p>Natural conversations with contextual understanding. Ask anything about your schedule, tasks, and announcements in your own words!</p>
+                                        </div>
+                                        
+                                        <div className={`mode-card ${serviceMode === 'smart_mode' ? 'active' : ''}`}>
+                                            <div className="mode-header">
+                                                <span className="mode-icon">⚡</span>
+                                                <strong>Smart Mode</strong>
+                                                {serviceMode === 'smart_mode' && <span className="current-badge">CURRENT</span>}
+                                            </div>
+                                            <p>Reliable structured responses with real-time data. Choose from preset options for consistent, accurate results!</p>
+                                        </div>
+                                    </div>
+
+                                    {serviceMode === 'ai_enhanced' ? (
+                                        <div className="current-mode-actions">
+                                            <span>Try asking me:</span>
+                                            <div className="example-questions">
+                                                <button onClick={() => setInputMessage("What classes do I have today?")}>
+                                                    "What classes do I have today?"
+                                                </button>
+                                                <button onClick={() => setInputMessage("What tasks are due soon?")}>
+                                                    "What tasks are due soon?"
+                                                </button>
+                                                <button onClick={() => setInputMessage("Any new announcements?")}>
+                                                    "Any new announcements?"
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : serviceMode === 'smart_mode' ? (
+                                        <div className="current-mode-actions">
+                                            <span>Choose from reliable options below:</span>
+                                        </div>
+                                    ) : (
+                                        <div className="error-message">
+                                            <p><strong>❌ Service temporarily unavailable.</strong> Please try again in a moment.</p>
+                                        </div>
+                                    )}
+
+                                    {process.env.NODE_ENV === 'production' && serviceMode === 'ai_enhanced' && (
                                         <div className="production-notice">
-                                            <p style={{ fontSize: '0.85rem', color: '#f59e0b', fontStyle: 'italic', marginTop: '8px' }}>
-                                                ⚡ <strong>Production Note:</strong> I'm using lighter AI models for memory efficiency, so I might occasionally hallucinate or provide less accurate responses. For critical information, please double-check! 🐝
+                                            <p style={{ fontSize: '0.85rem', color: '#f59e0b', fontStyle: 'italic', marginTop: '12px' }}>
+                                                ⚡ <strong>Production Note:</strong> Using lighter AI models for efficiency. Please double-check critical information! 🐝
                                             </p>
                                         </div>
                                     )}
-                                    <div className="example-questions">
-                                        <span>Try asking:</span>
-                                        <button onClick={() => setInputMessage("What classes do I have today?")}>
-                                            "What classes do I have today?"
-                                        </button>
-                                        <button onClick={() => setInputMessage("What tasks are due soon?")}>
-                                            "What tasks are due soon?"
-                                        </button>
-                                        <button onClick={() => setInputMessage("Any new announcements?")}>
-                                            "Any new announcements?"
-                                        </button>
-                                    </div>
                                 </div>
                             ) : (
                                 messages.map((message) => (
@@ -363,7 +406,7 @@ const ChatBot = () => {
                         </div>
 
                         {/* Input Area */}
-                        {isServiceHealthy ? (
+                        {serviceMode === 'ai_enhanced' ? (
                             <div className="chat-input-area">
                                 <div className="chat-input-container">
                                     <textarea
@@ -371,7 +414,7 @@ const ChatBot = () => {
                                         value={inputMessage}
                                         onChange={(e) => setInputMessage(e.target.value)}
                                         onKeyPress={handleKeyPress}
-                                        placeholder="Send a message.."
+                                        placeholder="Ask me anything about your schedule..."
                                         className="chat-input"
                                         rows="1"
                                         disabled={isLoading}
@@ -386,35 +429,46 @@ const ChatBot = () => {
                                     </button>
                                 </div>
                             </div>
-                        ) : (
-                            <div className="offline-buttons-area">
-                                <div className="offline-notice">
-                                    <WifiOff size={20} />
-                                    <span>AI is offline. Use quick actions below:</span>
-                                </div>
-                                <div className="offline-buttons">
+                        ) : serviceMode === 'smart_mode' ? (
+                            <div className="smart-mode-buttons-area">
+                                <div className="smart-mode-buttons">
                                     <button 
-                                        className="offline-btn"
+                                        className="smart-mode-btn"
                                         onClick={() => handleOfflineAction("schedules")}
                                         disabled={isLoading}
                                     >
-                                        📅 Schedules (This Week)
+                                        📅 Weekly Schedule
                                     </button>
                                     <button 
-                                        className="offline-btn"
+                                        className="smart-mode-btn"
                                         onClick={() => handleOfflineAction("tasks")}
                                         disabled={isLoading}
                                     >
-                                        📋 Tasks
+                                        📋 My Tasks
                                     </button>
                                     <button 
-                                        className="offline-btn"
+                                        className="smart-mode-btn"
                                         onClick={() => handleOfflineAction("announcements")}
                                         disabled={isLoading}
                                     >
                                         📢 Announcements
                                     </button>
                                 </div>
+                            </div>
+                        ) : (
+                            <div className="offline-buttons-area">
+                                <div className="offline-notice">
+                                    <WifiOff size={20} />
+                                    <span>Service temporarily unavailable. Please try again later.</span>
+                                </div>
+                                <button 
+                                    className="retry-btn"
+                                    onClick={checkServiceHealth}
+                                    disabled={isLoading}
+                                >
+                                    <RefreshCw size={18} />
+                                    Try Again
+                                </button>
                             </div>
                         )}
                     </div>

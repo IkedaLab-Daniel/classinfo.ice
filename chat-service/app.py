@@ -685,7 +685,7 @@ Response:
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    """Health check endpoint"""
+    """Health check endpoint with enhanced service state detection"""
     global last_throttle_check
     
     # Clear throttle status every 30 minutes to allow retry
@@ -693,18 +693,47 @@ def health_check():
         throttled_models.clear()
         last_throttle_check = datetime.now()
     
-    # Consider service unhealthy if no AI models are available OR all are throttled
+    # Test basic service functionality (database connectivity)
+    try:
+        # Test if we can fetch data (core service functionality)
+        test_data = ContextManager.fetch_user_data()
+        service_functional = True
+        service_error = None
+    except Exception as e:
+        service_functional = False
+        service_error = str(e)
+    
+    # Determine available AI models
     available_models = [model for model in WORKING_MODELS if model['name'] not in throttled_models]
-    is_healthy = len(available_models) > 0
-    status = 'healthy' if is_healthy else 'unhealthy'
+    
+    # Determine service mode and status
+    if not service_functional:
+        # Core service is broken
+        mode = 'error'
+        status = 'unhealthy' 
+        description = 'Service error - core functionality unavailable'
+    elif len(available_models) > 0:
+        # AI models available - full RAG capability
+        mode = 'ai_enhanced'
+        status = 'healthy'
+        description = 'AI Enhanced - Full conversational responses with context retrieval'
+    else:
+        # No AI models but rule-based system works
+        mode = 'smart_mode'
+        status = 'healthy'
+        description = 'Smart Mode - Structured responses with context retrieval'
     
     return jsonify({
         'status': status,
+        'mode': mode,
+        'description': description,
         'timestamp': datetime.now().isoformat(),
         'service': 'chat-service',
         'ai_available': len(available_models) > 0,
         'working_models': [model['name'] for model in available_models],
-        'throttled_models': list(throttled_models)
+        'throttled_models': list(throttled_models),
+        'service_functional': service_functional,
+        'service_error': service_error
     })
 
 @app.route('/chat', methods=['POST'])
