@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import './ChatBot.css';
 import hunnibee from '../assets/HunniBee.gif'
+import thinking_orb from '../assets/thinking2.gif'
 
 const ChatBot = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -270,7 +271,7 @@ const ChatBot = () => {
                                                 {message.type === 'bot' && !message.isError && (
                                                     <span className="message-info">
                                                         {message.isThrottled ? '⚡ Backup Mode' : 
-                                                         message.aiPowered ? '🤖 AI' : '📝 Rule-based'}
+                                                         message.aiPowered ? '🐝 HunniBee' : '📝 Rule-based'}
                                                         {message.contextItemsUsed > 0 && 
                                                             ` • ${message.contextItemsUsed} context items`
                                                         }
@@ -290,7 +291,7 @@ const ChatBot = () => {
                             {isLoading && (
                                 <div className="message bot">
                                     <div className="message-avatar">
-                                        <Bot size={18} />
+                                        <img className='hunnibee-avatar' src={thinking_orb} />
                                     </div>
                                     <div className="message-content">
                                         <div className="typing-indicator">

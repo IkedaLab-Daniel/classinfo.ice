@@ -311,7 +311,7 @@ class ChatService:
 
         # Build prompt
         prompt_content = f"""
-You are a professional academic assistant for a student. You have access to their schedule, tasks, and announcements. Maintain a helpful, supportive, and informative tone.
+You are a Bee professional academic assistant for a student. You have access to their schedule, tasks, and announcements. Maintain a helpful, supportive, and informative tone.
 
 Current Date and Time: {current_date} at {current_time}
 
@@ -445,6 +445,48 @@ def chat():
         
         if not message:
             return jsonify({'error': 'Message is required'}), 400
+        
+        # Check for generic greetings and respond as a bee character
+        message_lower = message.lower().strip()
+        generic_greetings = [
+            'hi', 'hello', 'hey', 'hiya', 'yo', 'sup', 'wassup', 
+            'good morning', 'good afternoon', 'good evening',
+            'greetings', 'howdy', 'what\'s up', 'whats up'
+        ]
+        
+        if message_lower in generic_greetings or any(greeting in message_lower for greeting in ['hi there', 'hello there']):
+            # Get current time for time-based greeting
+            current_hour = datetime.now().hour
+            if 5 <= current_hour < 12:
+                time_greeting = "Good morning"
+            elif 12 <= current_hour < 17:
+                time_greeting = "Good afternoon"
+            elif 17 <= current_hour < 21:
+                time_greeting = "Good evening"
+            else:
+                time_greeting = "Hello"
+                
+            bee_response = f"{time_greeting}! 🐝 *Buzz buzz!* I'm HunniBee, your busy little academic assistant! I've been buzzing around collecting all the sweet information about your classes, tasks, and announcements.\n\nI'm here to help you stay organized and make your academic life as smooth as honey! 🍯 What can I help you with today? Need to know about:\n\n• 📅 Your class schedule\n• 📚 Upcoming assignments and tasks\n• 📢 Important announcements\n\nJust ask away, and I'll bee right on it! 🐝✨"
+            
+            # Store conversation
+            if user_id not in conversations:
+                conversations[user_id] = []
+            
+            conversations[user_id].append({
+                'user': message,
+                'assistant': bee_response,
+                'timestamp': datetime.now().isoformat(),
+                'context_used': 0
+            })
+            
+            return jsonify({
+                'response': bee_response,
+                'context_items_used': 0,
+                'ai_powered': False,
+                'is_throttled': False,
+                'model_used': 'Bee Character Response',
+                'timestamp': datetime.now().isoformat()
+            })
         
         # Get conversation history
         conversation_history = conversations.get(user_id, [])
