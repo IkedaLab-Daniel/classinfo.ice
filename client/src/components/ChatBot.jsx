@@ -250,11 +250,11 @@ const ChatBot = () => {
             >
                 <div className={`service-status-indicator ${serviceMode}`}>
                     {serviceMode === 'ai_enhanced' ? (
-                        <Wifi size={16} />
+                        <Wifi />
                     ) : serviceMode === 'smart_mode' ? (
-                        <Bot size={16} />
+                        <Bot />
                     ) : (
-                        <WifiOff size={16} />
+                        <WifiOff />
                     )}
                 </div>
                 <img src={hunnibee} alt="" />

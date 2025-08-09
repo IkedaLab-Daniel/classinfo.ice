@@ -30,10 +30,10 @@
 
 .service-status-indicator {
     position: absolute;
-    bottom: -10px;
-    right: 0px;
-    width: 24px;
-    height: 24px;
+    bottom: -20px;
+    left: -40px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -41,6 +41,10 @@
     border: 2px solid white;
     background: white;
     animation: float-up-down 2s ease-in-out infinite;
+}
+
+.service-status-indicator svg{
+    width: 60px;
 }
 
 .service-status-indicator.ai_enhanced {
@@ -873,6 +877,18 @@
 
 /* Medium Mobile Responsive */
 @media (max-width: 600px) {
+    .service-status-indicator {
+        right: 0;
+        left: unset;
+        width: 24px;
+        height: 24px;
+        bottom: -10px;
+    }
+
+    .service-status-indicator svg{
+        width: 16px;
+    }
+
     .chat-modal {
         max-width: 500px;
     }

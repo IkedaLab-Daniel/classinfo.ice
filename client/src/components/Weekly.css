@@ -1,6 +1,7 @@
 #weekly{
   padding: 12px;
   width: 100%;
+  margin-top: 20px;
 }
 
 /* .weekly-container{
@@ -109,7 +110,7 @@
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     border: 1px solid rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
-    min-height: 200px;
+    min-height: 1000px;
     width: 100%;
 }
 
@@ -339,6 +340,7 @@
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         min-height: 390px;
         width: 16.65%;
+        height: auto;
     }
     
     .day-header {

@@ -13,7 +13,7 @@ const Home = () => {
             <div id="today-page">
                 <Today />
             </div>
-            <div id="weekly" style={{ minHeight: '100vh', paddingTop: '20px', paddingBottom: '40px' }}>
+            <div id="weekly">
                 <Weekly />
             </div>
             <div id="tasks">
