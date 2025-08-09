@@ -272,8 +272,16 @@ const ChatBot = () => {
 
             {/* Chat Modal */}
             {isOpen && (
-                <div className="chat-modal-overlay">
-                    <div className="chat-modal">
+                <div 
+                    className={`chat-modal-overlay ${isOpen ? 'active' : ''}`}
+                    onClick={(e) => {
+                        // Close sidebar when clicking on the overlay (not on the modal itself)
+                        if (e.target === e.currentTarget) {
+                            setIsOpen(false);
+                        }
+                    }}
+                >
+                    <div className={`chat-modal ${isOpen ? 'open' : ''}`}>
                         {/* Header */}
                         <div className="chat-header">
                             <div className="chat-header-info">
@@ -282,9 +290,13 @@ const ChatBot = () => {
                                 <div>
                                     <h3>HunniBee</h3>
                                     <span className={`ai-status ${serviceMode}`} title={serviceDescription}>
-                                        {serviceMode === 'ai_enhanced' ? '🤖 AI Enhanced' :
-                                         serviceMode === 'smart_mode' ? '⚡ Smart Mode' :
-                                         '❌ Service Error'}
+                                        {serviceMode === 'ai_enhanced' ? (
+                                            <><Wifi size={14} style={{ marginRight: '4px' }} /> AI Enhanced</>
+                                        ) : serviceMode === 'smart_mode' ? (
+                                            <><Bot size={14} style={{ marginRight: '4px' }} /> Smart Mode</>
+                                        ) : (
+                                            <><WifiOff size={14} style={{ marginRight: '4px' }} /> Service Error</>
+                                        )}
                                     </span>
                                 </div>
                             </div>
@@ -325,7 +337,7 @@ const ChatBot = () => {
                                     <div className="modes-explanation">
                                         <div className={`mode-card ${serviceMode === 'ai_enhanced' ? 'active' : ''}`}>
                                             <div className="mode-header">
-                                                <span className="mode-icon">🤖</span>
+                                                <span className="mode-icon"><Wifi size={18} /></span>
                                                 <strong>AI Enhanced Mode</strong>
                                                 {serviceMode === 'ai_enhanced' && <span className="current-badge">CURRENT</span>}
                                                 {!aiAvailable && <span className="unavailable-badge">UNAVAILABLE</span>}
@@ -335,7 +347,7 @@ const ChatBot = () => {
                                         
                                         <div className={`mode-card ${serviceMode === 'smart_mode' ? 'active' : ''}`}>
                                             <div className="mode-header">
-                                                <span className="mode-icon">⚡</span>
+                                                <span className="mode-icon"><Bot size={18} /></span>
                                                 <strong>Smart Mode</strong>
                                                 {serviceMode === 'smart_mode' && <span className="current-badge">CURRENT</span>}
                                             </div>
@@ -371,7 +383,7 @@ const ChatBot = () => {
                                     {process.env.NODE_ENV === 'production' && serviceMode === 'ai_enhanced' && (
                                         <div className="production-notice">
                                             <p style={{ fontSize: '0.85rem', color: '#f59e0b', fontStyle: 'italic', marginTop: '12px' }}>
-                                                ⚡ <strong>Production Note:</strong> Using lighter AI models for efficiency. Please double-check critical information! 🐝
+                                                <Wifi size={16} style={{ display: 'inline', marginRight: '4px' }} /> <strong>Production Note:</strong> Using lighter AI models for efficiency. Please double-check critical information!
                                             </p>
                                         </div>
                                     )}

@@ -92,28 +92,47 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: rgba(0, 0, 0, 0.1);
     z-index: 999;
-    padding: 20px;
-    animation: fadeIn 0.3s ease-out;
+    pointer-events: none;
+    transition: background 0.3s ease;
+}
+
+.chat-modal-overlay.active {
+    pointer-events: auto;
 }
 
 .chat-modal {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 400px;
     background: white;
-    border-radius: 16px;
-    width: 100%;
-    max-width: 600px;
-    height: 90vh;
-    max-height: 800px;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-    overflow: hidden;
-    animation: slideInUp 0.4s ease-out;
-    transform-origin: center bottom;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    z-index: 1000;
+}
+
+.chat-modal.open {
+    transform: translateX(0);
+}
+
+/* On larger screens, make it wider */
+@media (min-width: 1200px) {
+    .chat-modal {
+        width: 450px;
+    }
+}
+
+/* On very large screens, make it even wider */
+@media (min-width: 1600px) {
+    .chat-modal {
+        width: 500px;
+    }
 }
 
 @keyframes fadeIn {
@@ -177,6 +196,10 @@
 }
 
 .chat-header-info .ai-status.smart_mode {
+    color: #d97706;
+}
+
+.chat-header-info .ai-status.smart_mode svg{
     color: #d97706;
 }
 
@@ -920,15 +943,31 @@
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
+    /* On mobile, revert to modal behavior */
     .chat-modal-overlay {
-        padding: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        pointer-events: auto;
     }
     
     .chat-modal {
+        position: relative;
+        top: auto;
+        right: auto;
+        bottom: auto;
         width: 100%;
-        height: 100vh;
+        height: 90vh;
         max-height: none;
-        border-radius: 0;
+        border-radius: 16px;
+        transform: none;
+        animation: slideInUp 0.4s ease-out;
+    }
+    
+    .chat-modal.open {
+        transform: none;
     }
     
     .chat-trigger {
@@ -944,6 +983,8 @@
     
     .chat-header {
         padding: 5px 20px;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
     }
     
     .chat-messages {
@@ -956,6 +997,8 @@
     
     .smart-mode-buttons-area {
         padding: 12px 16px;
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
     }
     
     .smart-mode-buttons {
@@ -984,16 +1027,39 @@
     }
     
     .welcome-message {
-        gap: 12px;
+        gap: 5px;
+    }
+
+    .welcome-message p{
+        margin: 0;
     }
     
     .welcome-message h4 {
-        font-size: 1.1rem;
+        font-size: 1rem;
     }
     
     .example-questions button {
         font-size: 0.8rem;
         padding: 6px 10px;
+    }
+
+    .current-mode-actions{
+        margin: 0;
+    }
+
+    .current-mode-actions > span{
+        margin: 0;
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
     }
 }
 
@@ -1004,6 +1070,8 @@
     
     .chat-header-info .ai-status {
         font-size: 0.75rem;
+        display: flex;
+        align-items: center;
     }
     
     .message-text {
