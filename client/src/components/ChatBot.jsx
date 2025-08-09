@@ -53,7 +53,7 @@ const ChatBot = () => {
     useEffect(() => {
         if (isOpen) {
             setTimeout(() => inputRef.current?.focus(), 100);
-            checkServiceHealth();
+            // Removed checkServiceHealth() - no need to check again since it's already checked on page load
         }
     }, [isOpen]);
 
