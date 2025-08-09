@@ -24,8 +24,8 @@ const ChatBot = () => {
     const [messages, setMessages] = useState([]);
     const [inputMessage, setInputMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [serviceMode, setServiceMode] = useState('ai_enhanced'); // 'ai_enhanced', 'smart_mode', or 'error'
-    const [serviceDescription, setServiceDescription] = useState('');
+    const [serviceMode, setServiceMode] = useState('loading'); // 'ai_enhanced', 'smart_mode', 'error', or 'loading'
+    const [serviceDescription, setServiceDescription] = useState('Checking service status...');
     const [aiAvailable, setAiAvailable] = useState(true); // Track AI availability separately
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
@@ -60,7 +60,13 @@ const ChatBot = () => {
     // Check chat service health and mode
     const checkServiceHealth = async () => {
         try {
-            const response = await fetch(`${API_BASE}/health`);
+            setServiceMode('loading');
+            setServiceDescription('Checking service status...');
+            
+            const response = await fetch(`${API_BASE}/health`, {
+                method: 'GET',
+                signal: AbortSignal.timeout(15000) // 15 second timeout
+            });
             const data = await response.json();
             
             // Update service mode based on enhanced health response
@@ -71,8 +77,14 @@ const ChatBot = () => {
             console.log('Service status:', data.mode, '-', data.description, '- AI Available:', data.ai_available);
         } catch (error) {
             console.error('Health check failed:', error);
-            setServiceMode('error');
-            setServiceDescription('Unable to connect to service');
+            
+            if (error.name === 'TimeoutError') {
+                setServiceMode('loading');
+                setServiceDescription('Service is starting up... Please wait.');
+            } else {
+                setServiceMode('error');
+                setServiceDescription('Unable to connect to service');
+            }
             setAiAvailable(false);
         }
     };
@@ -274,6 +286,8 @@ const ChatBot = () => {
                         <Wifi />
                     ) : serviceMode === 'smart_mode' ? (
                         <Bot />
+                    ) : serviceMode === 'loading' ? (
+                        <Loader2 className="spin" />
                     ) : (
                         <WifiOff />
                     )}
@@ -305,8 +319,10 @@ const ChatBot = () => {
                                             <><Wifi size={14} style={{ marginRight: '4px' }} /> AI Enhanced</>
                                         ) : serviceMode === 'smart_mode' ? (
                                             <><Bot size={14} style={{ marginRight: '4px' }} /> Smart Mode</>
+                                        ) : serviceMode === 'loading' ? (
+                                            <><Loader2 size={14} className="spin" style={{ marginRight: '4px' }} /> Checking Status...</>
                                         ) : (
-                                            <><WifiOff size={14} style={{ marginRight: '4px' }} /> Service Error</>
+                                            <><WifiOff size={14} style={{ marginRight: '4px' }} /> Offline</>
                                         )}
                                     </span>
                                 </div>
@@ -346,7 +362,16 @@ const ChatBot = () => {
                                     <p>Your AI-powered academic assistant with two intelligent modes:</p>
                                     
                                     <div className="modes-explanation">
-                                        <div className={`mode-card ${serviceMode === 'ai_enhanced' ? 'active' : ''}`}>
+                                        <div className={`mode-card ${serviceMode === 'loading' ? 'active' : ''}`} style={{ display: serviceMode === 'loading' ? 'block' : 'none' }}>
+                                            <div className="mode-header">
+                                                <span className="mode-icon"><Loader2 size={18} className="spin" /></span>
+                                                <strong>Checking Service...</strong>
+                                                <span className="current-badge">LOADING</span>
+                                            </div>
+                                            <p>Please wait while we check the service status. The server may be starting up.</p>
+                                        </div>
+
+                                        <div className={`mode-card ${serviceMode === 'ai_enhanced' ? 'active' : ''}`} style={{ display: serviceMode === 'loading' ? 'none' : 'block' }}>
                                             <div className="mode-header">
                                                 <span className="mode-icon"><Wifi size={18} /></span>
                                                 <strong>AI Enhanced Mode</strong>
@@ -356,7 +381,7 @@ const ChatBot = () => {
                                             <p>Chat with natural conversations with contextual understanding. Ask anything about your schedule, tasks, and announcements in your own words!</p>
                                         </div>
                                         
-                                        <div className={`mode-card ${serviceMode === 'smart_mode' ? 'active' : ''}`}>
+                                        <div className={`mode-card ${serviceMode === 'smart_mode' ? 'active' : ''}`} style={{ display: serviceMode === 'loading' ? 'none' : 'block' }}>
                                             <div className="mode-header">
                                                 <span className="mode-icon"><Bot size={18} /></span>
                                                 <strong>Smart Mode</strong>
@@ -385,10 +410,19 @@ const ChatBot = () => {
                                         <div className="current-mode-actions">
                                             <span>Choose from reliable options below:</span>
                                         </div>
-                                    ) : (
-                                        <div className="error-message">
-                                            <p><strong>❌ Service temporarily unavailable.</strong> Please try again in a moment.</p>
+                                    ) : serviceMode === 'loading' ? (
+                                        <div className="loading-actions">
+                                            <div className="loading-spinner">
+                                                <Loader2 size={24} className="spin" />
+                                                <span>Connecting to service...</span>
+                                            </div>
                                         </div>
+                                    ) : (
+                                        // <div className="error-message">
+                                        //     <p><strong>❌ Service temporarily unavailable.</strong> Please try again in a moment.</p>
+                                        // </div>
+                                        <>
+                                        </>
                                     )}
 
                                     {process.env.NODE_ENV === 'production' && serviceMode === 'ai_enhanced' && (
@@ -543,6 +577,21 @@ const ChatBot = () => {
                                         News
                                     </button>
                                 </div>
+                            </div>
+                        ) : serviceMode === 'loading' ? (
+                            <div className="loading-buttons-area">
+                                <div className="loading-notice">
+                                    <Loader2 size={20} className="spin" />
+                                    <span>Service is starting up... Please wait.</span>
+                                </div>
+                                <button 
+                                    className="retry-btn"
+                                    onClick={checkServiceHealth}
+                                    disabled={false}
+                                >
+                                    <RefreshCw size={18} />
+                                    Retry Connection
+                                </button>
                             </div>
                         ) : (
                             <div className="offline-buttons-area">

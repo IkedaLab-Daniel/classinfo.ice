@@ -58,6 +58,12 @@
     animation: float-up-down 2s ease-in-out infinite;
 }
 
+.service-status-indicator.loading {
+    background: #6b7280;
+    color: white;
+    animation: float-up-down 2s ease-in-out infinite, pulse-loading 1.5s infinite;
+}
+
 .service-status-indicator.error {
     background: #ef4444;
     color: white;
@@ -82,6 +88,18 @@
     }
     100% {
         box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}
+
+@keyframes pulse-loading {
+    0% {
+        box-shadow: 0 0 0 0 rgba(107, 114, 128, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 4px rgba(107, 114, 128, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(107, 114, 128, 0);
     }
 }
 
@@ -203,7 +221,19 @@
     color: #d97706;
 }
 
+.chat-header-info .ai-status.loading {
+    color: #6b7280;
+}
+
+.chat-header-info .ai-status.loading svg {
+    color: #6b7280;
+}
+
 .chat-header-info .ai-status.error {
+    color: #dc2626;
+}
+
+.chat-header-info .ai-status.error svg{
     color: #dc2626;
 }
 
@@ -454,6 +484,44 @@
 
 .mode-card.active p {
     color: #475569;
+}
+
+/* Loading Actions */
+.loading-actions {
+    margin-top: 16px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: #6b7280;
+}
+
+.loading-spinner span {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Loading Buttons Area */
+.loading-buttons-area {
+    padding: 20px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+}
+
+.loading-notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-bottom: 16px;
 }
 
 /* Current Mode Actions */
