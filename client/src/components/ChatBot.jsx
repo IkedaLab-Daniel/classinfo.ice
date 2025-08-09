@@ -210,9 +210,20 @@ const ChatBot = () => {
                 }, 200);
             }
         } else if (action.type === 'chat_action') {
-            // Handle chat actions (send a message)
-            if (action.message) {
-                // Don't close the modal, just send the message
+            // Handle chat actions (send a message) with loading state
+            if (action.message && !isLoading) {
+                setIsLoading(true);
+                
+                // Add user action message to chat
+                setMessages(prev => [...prev, {
+                    id: Date.now(),
+                    type: 'user',
+                    content: action.message,
+                    timestamp: new Date(),
+                    isNavigationAction: true
+                }]);
+                
+                // Send the chat request
                 sendChatRequest(action.message);
             }
         }
@@ -421,6 +432,7 @@ const ChatBot = () => {
                                                                 key={index}
                                                                 className="navigation-btn"
                                                                 onClick={() => handleNavigationAction(action)}
+                                                                disabled={isLoading}
                                                             >
                                                                 {action.label}
                                                             </button>
@@ -430,6 +442,7 @@ const ChatBot = () => {
                                                         <button 
                                                             className="navigation-btn"
                                                             onClick={() => handleNavigationAction(message.navigationAction)}
+                                                            disabled={isLoading}
                                                         >
                                                             {message.navigationAction.label}
                                                         </button>
