@@ -19,8 +19,7 @@
 }
 
 .chat-trigger:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
+    transform: translateY(-2px) scale(120%);
 }
 
 .chat-trigger.open {
@@ -718,11 +717,21 @@
     font-size: 0.9rem;
 }
 
-.typing-indicator .spin {
-    animation: spin 1s linear infinite;
+/* Spinner Animation for Loader Icons */
+.spin {
+    animation: loader-spin 1s linear infinite;
 }
 
-@keyframes spin {
+.typing-indicator .spin {
+    animation: chatbot-spin 1s linear infinite;
+}
+
+@keyframes chatbot-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes loader-spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
 }
