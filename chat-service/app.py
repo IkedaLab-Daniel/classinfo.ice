@@ -262,9 +262,13 @@ class ContextManager:
                 schedule.get('day', '').lower(),
                 'schedule', 'class', 'subject', 'today'
             ]):
+                # Format times for better display
+                start_time = ChatService.format_time(schedule.get('startTime', 'TBA'))
+                end_time = ChatService.format_time(schedule.get('endTime', 'TBA'))
+                
                 relevant_context.append({
                     'type': 'schedule',
-                    'content': f"{schedule.get('subject')} class from {schedule.get('startTime')} to {schedule.get('endTime')} in room {schedule.get('room')}"
+                    'content': f"{schedule.get('subject')} class from {start_time} to {end_time} in room {schedule.get('room')}"
                 })
                 schedule_matches += 1
                 print(f"DEBUG - Including schedule: {schedule.get('subject')} on {schedule.get('date', 'unknown date')}")
@@ -366,6 +370,37 @@ class ChatService:
         except Exception as e:
             print(f"Error formatting date {date_str}: {e}")
             return date_str  # Return original if parsing fails
+    
+    @staticmethod
+    def format_time(time_str):
+        """Format time string from 24-hour to 12-hour AM/PM format"""
+        if not time_str or time_str == 'TBA':
+            return 'TBA'
+        
+        try:
+            # Parse time string (assuming format like "14:30" or "14:30:00")
+            if ':' in time_str:
+                time_parts = time_str.split(':')
+                hour = int(time_parts[0])
+                minute = int(time_parts[1])
+                
+                # Convert to 12-hour format
+                if hour == 0:
+                    formatted_time = f"12:{minute:02d}AM"
+                elif hour < 12:
+                    formatted_time = f"{hour}:{minute:02d}AM"
+                elif hour == 12:
+                    formatted_time = f"12:{minute:02d}PM"
+                else:
+                    formatted_time = f"{hour - 12}:{minute:02d}PM"
+                
+                return formatted_time
+            else:
+                return time_str  # Return original if not in expected format
+                
+        except Exception as e:
+            print(f"Error formatting time {time_str}: {e}")
+            return time_str  # Return original if parsing fails
     
     @staticmethod
     def generate_ai_response(message, context, conversation_history):
@@ -602,8 +637,12 @@ Response:
                     schedule_date = datetime.fromisoformat(schedule_date_str.replace('Z', '+00:00'))
                     schedule_day = schedule_date.strftime('%A')  # Gets day name like "Monday"
                     
+                    # Format times for better display
+                    start_time = ChatService.format_time(schedule.get('startTime', 'TBA'))
+                    end_time = ChatService.format_time(schedule.get('endTime', 'TBA'))
+                    
                     # Format the schedule entry
-                    schedule_entry = f"{schedule.get('subject', 'Unknown Class')} from {schedule.get('startTime', 'TBA')} to {schedule.get('endTime', 'TBA')} in room {schedule.get('room', 'TBA')}"
+                    schedule_entry = f"{schedule.get('subject', 'Unknown Class')} from {start_time} to {end_time} in room {schedule.get('room', 'TBA')}"
                     schedule_by_day[schedule_day].append(schedule_entry)
                     print(f"DEBUG - Assigned {schedule.get('subject')} to {schedule_day}")
                     
@@ -689,8 +728,12 @@ Response:
                     schedule_date = datetime.fromisoformat(schedule_date_str.replace('Z', '+00:00'))
                     schedule_day = schedule_date.strftime('%A')  # Gets day name like "Monday"
                     
+                    # Format times for better display
+                    start_time = ChatService.format_time(schedule.get('startTime', 'TBA'))
+                    end_time = ChatService.format_time(schedule.get('endTime', 'TBA'))
+                    
                     # Format the schedule entry
-                    schedule_entry = f"{schedule.get('subject', 'Unknown Class')} from {schedule.get('startTime', 'TBA')} to {schedule.get('endTime', 'TBA')} in room {schedule.get('room', 'TBA')}"
+                    schedule_entry = f"{schedule.get('subject', 'Unknown Class')} from {start_time} to {end_time} in room {schedule.get('room', 'TBA')}"
                     schedule_by_day[schedule_day].append(schedule_entry)
                     print(f"DEBUG - Assigned {schedule.get('subject')} to {schedule_day}")
                     
