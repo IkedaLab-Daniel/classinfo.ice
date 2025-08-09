@@ -702,13 +702,8 @@ Response:
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    """Health check endpoint with enhanced service state detection"""
+    """Health check endpoint - FORCED SMART MODE (RAG disabled)"""
     global last_throttle_check
-    
-    # Clear throttle status every 30 minutes to allow retry
-    if datetime.now() - last_throttle_check > timedelta(minutes=30):
-        throttled_models.clear()
-        last_throttle_check = datetime.now()
     
     # Test basic service functionality (database connectivity)
     try:
@@ -720,8 +715,8 @@ def health_check():
         service_functional = False
         service_error = str(e)
     
-    # Determine available AI models
-    available_models = [model for model in WORKING_MODELS if model['name'] not in throttled_models]
+    # FORCE SMART MODE: Always report AI as unavailable
+    available_models = []  # Force empty to disable AI Enhanced mode
     
     # Determine service mode and status
     if not service_functional:
@@ -729,13 +724,8 @@ def health_check():
         mode = 'error'
         status = 'unhealthy' 
         description = 'Service error - core functionality unavailable'
-    elif len(available_models) > 0:
-        # AI models available - full RAG capability
-        mode = 'ai_enhanced'
-        status = 'healthy'
-        description = 'AI Enhanced - Full conversational responses with context retrieval'
     else:
-        # No AI models but rule-based system works
+        # Force Smart Mode - disable RAG/AI Enhanced mode
         mode = 'smart_mode'
         status = 'healthy'
         description = 'Smart Mode - Structured responses with context retrieval'
@@ -746,9 +736,9 @@ def health_check():
         'description': description,
         'timestamp': datetime.now().isoformat(),
         'service': 'chat-service',
-        'ai_available': len(available_models) > 0,
-        'working_models': [model['name'] for model in available_models],
-        'throttled_models': list(throttled_models),
+        'ai_available': False,  # Force AI unavailable
+        'working_models': [],   # Force empty list
+        'throttled_models': [],
         'service_functional': service_functional,
         'service_error': service_error
     })
@@ -815,17 +805,12 @@ def chat():
         # Find relevant context
         context = ContextManager.find_relevant_context(message, user_data)
         
-        # Generate response
-        response_result = ChatService.generate_ai_response(message, context, conversation_history)
+        # FORCE SMART MODE: Always use rule-based responses (RAG disabled)
+        response = ChatService.generate_fallback_response(message, context)
+        is_fallback = True  # Always mark as fallback since we're forcing Smart Mode
         
-        # Handle tuple return (response, is_fallback) or just response string
-        if isinstance(response_result, tuple):
-            response, is_fallback = response_result
-        else:
-            response, is_fallback = response_result, False
-        
-        # Check available models for metadata
-        available_models = [model for model in WORKING_MODELS if model['name'] not in throttled_models]
+        # Force empty available models to maintain Smart Mode
+        available_models = []
         
         # Store conversation
         if user_id not in conversations:
