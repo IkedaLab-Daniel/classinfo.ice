@@ -414,7 +414,6 @@ const ChatBot = () => {
                                         <div className="loading-actions">
                                             <div className="loading-spinner">
                                                 <Loader2 size={24} className="spin" />
-                                                <span>Connecting to service...</span>
                                             </div>
                                         </div>
                                     ) : (
