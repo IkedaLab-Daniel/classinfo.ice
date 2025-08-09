@@ -1003,7 +1003,7 @@ def chat():
                 'type': 'navigate',
                 'action': 'announcements',
                 'label': '📢 View All Announcements',
-                'url': '/#dashboard'  
+                'url': '/#announcements'  # Changed from /#dashboard to /#announcements
             }
         
         return jsonify({

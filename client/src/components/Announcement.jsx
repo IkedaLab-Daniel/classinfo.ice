@@ -29,6 +29,35 @@ const Announcement = () => {
         fetchAnnouncements();
     }, []);
 
+    // Check URL hash and auto-expand announcements section
+    useEffect(() => {
+        const checkHashAndExpand = () => {
+            if (window.location.hash === '#announcements') {
+                setIsExpanded(true);
+                // Smooth scroll to the announcements section
+                setTimeout(() => {
+                    const element = document.getElementById('announcement');
+                    if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }, 100);
+                // Clean up the hash from URL after expanding
+                window.history.replaceState(null, null, window.location.pathname);
+            }
+        };
+
+        // Check on mount
+        checkHashAndExpand();
+
+        // Listen for hash changes (in case user navigates)
+        const handleHashChange = () => checkHashAndExpand();
+        window.addEventListener('hashchange', handleHashChange);
+
+        return () => {
+            window.removeEventListener('hashchange', handleHashChange);
+        };
+    }, []);
+
     // Format date for display
     const formatDate = (dateString) => {
         const date = new Date(dateString);
