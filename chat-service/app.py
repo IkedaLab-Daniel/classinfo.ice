@@ -493,6 +493,9 @@ Response:
         if 'show my schedules for this week' in message_lower or 'schedules for this week' in message_lower:
             return ChatService.format_weekly_schedule_response(context)
         
+        elif 'show my schedules for next week' in message_lower or 'schedules for next week' in message_lower:
+            return ChatService.format_next_week_schedule_response(context)
+        
         elif 'show my tasks' in message_lower or 'show tasks' in message_lower:
             return ChatService.format_tasks_response(context)
         
@@ -623,6 +626,93 @@ Response:
             response_parts.append("🎉 **You have a free week!** No classes scheduled for this week.")
             response_parts.append("")
             response_parts.append("💡 *Tip: Use this time to catch up on assignments or prepare for upcoming classes.*")
+        
+        return "\n".join(response_parts).strip()
+    
+    @staticmethod
+    def format_next_week_schedule_response(context):
+        """Format next week schedule response with day-by-day breakdown for NEXT WEEK ONLY"""
+        # Get fresh schedule data to properly organize by day
+        try:
+            user_data = ContextManager.fetch_user_data()
+            raw_schedules = user_data.get('schedules', [])
+        except Exception as e:
+            print(f"Error fetching fresh schedule data: {e}")
+            raw_schedules = []
+        
+        # Get next week date range
+        today = datetime.now()
+        # Find Monday of current week, then add 7 days for next week
+        days_since_monday = today.weekday()  # Monday is 0
+        current_monday = today - timedelta(days=days_since_monday)
+        next_monday = current_monday + timedelta(days=7)
+        next_sunday = next_monday + timedelta(days=6)
+        
+        week_range = f"{next_monday.strftime('%B %d')} - {next_sunday.strftime('%B %d, %Y')}"
+        print(f"DEBUG - Next week range: {next_monday.date()} to {next_sunday.date()}")
+        
+        # Filter schedules to only include those from next week
+        next_week_schedules = []
+        for schedule in raw_schedules:
+            schedule_date_str = schedule.get('date', '')
+            if schedule_date_str:
+                try:
+                    # Parse ISO date string and convert to date
+                    schedule_date = datetime.fromisoformat(schedule_date_str.replace('Z', '+00:00')).date()
+                    
+                    # Check if this schedule falls within next week
+                    if next_monday.date() <= schedule_date <= next_sunday.date():
+                        next_week_schedules.append(schedule)
+                        print(f"DEBUG - Including schedule: {schedule.get('subject')} on {schedule_date} (next week)")
+                    else:
+                        print(f"DEBUG - Excluding schedule: {schedule.get('subject')} on {schedule_date} (not next week)")
+                        
+                except Exception as e:
+                    print(f"DEBUG - Error parsing schedule date {schedule_date_str}: {e}")
+        
+        print(f"DEBUG - Found {len(next_week_schedules)} schedules for next week out of {len(raw_schedules)} total")
+        
+        response_parts = [f"📅 **Your Schedule Next Week**"]
+        response_parts.append(f"*Week of {week_range}*")
+        response_parts.append("")
+        
+        # Group schedules by day for next week
+        days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        schedule_by_day = {day: [] for day in days_of_week}
+        
+        # Organize next week schedules by day
+        for schedule in next_week_schedules:
+            schedule_date_str = schedule.get('date', '')
+            if schedule_date_str:
+                try:
+                    # Parse ISO date string and get day name
+                    schedule_date = datetime.fromisoformat(schedule_date_str.replace('Z', '+00:00'))
+                    schedule_day = schedule_date.strftime('%A')  # Gets day name like "Monday"
+                    
+                    # Format the schedule entry
+                    schedule_entry = f"{schedule.get('subject', 'Unknown Class')} from {schedule.get('startTime', 'TBA')} to {schedule.get('endTime', 'TBA')} in room {schedule.get('room', 'TBA')}"
+                    schedule_by_day[schedule_day].append(schedule_entry)
+                    print(f"DEBUG - Assigned {schedule.get('subject')} to {schedule_day}")
+                    
+                except Exception as e:
+                    print(f"DEBUG - Error processing schedule date {schedule_date_str}: {e}")
+        
+        # Display each day - show "No classes scheduled" for empty days
+        for day in days_of_week:
+            if schedule_by_day[day]:
+                response_parts.append(f"**{day}:**")
+                for schedule in schedule_by_day[day]:
+                    response_parts.append(f"  • {schedule}")
+                response_parts.append("")
+            else:
+                response_parts.append(f"**{day}:** No classes scheduled")
+                response_parts.append("")
+        
+        # If no schedules found for the entire week, add a helpful note
+        if not next_week_schedules:
+            response_parts.append("🎉 **You have a free week ahead!** No classes scheduled for next week.")
+            response_parts.append("")
+            response_parts.append("💡 *Tip: Perfect time to plan ahead or work on long-term projects.*")
         
         return "\n".join(response_parts).strip()
     
@@ -829,12 +919,32 @@ def chat():
         
         # Determine if this is a Smart Mode button action for navigation
         navigation_action = None
+        navigation_actions = []  # Support multiple navigation actions
         message_lower = message.lower().strip()
         if ('show my schedules for this week' in message_lower or 
             'schedules for this week' in message_lower):
+            # For current week schedule, provide both "View Full Schedule" and "See Next Week" actions
+            navigation_actions = [
+                {
+                    'type': 'navigate',
+                    'action': 'schedule',
+                    'label': '📅 View Full Schedule',
+                    'url': '/#weekly'
+                },
+                {
+                    'type': 'chat_action',
+                    'action': 'next_week_schedule',
+                    'label': '📆 See Next Week',
+                    'message': 'Show my schedules for next week'
+                }
+            ]
+            # Keep single navigation_action for backward compatibility
+            navigation_action = navigation_actions[0]
+        elif ('show my schedules for next week' in message_lower or 
+              'schedules for next week' in message_lower):
             navigation_action = {
                 'type': 'navigate',
-                'action': 'schedule',
+                'action': 'next_week_schedule',
                 'label': '📅 View Full Schedule',
                 'url': '/#weekly'
             }
@@ -860,7 +970,8 @@ def chat():
             'is_throttled': is_fallback and len(WORKING_MODELS) > 0,
             'model_used': available_models[0]['name'] if available_models and not is_fallback else 'Rule-based',
             'timestamp': datetime.now().isoformat(),
-            'navigation_action': navigation_action
+            'navigation_action': navigation_action,
+            'navigation_actions': navigation_actions if navigation_actions else None
         })
         
     except Exception as e:

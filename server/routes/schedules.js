@@ -10,7 +10,7 @@ const { asyncHandler, AppError } = require('../middleware/errorHandler');
 router.get('/', asyncHandler(async (req, res) => {
   const {
     page = 1,
-    limit = 10,
+    limit = 0,
     date,
     instructor,
     department,

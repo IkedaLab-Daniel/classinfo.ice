@@ -544,6 +544,8 @@
 .navigation-action {
     margin-top: 12px;
     display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
     justify-content: center;
 }
 
@@ -561,12 +563,24 @@
     align-items: center;
     gap: 6px;
     box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+    flex: 1;
+    min-width: 140px;
+    justify-content: center;
 }
 
 .navigation-btn:hover {
     background: linear-gradient(135deg, #1d4ed8, #1e40af);
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+}
+
+/* Special styling for the "See Next Week" button */
+.navigation-btn:nth-child(2) {
+    background: linear-gradient(135deg, #059669, #047857);
+}
+
+.navigation-btn:nth-child(2):hover {
+    background: linear-gradient(135deg, #047857, #065f46);
 }
 
 .message-meta {

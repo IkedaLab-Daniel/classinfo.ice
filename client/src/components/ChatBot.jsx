@@ -153,7 +153,8 @@ const ChatBot = () => {
                     contextItemsUsed: responseData.success ? responseData.data.context_items_used : responseData.context_items_used,
                     aiPowered: responseData.success ? responseData.data.ai_powered : responseData.ai_powered,
                     isThrottled: responseData.success ? responseData.data.is_throttled : responseData.is_throttled,
-                    navigationAction: responseData.success ? responseData.data.navigation_action : responseData.navigation_action
+                    navigationAction: responseData.success ? responseData.data.navigation_action : responseData.navigation_action,
+                    navigationActions: responseData.success ? responseData.data.navigation_actions : responseData.navigation_actions
                 }]);
             } else {
                 // Add error message with fallback if available
@@ -195,16 +196,25 @@ const ChatBot = () => {
     // Handle navigation actions
     const handleNavigationAction = (action) => {
         console.log('Navigation action:', action);
-        // Close the chat modal first
-        setIsOpen(false);
         
-        // Navigate to the specified URL/section
-        if (action.url) {
-            // Use a small delay to allow modal close animation
-            setTimeout(() => {
-                // Perform actual navigation using window.location
-                window.location.href = action.url;
-            }, 200);
+        if (action.type === 'navigate') {
+            // Close the chat modal first for navigation
+            setIsOpen(false);
+            
+            // Navigate to the specified URL/section
+            if (action.url) {
+                // Use a small delay to allow modal close animation
+                setTimeout(() => {
+                    // Perform actual navigation using window.location
+                    window.location.href = action.url;
+                }, 200);
+            }
+        } else if (action.type === 'chat_action') {
+            // Handle chat actions (send a message)
+            if (action.message) {
+                // Don't close the modal, just send the message
+                sendChatRequest(action.message);
+            }
         }
     };
 
@@ -389,15 +399,29 @@ const ChatBot = () => {
                                                 )}
                                             </div>
                                             
-                                            {/* Navigation Action Button */}
-                                            {message.navigationAction && (
+                                            {/* Navigation Action Buttons */}
+                                            {(message.navigationActions || message.navigationAction) && (
                                                 <div className="navigation-action">
-                                                    <button 
-                                                        className="navigation-btn"
-                                                        onClick={() => handleNavigationAction(message.navigationAction)}
-                                                    >
-                                                        {message.navigationAction.label}
-                                                    </button>
+                                                    {message.navigationActions ? (
+                                                        // Multiple navigation actions
+                                                        message.navigationActions.map((action, index) => (
+                                                            <button 
+                                                                key={index}
+                                                                className="navigation-btn"
+                                                                onClick={() => handleNavigationAction(action)}
+                                                            >
+                                                                {action.label}
+                                                            </button>
+                                                        ))
+                                                    ) : (
+                                                        // Single navigation action (backward compatibility)
+                                                        <button 
+                                                            className="navigation-btn"
+                                                            onClick={() => handleNavigationAction(message.navigationAction)}
+                                                        >
+                                                            {message.navigationAction.label}
+                                                        </button>
+                                                    )}
                                                 </div>
                                             )}
                                             
