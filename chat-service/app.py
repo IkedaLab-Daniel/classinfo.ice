@@ -4,7 +4,7 @@ import requests
 import os
 import json
 import google.generativeai as genai
-from datetime import datetime, timedelta, timezone, timezone
+from datetime import datetime, timedelta, timezone
 import threading
 import time
 from dotenv import load_dotenv
@@ -423,16 +423,44 @@ class ChatService:
                 for msg in conversation_history[-3:]  # Last 3 exchanges
             ])
 
-        # Get current date and time
-        current_datetime = datetime.now()
+        # Get current date and time in US Eastern Time
+        def get_eastern_time():
+            """Get current time in US Eastern timezone with proper DST handling"""
+            utc_now = datetime.now(timezone.utc)
+            
+            # Simple DST calculation for US Eastern Time
+            # DST starts second Sunday in March, ends first Sunday in November
+            year = utc_now.year
+            
+            # Find second Sunday in March
+            march_first = datetime(year, 3, 1, tzinfo=timezone.utc)
+            march_first_sunday = march_first + timedelta(days=(6 - march_first.weekday()) % 7)
+            dst_start = march_first_sunday + timedelta(days=7)  # Second Sunday
+            
+            # Find first Sunday in November
+            nov_first = datetime(year, 11, 1, tzinfo=timezone.utc)
+            dst_end = nov_first + timedelta(days=(6 - nov_first.weekday()) % 7)
+            
+            # Determine if we're in DST
+            if dst_start <= utc_now < dst_end:
+                # Daylight Saving Time (EDT = UTC-4)
+                eastern_offset = timedelta(hours=-4)
+            else:
+                # Standard Time (EST = UTC-5)
+                eastern_offset = timedelta(hours=-5)
+            
+            return utc_now.replace(tzinfo=timezone.utc).astimezone(timezone(eastern_offset))
+        
+        current_datetime = get_eastern_time()
         current_date = current_datetime.strftime("%A, %B %d, %Y")
         current_time = current_datetime.strftime("%I:%M %p")
+        timezone_info = "EDT" if current_datetime.utcoffset() == timedelta(hours=-4) else "EST"
 
         # Build prompt
         prompt_content = f"""
 You are a Bee professional academic assistant for a student. You have access to their schedule, tasks, and announcements. Maintain a helpful, supportive, and informative tone.
 
-Current Date and Time: {current_date} at {current_time}
+Current Date and Time: {current_date} at {current_time} {timezone_info}
 
 Previous conversation:
 {history_text}
@@ -583,8 +611,36 @@ Response:
             print(f"Error fetching fresh schedule data: {e}")
             raw_schedules = []
         
-        # Get current week date range
-        today = datetime.now()
+        # Get current week date range using US Eastern Time with DST handling
+        def get_eastern_time():
+            """Get current time in US Eastern timezone with proper DST handling"""
+            utc_now = datetime.now(timezone.utc)
+            
+            # Simple DST calculation for US Eastern Time
+            # DST starts second Sunday in March, ends first Sunday in November
+            year = utc_now.year
+            
+            # Find second Sunday in March
+            march_first = datetime(year, 3, 1, tzinfo=timezone.utc)
+            march_first_sunday = march_first + timedelta(days=(6 - march_first.weekday()) % 7)
+            dst_start = march_first_sunday + timedelta(days=7)  # Second Sunday
+            
+            # Find first Sunday in November
+            nov_first = datetime(year, 11, 1, tzinfo=timezone.utc)
+            dst_end = nov_first + timedelta(days=(6 - nov_first.weekday()) % 7)
+            
+            # Determine if we're in DST
+            if dst_start <= utc_now < dst_end:
+                # Daylight Saving Time (EDT = UTC-4)
+                eastern_offset = timedelta(hours=-4)
+            else:
+                # Standard Time (EST = UTC-5)
+                eastern_offset = timedelta(hours=-5)
+            
+            return utc_now.replace(tzinfo=timezone.utc).astimezone(timezone(eastern_offset))
+        
+        today = get_eastern_time()
+        
         # Find Monday of current week
         days_since_monday = today.weekday()  # Monday is 0
         monday = today - timedelta(days=days_since_monday)
@@ -679,8 +735,36 @@ Response:
             print(f"Error fetching fresh schedule data: {e}")
             raw_schedules = []
         
-        # Get next week date range
-        today = datetime.now()
+        # Get next week date range using US Eastern Time with DST handling
+        def get_eastern_time():
+            """Get current time in US Eastern timezone with proper DST handling"""
+            utc_now = datetime.now(timezone.utc)
+            
+            # Simple DST calculation for US Eastern Time
+            # DST starts second Sunday in March, ends first Sunday in November
+            year = utc_now.year
+            
+            # Find second Sunday in March
+            march_first = datetime(year, 3, 1, tzinfo=timezone.utc)
+            march_first_sunday = march_first + timedelta(days=(6 - march_first.weekday()) % 7)
+            dst_start = march_first_sunday + timedelta(days=7)  # Second Sunday
+            
+            # Find first Sunday in November
+            nov_first = datetime(year, 11, 1, tzinfo=timezone.utc)
+            dst_end = nov_first + timedelta(days=(6 - nov_first.weekday()) % 7)
+            
+            # Determine if we're in DST
+            if dst_start <= utc_now < dst_end:
+                # Daylight Saving Time (EDT = UTC-4)
+                eastern_offset = timedelta(hours=-4)
+            else:
+                # Standard Time (EST = UTC-5)
+                eastern_offset = timedelta(hours=-5)
+            
+            return utc_now.replace(tzinfo=timezone.utc).astimezone(timezone(eastern_offset))
+        
+        today = get_eastern_time()
+        
         # Find Monday of current week, then add 7 days for next week
         days_since_monday = today.weekday()  # Monday is 0
         current_monday = today - timedelta(days=days_since_monday)
