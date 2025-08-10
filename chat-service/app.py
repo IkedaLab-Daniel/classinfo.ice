@@ -235,8 +235,19 @@ class ContextManager:
         for schedule in data['schedules']:
             # Check if this is a date-specific query (like "today")
             if today_query:
-                # Get today's date in UTC
-                today_utc = datetime.now(timezone.utc).date()
+                # Get today's date in proper timezone (Philippines UTC+8)
+                def get_user_timezone():
+                    """Get current time in appropriate timezone based on user location"""
+                    utc_now = datetime.now(timezone.utc)
+                    
+                    # Default to Philippines timezone (UTC+8) since users are experiencing issues there
+                    # Philippines doesn't observe DST, so it's consistently UTC+8
+                    philippines_offset = timedelta(hours=8)
+                    philippines_time = utc_now.replace(tzinfo=timezone.utc).astimezone(timezone(philippines_offset))
+                    
+                    return philippines_time
+                
+                today_user_tz = get_user_timezone().date()
                 
                 # Parse schedule date
                 schedule_date_str = schedule.get('date', '')
@@ -245,10 +256,10 @@ class ContextManager:
                         # Parse ISO date string and convert to date
                         schedule_date = datetime.fromisoformat(schedule_date_str.replace('Z', '+00:00')).date()
                         
-                        print(f"DEBUG - Schedule: {schedule.get('subject')} on {schedule_date}, Today: {today_utc}")
+                        print(f"DEBUG - Schedule: {schedule.get('subject')} on {schedule_date}, Today: {today_user_tz}")
                         
                         # Only include if it's actually today
-                        if schedule_date != today_utc:
+                        if schedule_date != today_user_tz:
                             continue
                             
                     except Exception as e:
@@ -423,38 +434,24 @@ class ChatService:
                 for msg in conversation_history[-3:]  # Last 3 exchanges
             ])
 
-        # Get current date and time in US Eastern Time
-        def get_eastern_time():
-            """Get current time in US Eastern timezone with proper DST handling"""
+        # Get current date and time in appropriate timezone (Philippines UTC+8 or Eastern Time)
+        def get_user_timezone():
+            """Get current time in appropriate timezone based on user location"""
             utc_now = datetime.now(timezone.utc)
             
-            # Simple DST calculation for US Eastern Time
-            # DST starts second Sunday in March, ends first Sunday in November
-            year = utc_now.year
+            # Default to Philippines timezone (UTC+8) since users are experiencing issues there
+            # Philippines doesn't observe DST, so it's consistently UTC+8
+            philippines_offset = timedelta(hours=8)
+            philippines_time = utc_now.replace(tzinfo=timezone.utc).astimezone(timezone(philippines_offset))
             
-            # Find second Sunday in March
-            march_first = datetime(year, 3, 1, tzinfo=timezone.utc)
-            march_first_sunday = march_first + timedelta(days=(6 - march_first.weekday()) % 7)
-            dst_start = march_first_sunday + timedelta(days=7)  # Second Sunday
-            
-            # Find first Sunday in November
-            nov_first = datetime(year, 11, 1, tzinfo=timezone.utc)
-            dst_end = nov_first + timedelta(days=(6 - nov_first.weekday()) % 7)
-            
-            # Determine if we're in DST
-            if dst_start <= utc_now < dst_end:
-                # Daylight Saving Time (EDT = UTC-4)
-                eastern_offset = timedelta(hours=-4)
-            else:
-                # Standard Time (EST = UTC-5)
-                eastern_offset = timedelta(hours=-5)
-            
-            return utc_now.replace(tzinfo=timezone.utc).astimezone(timezone(eastern_offset))
+            # For now, prioritize Philippines time since that's where the issue is occurring
+            # In the future, this could be made configurable per user
+            return philippines_time
         
-        current_datetime = get_eastern_time()
+        current_datetime = get_user_timezone()
         current_date = current_datetime.strftime("%A, %B %d, %Y")
         current_time = current_datetime.strftime("%I:%M %p")
-        timezone_info = "EDT" if current_datetime.utcoffset() == timedelta(hours=-4) else "EST"
+        timezone_info = "PHT"  # Philippines Time (UTC+8)
 
         # Build prompt
         prompt_content = f"""
@@ -611,35 +608,19 @@ Response:
             print(f"Error fetching fresh schedule data: {e}")
             raw_schedules = []
         
-        # Get current week date range using US Eastern Time with DST handling
-        def get_eastern_time():
-            """Get current time in US Eastern timezone with proper DST handling"""
+        # Get current week date range using appropriate timezone (Philippines UTC+8)
+        def get_user_timezone():
+            """Get current time in appropriate timezone based on user location"""
             utc_now = datetime.now(timezone.utc)
             
-            # Simple DST calculation for US Eastern Time
-            # DST starts second Sunday in March, ends first Sunday in November
-            year = utc_now.year
+            # Default to Philippines timezone (UTC+8) since users are experiencing issues there
+            # Philippines doesn't observe DST, so it's consistently UTC+8
+            philippines_offset = timedelta(hours=8)
+            philippines_time = utc_now.replace(tzinfo=timezone.utc).astimezone(timezone(philippines_offset))
             
-            # Find second Sunday in March
-            march_first = datetime(year, 3, 1, tzinfo=timezone.utc)
-            march_first_sunday = march_first + timedelta(days=(6 - march_first.weekday()) % 7)
-            dst_start = march_first_sunday + timedelta(days=7)  # Second Sunday
-            
-            # Find first Sunday in November
-            nov_first = datetime(year, 11, 1, tzinfo=timezone.utc)
-            dst_end = nov_first + timedelta(days=(6 - nov_first.weekday()) % 7)
-            
-            # Determine if we're in DST
-            if dst_start <= utc_now < dst_end:
-                # Daylight Saving Time (EDT = UTC-4)
-                eastern_offset = timedelta(hours=-4)
-            else:
-                # Standard Time (EST = UTC-5)
-                eastern_offset = timedelta(hours=-5)
-            
-            return utc_now.replace(tzinfo=timezone.utc).astimezone(timezone(eastern_offset))
+            return philippines_time
         
-        today = get_eastern_time()
+        today = get_user_timezone()
         
         # Find Monday of current week
         days_since_monday = today.weekday()  # Monday is 0
@@ -735,35 +716,19 @@ Response:
             print(f"Error fetching fresh schedule data: {e}")
             raw_schedules = []
         
-        # Get next week date range using US Eastern Time with DST handling
-        def get_eastern_time():
-            """Get current time in US Eastern timezone with proper DST handling"""
+        # Get next week date range using appropriate timezone (Philippines UTC+8)
+        def get_user_timezone():
+            """Get current time in appropriate timezone based on user location"""
             utc_now = datetime.now(timezone.utc)
             
-            # Simple DST calculation for US Eastern Time
-            # DST starts second Sunday in March, ends first Sunday in November
-            year = utc_now.year
+            # Default to Philippines timezone (UTC+8) since users are experiencing issues there
+            # Philippines doesn't observe DST, so it's consistently UTC+8
+            philippines_offset = timedelta(hours=8)
+            philippines_time = utc_now.replace(tzinfo=timezone.utc).astimezone(timezone(philippines_offset))
             
-            # Find second Sunday in March
-            march_first = datetime(year, 3, 1, tzinfo=timezone.utc)
-            march_first_sunday = march_first + timedelta(days=(6 - march_first.weekday()) % 7)
-            dst_start = march_first_sunday + timedelta(days=7)  # Second Sunday
-            
-            # Find first Sunday in November
-            nov_first = datetime(year, 11, 1, tzinfo=timezone.utc)
-            dst_end = nov_first + timedelta(days=(6 - nov_first.weekday()) % 7)
-            
-            # Determine if we're in DST
-            if dst_start <= utc_now < dst_end:
-                # Daylight Saving Time (EDT = UTC-4)
-                eastern_offset = timedelta(hours=-4)
-            else:
-                # Standard Time (EST = UTC-5)
-                eastern_offset = timedelta(hours=-5)
-            
-            return utc_now.replace(tzinfo=timezone.utc).astimezone(timezone(eastern_offset))
+            return philippines_time
         
-        today = get_eastern_time()
+        today = get_user_timezone()
         
         # Find Monday of current week, then add 7 days for next week
         days_since_monday = today.weekday()  # Monday is 0
