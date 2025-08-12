@@ -33,24 +33,30 @@ CORS(app, origins=[
 print("OPENROUTER_API_KEY:", "***" + str(OPENROUTER_API_KEY)[-4:] if OPENROUTER_API_KEY else "Not set")
 print("FRONTEND_URL:", FRONTEND_URL)
 
-# Model configuration with fallback chain
+# Model configuration with fallback chain - Updated with more reliable models
 MODEL_CHAIN = [
-    {
-        "provider": "openrouter",
-        "model": "meta-llama/llama-3.1-8b-instruct:free",
-        "name": "Llama 3.1 8B (Free)",
-        "available": bool(OPENROUTER_API_KEY)
-    },
-    {
-        "provider": "openrouter",
-        "model": "deepseek/deepseek-chat-v3-0324:free",
-        "name": "DeepSeek V3 0324 (free)",
-        "available": bool(OPENROUTER_API_KEY)
-    },
     {
         "provider": "openrouter", 
         "model": "mistralai/mistral-7b-instruct:free",
         "name": "Mistral 7B (Free)",
+        "available": bool(OPENROUTER_API_KEY)
+    },
+    {
+        "provider": "openrouter",
+        "model": "huggingface/meta-llama/llama-3.2-3b-instruct:free",
+        "name": "Llama 3.2 3B (Free)",
+        "available": bool(OPENROUTER_API_KEY)
+    },
+    {
+        "provider": "openrouter",
+        "model": "microsoft/phi-3-mini-128k-instruct:free",
+        "name": "Phi-3 Mini (Free)",
+        "available": bool(OPENROUTER_API_KEY)
+    },
+    {
+        "provider": "openrouter",
+        "model": "qwen/qwen-2-7b-instruct:free",
+        "name": "Qwen 2 7B (Free)",
         "available": bool(OPENROUTER_API_KEY)
     },
     {
@@ -79,7 +85,7 @@ if GEMINI_API_KEY:
         print(f"❌ Gemini AI initialization failed: {e}")
 
 # OpenRouter API helper function
-def call_openrouter_api(model, messages, max_tokens=1000):
+def call_openrouter_api(model, messages, max_tokens=1000, temperature=0.7):
     """Call OpenRouter API with the specified model"""
     try:
         headers = {
@@ -93,20 +99,59 @@ def call_openrouter_api(model, messages, max_tokens=1000):
             "model": model,
             "messages": messages,
             "max_tokens": max_tokens,
-            "temperature": 0.7
+            "temperature": temperature
         }
         
         response = requests.post(OPENROUTER_BASE_URL, headers=headers, json=data, timeout=30)
+        
+        # Handle different HTTP status codes
+        if response.status_code == 404:
+            raise Exception(f"Model '{model}' not found (404). Model may be discontinued or moved.")
+        elif response.status_code == 429:
+            raise Exception(f"Rate limit exceeded (429). Please wait before retrying.")
+        elif response.status_code == 524:
+            raise Exception(f"Provider timeout (524). Upstream service unavailable.")
+        elif response.status_code >= 500:
+            raise Exception(f"Server error ({response.status_code}). Provider service issue.")
+        
         response.raise_for_status()
         
         result = response.json()
+        
+        # Check for API-level errors in the response
+        if 'error' in result:
+            error_info = result['error']
+            error_code = error_info.get('code', 'unknown')
+            error_message = error_info.get('message', 'Unknown error')
+            
+            if error_code == 524:
+                raise Exception(f"Provider timeout (524): {error_message}")
+            elif error_code == 429:
+                raise Exception(f"Rate limit (429): {error_message}")
+            elif error_code == 404:
+                raise Exception(f"Model not found (404): {error_message}")
+            else:
+                raise Exception(f"API error ({error_code}): {error_message}")
+        
         if 'choices' in result and len(result['choices']) > 0:
             return result['choices'][0]['message']['content']
         else:
             raise Exception(f"Unexpected response format: {result}")
             
+    except requests.exceptions.Timeout:
+        raise Exception(f"Request timeout for model '{model}'. Try again later.")
+    except requests.exceptions.ConnectionError:
+        raise Exception(f"Connection error to OpenRouter API. Check your internet connection.")
     except Exception as e:
-        raise Exception(f"OpenRouter API error: {e}")
+        # Re-raise our custom exceptions
+        if "Model" in str(e) and "not found" in str(e):
+            raise e
+        elif "timeout" in str(e).lower():
+            raise e
+        elif "rate limit" in str(e).lower():
+            raise e
+        else:
+            raise Exception(f"OpenRouter API error: {e}")
 
 # Test available models on startup
 def test_models():
@@ -185,7 +230,7 @@ class ContextManager:
         # Check if this is a specific content type query
         is_announcement_query = any(word in message_lower for word in ['announcement', 'announcements', 'news', 'update'])
         is_task_query = any(word in message_lower for word in ['task', 'tasks', 'assignment', 'assignments', 'homework', 'project', 'due'])
-        is_schedule_query = any(word in message_lower for word in ['schedule', 'class', 'classes', 'subject', 'today'])
+        is_schedule_query = any(word in message_lower for word in ['schedule', 'class', 'classes', 'subject', 'today', 'tomorrow'])
         
         print(f"DEBUG - Query type detection: announcement={is_announcement_query}, task={is_task_query}, schedule={is_schedule_query}")
         
@@ -231,10 +276,17 @@ class ContextManager:
         # Check schedules
         schedule_matches = 0
         today_query = any(word in message_lower for word in ['today', 'today?'])
+        tomorrow_query = any(word in message_lower for word in ['tomorrow', 'tomorrow?'])
+        
+        # Detect if this is a casual follow-up question (less strict filtering)
+        is_casual_followup = any(phrase in message_lower for phrase in ['how about', 'what about', 'and tomorrow', 'for tomorrow'])
         
         for schedule in data['schedules']:
-            # Check if this is a date-specific query (like "today")
-            if today_query:
+            should_include = False
+            
+            # Check if this is a date-specific query (like "today" or "tomorrow")
+            if (today_query or tomorrow_query) and not is_casual_followup:
+                # Apply strict date filtering only for direct date queries, not casual follow-ups
                 # Get today's date in proper timezone (Philippines UTC+8)
                 def get_user_timezone():
                     """Get current time in appropriate timezone based on user location"""
@@ -247,7 +299,17 @@ class ContextManager:
                     
                     return philippines_time
                 
-                today_user_tz = get_user_timezone().date()
+                user_tz_now = get_user_timezone()
+                today_user_tz = user_tz_now.date()
+                
+                if tomorrow_query:
+                    # Get tomorrow's date
+                    target_date = today_user_tz + timedelta(days=1)
+                    query_type = "tomorrow"
+                else:
+                    # Get today's date
+                    target_date = today_user_tz
+                    query_type = "today"
                 
                 # Parse schedule date
                 schedule_date_str = schedule.get('date', '')
@@ -256,30 +318,52 @@ class ContextManager:
                         # Parse ISO date string and convert to date
                         schedule_date = datetime.fromisoformat(schedule_date_str.replace('Z', '+00:00')).date()
                         
-                        print(f"DEBUG - Schedule: {schedule.get('subject')} on {schedule_date}, Today: {today_user_tz}")
+                        print(f"DEBUG - Schedule: {schedule.get('subject')} on {schedule_date}, Target ({query_type}): {target_date}")
                         
-                        # Only include if it's actually today
-                        if schedule_date != today_user_tz:
-                            continue
+                        # Only include if it matches the target date
+                        if schedule_date == target_date:
+                            should_include = True
+                            print(f"DEBUG - Including schedule for {query_type}: {schedule.get('subject')}")
+                        else:
+                            print(f"DEBUG - Excluding schedule (not {query_type}): {schedule.get('subject')} on {schedule_date}")
                             
                     except Exception as e:
                         print(f"DEBUG - Error parsing date {schedule_date_str}: {e}")
                         continue
+            else:
+                # For casual follow-ups or general queries, use keyword matching
+                if any(keyword in message_lower for keyword in [
+                    schedule.get('subject', '').lower(),
+                    schedule.get('room', '').lower(),
+                    schedule.get('day', '').lower(),
+                    'schedule', 'class', 'subject', 'today', 'tomorrow'
+                ]):
+                    should_include = True
+                    print(f"DEBUG - Including schedule via keyword match: {schedule.get('subject')}")
             
-            # Check if schedule matches query keywords
-            if any(keyword in message_lower for keyword in [
-                schedule.get('subject', '').lower(),
-                schedule.get('room', '').lower(),
-                schedule.get('day', '').lower(),
-                'schedule', 'class', 'subject', 'today'
-            ]):
+            # Include the schedule if it meets our criteria
+            if should_include:
                 # Format times for better display
                 start_time = ChatService.format_time(schedule.get('startTime', 'TBA'))
                 end_time = ChatService.format_time(schedule.get('endTime', 'TBA'))
                 
+                # Include date information in the context
+                schedule_date_str = schedule.get('date', '')
+                if schedule_date_str:
+                    try:
+                        # Parse and format the date for better readability
+                        schedule_date = datetime.fromisoformat(schedule_date_str.replace('Z', '+00:00'))
+                        formatted_date = schedule_date.strftime('%A, %B %d, %Y')
+                        content_with_date = f"{schedule.get('subject')} class on {formatted_date} from {start_time} to {end_time} in room {schedule.get('room')}"
+                    except Exception as e:
+                        # Fallback if date parsing fails
+                        content_with_date = f"{schedule.get('subject')} class from {start_time} to {end_time} in room {schedule.get('room')} (date: {schedule_date_str})"
+                else:
+                    content_with_date = f"{schedule.get('subject')} class from {start_time} to {end_time} in room {schedule.get('room')} (no date specified)"
+                
                 relevant_context.append({
                     'type': 'schedule',
-                    'content': f"{schedule.get('subject')} class from {start_time} to {end_time} in room {schedule.get('room')}"
+                    'content': content_with_date
                 })
                 schedule_matches += 1
                 print(f"DEBUG - Including schedule: {schedule.get('subject')} on {schedule.get('date', 'unknown date')}")
@@ -333,6 +417,23 @@ class ContextManager:
         
         print(f"DEBUG - Found {announcement_matches} relevant announcements")
         print(f"DEBUG - Total context items: {len(relevant_context)}")
+        
+        # Special handling for "today" or "tomorrow" queries with no results
+        if (today_query or tomorrow_query) and not relevant_context:
+            if tomorrow_query:
+                tomorrow_date = (datetime.now() + timedelta(days=1)).strftime('%A, %B %d, %Y')
+                print("DEBUG - Tomorrow query with no results - adding explicit 'no classes tomorrow' context")
+                relevant_context.append({
+                    'type': 'schedule',
+                    'content': f"No classes scheduled for tomorrow ({tomorrow_date})"
+                })
+            else:
+                today_date = datetime.now().strftime('%A, %B %d, %Y')
+                print("DEBUG - Today query with no results - adding explicit 'no classes today' context")
+                relevant_context.append({
+                    'type': 'schedule',
+                    'content': f"No classes scheduled for today ({today_date})"
+                })
         
         # For assignment queries, prioritize task context
         if is_task_query:
@@ -420,8 +521,33 @@ class ChatService:
             print("No AI models available, using rule-based fallback")
             return ChatService.generate_fallback_response(message, context), True
         
-        # Build context string
-        context_text = "\n".join([item['content'] for item in context])
+        # Build context string with clear structure
+        if not context:
+            context_text = "NO DATA AVAILABLE - The student has no schedules, tasks, or announcements in the database for this query."
+        else:
+            context_sections = []
+            
+            # Group context by type
+            schedules = [c for c in context if c['type'] == 'schedule']
+            tasks = [c for c in context if c['type'] == 'task']
+            announcements = [c for c in context if c['type'] == 'announcement']
+            
+            if schedules:
+                context_sections.append(f"SCHEDULES ({len(schedules)} found):")
+                for i, schedule in enumerate(schedules, 1):
+                    context_sections.append(f"{i}. {schedule['content']}")
+            
+            if tasks:
+                context_sections.append(f"\nTASKS ({len(tasks)} found):")
+                for i, task in enumerate(tasks, 1):
+                    context_sections.append(f"{i}. {task['content']}")
+            
+            if announcements:
+                context_sections.append(f"\nANNOUNCEMENTS ({len(announcements)} found):")
+                for i, announcement in enumerate(announcements, 1):
+                    context_sections.append(f"{i}. {announcement['content']}")
+            
+            context_text = "\n".join(context_sections)
         
         print(f"DEBUG - Context being sent to AI ({len(context)} items):")
         print(f"DEBUG - Context text (first 800 chars):\n{context_text[:800]}...")
@@ -455,30 +581,29 @@ class ChatService:
 
         # Build prompt
         prompt_content = f"""
-You are a Bee professional academic assistant for a student. You have access to their schedule, tasks, and announcements. Maintain a helpful, supportive, and informative tone.
+You are HunniBee, a friendly and helpful academic assistant for a student. You can have normal conversations while also helping with academic information.
 
 Current Date and Time: {current_date} at {current_time} {timezone_info}
 
 Previous conversation:
 {history_text}
 
-Current relevant information:
+AVAILABLE ACADEMIC DATA:
 {context_text}
 
 User's current question: {message}
 
-Instructions:
-- Provide clear, accurate, and helpful information
-- Use appropriate emojis sparingly for clarity and organization
+INSTRUCTIONS:
+- You can engage in normal, friendly conversation about any topic
+- For ACADEMIC QUERIES (schedules, tasks, assignments, announcements): Use information from the "AVAILABLE ACADEMIC DATA" section above
+- The academic data includes complete information with dates, times, and locations - use this information to answer questions
+- For academic data, be accurate and don't invent schedules, tasks, or announcements not listed
+- When answering follow-up questions like "how about tomorrow?" or "what about next class?", look through ALL the academic data provided to find relevant information
+- If you see schedule data in the available academic data, you can discuss it and identify which schedules are for today, tomorrow, or other specific dates
+- For general questions, study tips, motivation, or casual conversation: Respond naturally and helpfully
+- Use a friendly, encouraging tone with appropriate emojis
 - Today is {current_date}
-- Use the provided schedule/task/announcement information when relevant
-- For overdue tasks, provide gentle reminders and practical advice
-- For upcoming classes or deadlines, offer helpful preparation suggestions
-- Be encouraging and supportive in your responses
-- Format times and dates clearly and professionally
-- Calculate days remaining for deadlines accurately
-- When referring to "today", use {current_date}
-- Keep responses concise, organized, and actionable
+- Keep responses engaging and helpful
 
 Response:
 """
@@ -491,8 +616,17 @@ Response:
                 print(f"🔄 Trying {model_config['name']}...")
                 
                 if model_config["provider"] == "openrouter":
-                    messages = [{"role": "user", "content": prompt_content}]
-                    response = call_openrouter_api(model_config["model"], messages, max_tokens=1500)
+                    messages = [
+                        {
+                            "role": "system", 
+                            "content": "You are HunniBee, a friendly academic assistant. You can have normal conversations and help with general questions. For academic data (schedules, tasks, announcements), only use provided information and don't invent details."
+                        },
+                        {
+                            "role": "user", 
+                            "content": prompt_content
+                        }
+                    ]
+                    response = call_openrouter_api(model_config["model"], messages, max_tokens=1500, temperature=0.3)
                     print(f"✅ {model_config['name']} response received: {len(response)} characters")
                     # Remove from throttled list if successful
                     throttled_models.discard(model_config['name'])
@@ -884,7 +1018,7 @@ Response:
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    """Health check endpoint - FORCED SMART MODE (RAG disabled)"""
+    """Health check endpoint"""
     global last_throttle_check
     
     # Test basic service functionality (database connectivity)
@@ -897,8 +1031,8 @@ def health_check():
         service_functional = False
         service_error = str(e)
     
-    # FORCE SMART MODE: Always report AI as unavailable
-    available_models = []  # Force empty to disable AI Enhanced mode
+    # Check available models (not forced anymore)
+    available_models = [model for model in WORKING_MODELS if model['name'] not in throttled_models]
     
     # Determine service mode and status
     if not service_functional:
@@ -906,8 +1040,13 @@ def health_check():
         mode = 'error'
         status = 'unhealthy' 
         description = 'Service error - core functionality unavailable'
+    elif len(available_models) > 0:
+        # AI Enhanced mode - we have working AI models
+        mode = 'ai_enhanced'
+        status = 'healthy'
+        description = 'AI Enhanced - Full AI capabilities with context retrieval'
     else:
-        # Force Smart Mode - disable RAG/AI Enhanced mode
+        # Smart Mode - no AI available, use structured responses
         mode = 'smart_mode'
         status = 'healthy'
         description = 'Smart Mode - Structured responses with context retrieval'
@@ -918,9 +1057,9 @@ def health_check():
         'description': description,
         'timestamp': datetime.now().isoformat(),
         'service': 'chat-service',
-        'ai_available': False,  # Force AI unavailable
-        'working_models': [],   # Force empty list
-        'throttled_models': [],
+        'ai_available': len(available_models) > 0,
+        'working_models': [model['name'] for model in available_models],
+        'throttled_models': list(throttled_models),
         'service_functional': service_functional,
         'service_error': service_error
     })
@@ -987,12 +1126,16 @@ def chat():
         # Find relevant context
         context = ContextManager.find_relevant_context(message, user_data)
         
-        # FORCE SMART MODE: Always use rule-based responses (RAG disabled)
-        response = ChatService.generate_fallback_response(message, context)
-        is_fallback = True  # Always mark as fallback since we're forcing Smart Mode
+        # Use AI when available, fall back to Smart Mode when needed
+        available_models = [model for model in WORKING_MODELS if model['name'] not in throttled_models]
         
-        # Force empty available models to maintain Smart Mode
-        available_models = []
+        if available_models:
+            # Try AI first
+            response, is_fallback = ChatService.generate_ai_response(message, context, conversation_history)
+        else:
+            # Use Smart Mode fallback
+            response = ChatService.generate_fallback_response(message, context)
+            is_fallback = True
         
         # Store conversation
         if user_id not in conversations:
