@@ -36,6 +36,12 @@ const Manage = () => {
     // Active tab state
     const [activeTab, setActiveTab] = useState('schedules');
     
+    // Schedule filters state
+    const [scheduleFilter, setScheduleFilter] = useState('all');
+    const [customDateFrom, setCustomDateFrom] = useState('');
+    const [customDateTo, setCustomDateTo] = useState('');
+    const [filteredSchedules, setFilteredSchedules] = useState([]);
+    
     // Loading modal state
     const { isLoading, loadingMessage, showServerWaking, executeRequest } = useApiWithLoading();
 
@@ -229,6 +235,113 @@ const Manage = () => {
             setTasksLoading(false);
         }
     };
+
+    // Filter functions for schedules
+    const applyScheduleFilter = (filter, dateFrom = '', dateTo = '') => {
+        let filtered = [...schedules];
+        const today = new Date();
+        const todayStr = today.toISOString().split('T')[0];
+
+        switch (filter) {
+            case 'today':
+                filtered = schedules.filter(schedule => {
+                    const scheduleDate = new Date(schedule.date).toISOString().split('T')[0];
+                    return scheduleDate === todayStr;
+                });
+                break;
+            
+            case 'tomorrow':
+                const tomorrow = new Date(today);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tomorrowStr = tomorrow.toISOString().split('T')[0];
+                filtered = schedules.filter(schedule => {
+                    const scheduleDate = new Date(schedule.date).toISOString().split('T')[0];
+                    return scheduleDate === tomorrowStr;
+                });
+                break;
+            
+            case 'this_week':
+                const startOfWeek = new Date(today);
+                const day = startOfWeek.getDay();
+                const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1); // Monday
+                startOfWeek.setDate(diff);
+                startOfWeek.setHours(0, 0, 0, 0);
+                
+                const endOfWeek = new Date(startOfWeek);
+                endOfWeek.setDate(startOfWeek.getDate() + 6);
+                endOfWeek.setHours(23, 59, 59, 999);
+                
+                filtered = schedules.filter(schedule => {
+                    const scheduleDate = new Date(schedule.date);
+                    return scheduleDate >= startOfWeek && scheduleDate <= endOfWeek;
+                });
+                break;
+            
+            case 'next_week':
+                const nextWeekStart = new Date(today);
+                const dayOfWeek = nextWeekStart.getDay();
+                const daysUntilNextMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
+                nextWeekStart.setDate(nextWeekStart.getDate() + daysUntilNextMonday);
+                nextWeekStart.setHours(0, 0, 0, 0);
+                
+                const nextWeekEnd = new Date(nextWeekStart);
+                nextWeekEnd.setDate(nextWeekStart.getDate() + 6);
+                nextWeekEnd.setHours(23, 59, 59, 999);
+                
+                filtered = schedules.filter(schedule => {
+                    const scheduleDate = new Date(schedule.date);
+                    return scheduleDate >= nextWeekStart && scheduleDate <= nextWeekEnd;
+                });
+                break;
+            
+            case 'custom':
+                if (dateFrom && dateTo) {
+                    const fromDate = new Date(dateFrom);
+                    const toDate = new Date(dateTo);
+                    toDate.setHours(23, 59, 59, 999);
+                    
+                    filtered = schedules.filter(schedule => {
+                        const scheduleDate = new Date(schedule.date);
+                        return scheduleDate >= fromDate && scheduleDate <= toDate;
+                    });
+                }
+                break;
+            
+            case 'all':
+            default:
+                // No filtering, use all schedules
+                break;
+        }
+
+        // Sort filtered schedules by date and time
+        filtered.sort((a, b) => {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            if (dateA.getTime() === dateB.getTime()) {
+                // If same date, sort by start time
+                return a.startTime.localeCompare(b.startTime);
+            }
+            return dateA - dateB;
+        });
+
+        setFilteredSchedules(filtered);
+    };
+
+    const handleFilterChange = (filter) => {
+        setScheduleFilter(filter);
+        applyScheduleFilter(filter, customDateFrom, customDateTo);
+    };
+
+    const handleCustomDateChange = () => {
+        if (scheduleFilter === 'custom') {
+            applyScheduleFilter('custom', customDateFrom, customDateTo);
+        }
+    };
+
+    // Apply filter whenever schedules change
+    useEffect(() => {
+        applyScheduleFilter(scheduleFilter, customDateFrom, customDateTo);
+    }, [schedules, scheduleFilter, customDateFrom, customDateTo]);
 
     const handleAddSchedule = () => {
         setEditingSchedule(null);
@@ -703,15 +816,89 @@ const Manage = () => {
 
                 {activeTab === 'schedules' ? (
                     <>
+                        {/* Schedule Filters */}
+                        <div className="schedule-filters">
+                            <div className="filter-buttons">
+                                <button 
+                                    className={`filter-btn ${scheduleFilter === 'all' ? 'active' : ''}`}
+                                    onClick={() => handleFilterChange('all')}
+                                >
+                                    All
+                                </button>
+                                <button 
+                                    className={`filter-btn ${scheduleFilter === 'today' ? 'active' : ''}`}
+                                    onClick={() => handleFilterChange('today')}
+                                >
+                                    Today
+                                </button>
+                                <button 
+                                    className={`filter-btn ${scheduleFilter === 'tomorrow' ? 'active' : ''}`}
+                                    onClick={() => handleFilterChange('tomorrow')}
+                                >
+                                    Tomorrow
+                                </button>
+                                <button 
+                                    className={`filter-btn ${scheduleFilter === 'this_week' ? 'active' : ''}`}
+                                    onClick={() => handleFilterChange('this_week')}
+                                >
+                                    This Week
+                                </button>
+                                <button 
+                                    className={`filter-btn ${scheduleFilter === 'next_week' ? 'active' : ''}`}
+                                    onClick={() => handleFilterChange('next_week')}
+                                >
+                                    Next Week
+                                </button>
+                                <button 
+                                    className={`filter-btn ${scheduleFilter === 'custom' ? 'active' : ''}`}
+                                    onClick={() => handleFilterChange('custom')}
+                                >
+                                    Custom Range
+                                </button>
+                            </div>
+                            
+                            {scheduleFilter === 'custom' && (
+                                <div className="custom-date-range">
+                                    <div className="date-inputs">
+                                        <div className="date-input-group">
+                                            <label htmlFor="dateFrom">From:</label>
+                                            <input 
+                                                id="dateFrom"
+                                                type="date" 
+                                                value={customDateFrom}
+                                                onChange={(e) => setCustomDateFrom(e.target.value)}
+                                                onBlur={handleCustomDateChange}
+                                            />
+                                        </div>
+                                        <div className="date-input-group">
+                                            <label htmlFor="dateTo">To:</label>
+                                            <input 
+                                                id="dateTo"
+                                                type="date" 
+                                                value={customDateTo}
+                                                onChange={(e) => setCustomDateTo(e.target.value)}
+                                                onBlur={handleCustomDateChange}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
                         {schedulesLoading ? (
                             <div className="loading-container">
                                 <div className="spinner"></div>
                                 <p>Loading schedules...</p>
                             </div>
-                        ) : schedules.length === 0 ? (
+                        ) : filteredSchedules.length === 0 ? (
                             <div className="no-schedules-container">
                                 <Calendar size={48} />
-                                <p>No schedules found</p>
+                                <p>
+                                    {scheduleFilter === 'all' 
+                                        ? 'No schedules found'
+                                        : `No schedules found for ${scheduleFilter.replace('_', ' ')}`
+                                    }
+                                </p>
                                 <button className="add-first-schedule-btn" onClick={handleAddSchedule}>
                                     <Plus size={16} />
                                     Add Your First Schedule
@@ -719,6 +906,14 @@ const Manage = () => {
                             </div>
                         ) : (
                             <>
+                                {/* Filter Results Summary */}
+                                <div className="filter-summary">
+                                    <span>
+                                        Showing {filteredSchedules.length} of {schedules.length} schedules
+                                        {scheduleFilter !== 'all' && ` (${scheduleFilter.replace('_', ' ')})`}
+                                    </span>
+                                </div>
+                                
                                 {/* Desktop Schedule Table */}
                                 <div className="schedules-table-container desktop-table">
                                     <table className="schedules-table">
@@ -733,7 +928,7 @@ const Manage = () => {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {schedules.map((schedule) => (
+                                            {filteredSchedules.map((schedule) => (
                                                 <tr key={schedule._id}>
                                                     <td className="subject-cell">
                                                         <div className="subject-info">
@@ -785,7 +980,7 @@ const Manage = () => {
 
                                 {/* Mobile Schedule Cards */}
                                 <div className="schedules-mobile-container mobile-cards">
-                                    {schedules.map((schedule) => (
+                                    {filteredSchedules.map((schedule) => (
                                         <div key={schedule._id} className="schedule-mobile-card">
                                             <div className="mobile-card-header">
                                                 <div className="mobile-subject">

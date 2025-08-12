@@ -212,6 +212,10 @@
     color: #059669;
 }
 
+.chat-header-info .ai-status.ai_enhanced svg{
+    color: #059669;
+}
+
 .chat-header-info .ai-status.smart_mode {
     color: #d97706;
 }

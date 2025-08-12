@@ -36,6 +36,12 @@ print("FRONTEND_URL:", FRONTEND_URL)
 # Model configuration with fallback chain - Updated with more reliable models
 MODEL_CHAIN = [
     {
+        "provider": "personal_llm",
+        "model": "llama3.2:3b", 
+        "name": "Llama 3.2 3B (Personal Server)",
+        "available": bool(os.getenv('PERSONAL_LLM_URL'))  # Add this env var
+    },
+    {
         "provider": "openrouter", 
         "model": "mistralai/mistral-7b-instruct:free",
         "name": "Mistral 7B (Free)",
@@ -43,20 +49,32 @@ MODEL_CHAIN = [
     },
     {
         "provider": "openrouter",
-        "model": "huggingface/meta-llama/llama-3.2-3b-instruct:free",
-        "name": "Llama 3.2 3B (Free)",
+        "model": "meta-llama/llama-3.1-8b-instruct",
+        "name": "Meta: Llama 3.1 8B Instruct (Free)",
         "available": bool(OPENROUTER_API_KEY)
     },
     {
         "provider": "openrouter",
-        "model": "microsoft/phi-3-mini-128k-instruct:free",
-        "name": "Phi-3 Mini (Free)",
+        "model": "deepseek/deepseek-chat-v3-0324:free",
+        "name": "DeepSeek: DeepSeek V3 0324 (Free)",
         "available": bool(OPENROUTER_API_KEY)
     },
     {
         "provider": "openrouter",
-        "model": "qwen/qwen-2-7b-instruct:free",
-        "name": "Qwen 2 7B (Free)",
+        "model": "qwen/qwen3-coder:free",
+        "name": "Qwen: Qwen3 Coder (Free)",
+        "available": bool(OPENROUTER_API_KEY)
+    },
+    {
+        "provider": "openrouter",
+        "model": "deepseek/deepseek-r1-0528:free",
+        "name": "DeepSeek: R1 0528 (Free)",
+        "available": bool(OPENROUTER_API_KEY)
+    },
+    {
+        "provider": "openrouter",
+        "model": "openai/gpt-oss-20b:free",
+        "name": "Microsoft: MAI DS R1 (Free)",
         "available": bool(OPENROUTER_API_KEY)
     },
     {
@@ -153,6 +171,48 @@ def call_openrouter_api(model, messages, max_tokens=1000, temperature=0.7):
         else:
             raise Exception(f"OpenRouter API error: {e}")
 
+# Personal LLM API helper function
+def call_personal_llm_api(model, messages, max_tokens=1000, temperature=0.7):
+    """Call your personal LLM server running on your Mac"""
+    try:
+        personal_llm_url = os.getenv('PERSONAL_LLM_URL')
+        if not personal_llm_url:
+            raise Exception("Personal LLM URL not configured")
+        
+        # Format for Ollama API
+        if personal_llm_url.endswith('/'):
+            personal_llm_url = personal_llm_url[:-1]
+        
+        # Ollama chat API format
+        url = f"{personal_llm_url}/api/chat"
+        
+        data = {
+            "model": model,
+            "messages": messages,
+            "stream": False,
+            "options": {
+                "temperature": temperature,
+                "num_predict": max_tokens
+            }
+        }
+        
+        response = requests.post(url, json=data, timeout=60)  # Longer timeout for local processing
+        response.raise_for_status()
+        
+        result = response.json()
+        
+        if 'message' in result and 'content' in result['message']:
+            return result['message']['content']
+        else:
+            raise Exception(f"Unexpected response format from personal LLM: {result}")
+            
+    except requests.exceptions.Timeout:
+        raise Exception(f"Personal LLM server timeout. Check if your Mac is running and accessible.")
+    except requests.exceptions.ConnectionError:
+        raise Exception(f"Cannot connect to personal LLM server. Check URL: {personal_llm_url}")
+    except Exception as e:
+        raise Exception(f"Personal LLM API error: {e}")
+
 # Test available models on startup
 def test_models():
     """Test which models are actually working"""
@@ -161,7 +221,11 @@ def test_models():
     
     for model_config in AVAILABLE_MODELS:
         try:
-            if model_config["provider"] == "openrouter":
+            if model_config["provider"] == "personal_llm":
+                response = call_personal_llm_api(model_config["model"], test_messages)
+                working_models.append(model_config)
+                print(f"✅ {model_config['name']} is working (Personal LLM)")
+            elif model_config["provider"] == "openrouter":
                 response = call_openrouter_api(model_config["model"], test_messages)
                 working_models.append(model_config)
                 print(f"✅ {model_config['name']} is working")
@@ -615,7 +679,22 @@ Response:
             try:
                 print(f"🔄 Trying {model_config['name']}...")
                 
-                if model_config["provider"] == "openrouter":
+                if model_config["provider"] == "personal_llm":
+                    messages = [
+                        {
+                            "role": "system", 
+                            "content": "You are HunniBee, a friendly academic assistant. You can have normal conversations and help with general questions. For academic data (schedules, tasks, announcements), only use provided information and don't invent details."
+                        },
+                        {
+                            "role": "user", 
+                            "content": prompt_content
+                        }
+                    ]
+                    response = call_personal_llm_api(model_config["model"], messages, max_tokens=1500, temperature=0.3)
+                    print(f"✅ {model_config['name']} response received: {len(response)} characters (Personal LLM)")
+                    return response.strip(), False
+                    
+                elif model_config["provider"] == "openrouter":
                     messages = [
                         {
                             "role": "system", 
