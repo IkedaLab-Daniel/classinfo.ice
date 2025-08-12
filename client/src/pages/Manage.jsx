@@ -1,5 +1,5 @@
 
-import { Plus, Calendar, Megaphone, Settings, Users, X, Save, Edit, Trash2, Clock, MapPin, Eye, ClipboardList, AlertTriangle, CheckCircle2, Target } from 'lucide-react';
+import { Plus, Calendar, Megaphone, Settings, Users, X, Save, Edit, Trash2, Clock, MapPin, Eye, ClipboardList, AlertTriangle, CheckCircle2, Target, CalendarDays, Sun, CalendarRange, CalendarClock, CalendarX2, Filter } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { scheduleAPI, announcementAPI, taskAPI } from '../config/api';
 import LoadingModal from '../components/LoadingModal';
@@ -823,36 +823,42 @@ const Manage = () => {
                                     className={`filter-btn ${scheduleFilter === 'all' ? 'active' : ''}`}
                                     onClick={() => handleFilterChange('all')}
                                 >
+                                    <Filter className="filter-icon" />
                                     All
                                 </button>
                                 <button 
                                     className={`filter-btn ${scheduleFilter === 'today' ? 'active' : ''}`}
                                     onClick={() => handleFilterChange('today')}
                                 >
+                                    <Sun className="filter-icon" />
                                     Today
                                 </button>
                                 <button 
                                     className={`filter-btn ${scheduleFilter === 'tomorrow' ? 'active' : ''}`}
                                     onClick={() => handleFilterChange('tomorrow')}
                                 >
+                                    <CalendarDays className="filter-icon" />
                                     Tomorrow
                                 </button>
                                 <button 
                                     className={`filter-btn ${scheduleFilter === 'this_week' ? 'active' : ''}`}
                                     onClick={() => handleFilterChange('this_week')}
                                 >
+                                    <CalendarRange className="filter-icon" />
                                     This Week
                                 </button>
                                 <button 
                                     className={`filter-btn ${scheduleFilter === 'next_week' ? 'active' : ''}`}
                                     onClick={() => handleFilterChange('next_week')}
                                 >
+                                    <CalendarClock className="filter-icon" />
                                     Next Week
                                 </button>
                                 <button 
                                     className={`filter-btn ${scheduleFilter === 'custom' ? 'active' : ''}`}
                                     onClick={() => handleFilterChange('custom')}
                                 >
+                                    <CalendarX2 className="filter-icon" />
                                     Custom Range
                                 </button>
                             </div>

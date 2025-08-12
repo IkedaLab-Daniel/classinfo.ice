@@ -2380,6 +2380,10 @@ nav .wrapper .links a.active svg{
   padding: 8px 16px;
   border: 2px solid var(--border-color, #e5e7eb);
   border-radius: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
   background: var(--card-bg, #ffffff);
   color: var(--text-color, #374151);
   font-size: 14px;
@@ -2387,6 +2391,10 @@ nav .wrapper .links a.active svg{
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+}
+
+.filter-btn svg{
+  width: 15px;
 }
 
 .filter-btn:hover {
