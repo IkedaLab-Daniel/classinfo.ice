@@ -108,8 +108,8 @@ def call_openrouter_api(model, messages, max_tokens=1000, temperature=0.7):
     try:
         headers = {
             "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-            "HTTP-Referer": "http://localhost:5002",  # Optional
-            "X-Title": "Academic Schedule Assistant",   # Optional
+            "HTTP-Referer": "http://localhost:5002", 
+            "X-Title": "Academic Schedule Assistant",  
             "Content-Type": "application/json"
         }
         
