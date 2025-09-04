@@ -200,17 +200,17 @@ nav .wrapper .links a.active svg{
 }
 
 .nav-btn {
-  background: white;
-  border: 2px solid #e5e7eb;
+  background: rgba(37, 99, 235, 0.1);
+  border: 2px solid rgba(37, 99, 235, 0.2);
   border-radius: 50%;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  color: #6b7280;
+  color: #2563eb;
 }
 
 .nav-btn:hover {
