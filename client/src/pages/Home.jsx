@@ -3,6 +3,8 @@ import Today from '../components/Today'
 import Weekly from '../components/Weekly'
 import Tasks from '../components/Tasks'
 import Footer from '../components/Footer'
+import FooterFramer from '../components/FooterFramer'
+import FooterVanilla from '../components/FooterVanilla'
 import Announcement from '../components/Announcement'
 
 const Home = () => {
@@ -19,7 +21,7 @@ const Home = () => {
             <div id="tasks">
                 <Tasks />
             </div>
-            <Footer />
+            <FooterVanilla />
         </>
     )
 }
