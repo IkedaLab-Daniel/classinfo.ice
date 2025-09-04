@@ -187,17 +187,92 @@ nav .wrapper .links a.active svg{
   justify-content: center;
   align-items: center;
   gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 24px;
+}
+
+.date-navigation {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.nav-btn {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #6b7280;
+}
+
+.nav-btn:hover {
+  background: #f3f4f6;
+  border-color: #2563eb;
+  color: #2563eb;
+  transform: scale(1.05);
+}
+
+.nav-btn:active {
+  transform: scale(0.95);
+}
+
+.date-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+  gap: 8px;
+}
+
+.header-icon-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-icon-title svg {
+  color: #2563eb;
 }
 
 .today-header h2 {
   font-size: 1.8rem;
   font-weight: 600;
   color: #1a1a1a;
+  margin: 0;
 }
 
-.today-header svg {
-  color: #2563eb;
+.date-subtitle {
+  color: #6b7280;
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.today-btn {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 4px;
+}
+
+.today-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 #today > p {
@@ -1436,8 +1511,32 @@ nav .wrapper .links a.active svg{
     padding: 7px;
   }
   
+  .date-navigation {
+    gap: 12px;
+    max-width: 100%;
+  }
+  
+  .nav-btn {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .nav-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+  
   .today-header h2 {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+  }
+  
+  .date-subtitle {
+    font-size: 0.85rem;
+  }
+  
+  .today-btn {
+    padding: 5px 12px;
+    font-size: 0.75rem;
   }
   
   .schedule-cards-container .schedule-card {

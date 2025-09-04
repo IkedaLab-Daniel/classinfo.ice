@@ -1,4 +1,4 @@
-import { Clock, MapPin, FileText, Calendar, BookOpen, CheckCircle, Play, AlertCircle, XCircle } from 'lucide-react';
+import { Clock, MapPin, FileText, Calendar, BookOpen, CheckCircle, Play, AlertCircle, XCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { scheduleAPI } from '../config/api';
 import LoadingModal from './LoadingModal';
@@ -6,13 +6,66 @@ import useApiWithLoading from '../hooks/useApiWithLoading';
 
 const Today = () => {
     const [schedules, setSchedules] = useState([]);
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [dayOffset, setDayOffset] = useState(0); // 0 = today, 1 = tomorrow, -1 = yesterday, etc.
     const { isLoading, isServerWaking, error, executeRequest, clearError } = useApiWithLoading();
 
-    // Get today's date in YYYY-MM-DD format using local timezone
-    const today = new Date().getFullYear() + '-' + 
-                  String(new Date().getMonth() + 1).padStart(2, '0') + '-' + 
-                  String(new Date().getDate()).padStart(2, '0');
+    // Get current date and selected date in YYYY-MM-DD format
+    const getCurrentDate = () => {
+        const now = new Date();
+        return now.getFullYear() + '-' + 
+               String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+               String(now.getDate()).padStart(2, '0');
+    };
+
+    const getSelectedDateString = () => {
+        const date = new Date();
+        date.setDate(date.getDate() + dayOffset);
+        return date.getFullYear() + '-' + 
+               String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+               String(date.getDate()).padStart(2, '0');
+    };
+
+    const today = getCurrentDate();
     console.log('Today (local):', today);
+    console.log('Selected date:', getSelectedDateString(), 'Offset:', dayOffset);
+
+    // Navigation functions
+    const goToPreviousDay = () => {
+        setDayOffset(prev => prev - 1);
+    };
+
+    const goToNextDay = () => {
+        setDayOffset(prev => prev + 1);
+    };
+
+    const goToToday = () => {
+        setDayOffset(0);
+    };
+
+    // Get display text for the current selected day
+    const getDateDisplayText = () => {
+        if (dayOffset === 0) return "Today's Schedule";
+        if (dayOffset === 1) return "Tomorrow's Schedule";
+        if (dayOffset === -1) return "Yesterday's Schedule";
+        if (dayOffset > 1) return `${dayOffset} Days From Now`;
+        if (dayOffset < -1) return `${Math.abs(dayOffset)} Days Ago`;
+    };
+
+    // Get relative date description
+    const getRelativeDateText = () => {
+        const date = new Date();
+        date.setDate(date.getDate() + dayOffset);
+        
+        const options = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        };
+        
+        return date.toLocaleDateString('en-US', options);
+    };
 
     // Function to determine display status based on current time
     const getDisplayStatus = (schedule) => {
@@ -68,36 +121,26 @@ const Today = () => {
     useEffect(() => {
         const fetchSchedules = async () => {
             try {
+                const selectedDateString = getSelectedDateString();
                 const data = await executeRequest(
-                    () => scheduleAPI.getToday(),
+                    () => scheduleAPI.getByDate(selectedDateString),
                     { 
-                        loadingMessage: "Loading today's schedule",
+                        loadingMessage: `Loading ${dayOffset === 0 ? "today's" : dayOffset === 1 ? "tomorrow's" : dayOffset === -1 ? "yesterday's" : "selected day's"} schedule`,
                         serverWakeThreshold: 2500
                     }
                 );
                 
-                console.log('Today API Response:', data);
-                console.log('Today schedules data:', data.data);
+                console.log('Schedule API Response for', selectedDateString, ':', data);
+                console.log('Schedule data:', data.data);
                 setSchedules(data.data || []);
             } catch (err) {
-                console.error('Error fetching today schedules:', err);
+                console.error('Error fetching schedules:', err);
                 setSchedules([]);
             }
         };
 
         fetchSchedules();
-    }, [executeRequest]);
-
-    // Debug: Log schedules when they change
-    useEffect(() => {
-        console.log('Today schedules state updated:', schedules);
-        console.log('Number of today schedules:', schedules.length);
-    }, [schedules]);
-
-    // Since we're using the today endpoint, we don't need to filter anymore
-    const todaySchedules = schedules;
-
-    console.log('Final today schedules:', todaySchedules);
+    }, [executeRequest, dayOffset]); // Add dayOffset as dependency
 
     // Format time for display
     const formatTime = (time) => {
@@ -123,15 +166,42 @@ const Today = () => {
         {/* Loading Modal */}
         <LoadingModal 
             isOpen={isLoading} 
-            message="Loading today's schedule"
+            message={`Loading ${dayOffset === 0 ? "today's" : dayOffset === 1 ? "tomorrow's" : dayOffset === -1 ? "yesterday's" : "selected day's"} schedule`}
             isServerWaking={isServerWaking}
         />
         
         <div className="today-header">
-            <Calendar size={24} />
-            <h2>Today's Schedule</h2>
+            <div className="date-navigation">
+                <button 
+                    className="nav-btn nav-prev" 
+                    onClick={goToPreviousDay}
+                    title="Previous day"
+                >
+                    <ChevronLeft size={20} />
+                </button>
+                
+                <div className="date-info">
+                    <div className="header-icon-title">
+                        <Calendar size={24} />
+                        <h2>{getDateDisplayText()}</h2>
+                    </div>
+                    <p className="date-subtitle">{getRelativeDateText()}</p>
+                    {dayOffset !== 0 && (
+                        <button className="today-btn" onClick={goToToday}>
+                            Go to Today
+                        </button>
+                    )}
+                </div>
+                
+                <button 
+                    className="nav-btn nav-next" 
+                    onClick={goToNextDay}
+                    title="Next day"
+                >
+                    <ChevronRight size={20} />
+                </button>
+            </div>
         </div>
-        {/* <p>{formatDate(today)}</p> */}
         
         <div className="schedule-cards-container">
             {!isLoading && error ? (
@@ -142,8 +212,8 @@ const Today = () => {
                         Try Again
                     </button>
                 </div>
-            ) : !isLoading && todaySchedules.length > 0 ? (
-                todaySchedules.map(schedule => (
+            ) : !isLoading && schedules.length > 0 ? (
+                schedules.map(schedule => (
                     <div key={schedule.id || schedule._id} className="schedule-card" data-aos="fade-up">
                         <div className="head">
                             <BookOpen size={20} />
@@ -181,7 +251,7 @@ const Today = () => {
             ) : !isLoading ? (
                 <div className="no-schedules">
                     <Calendar size={48} />
-                    <p>No classes scheduled for today!</p>
+                    <p>No classes scheduled for {dayOffset === 0 ? 'today' : dayOffset === 1 ? 'tomorrow' : dayOffset === -1 ? 'yesterday' : 'this day'}!</p>
                 </div>
             ) : null}
         </div>
