@@ -6,8 +6,8 @@ import useApiWithLoading from '../hooks/useApiWithLoading';
 
 const Today = () => {
     const [schedules, setSchedules] = useState([]);
-    const [selectedDate, setSelectedDate] = useState(new Date());
-    const [dayOffset, setDayOffset] = useState(0); // 0 = today, 1 = tomorrow, -1 = yesterday, etc.
+    const [dayOffset, setDayOffset] = useState(0); // ? 0 = today, 1 = tomorrow, -1 = yesterday, etc.
+    const [isNavigating, setIsNavigating] = useState(false);
     const { isLoading, isServerWaking, error, executeRequest, clearError } = useApiWithLoading();
 
     // Get current date and selected date in YYYY-MM-DD format
@@ -32,14 +32,17 @@ const Today = () => {
 
     // Navigation functions
     const goToPreviousDay = () => {
+        setIsNavigating(true);
         setDayOffset(prev => prev - 1);
     };
 
     const goToNextDay = () => {
+        setIsNavigating(true);
         setDayOffset(prev => prev + 1);
     };
 
     const goToToday = () => {
+        setIsNavigating(true);
         setDayOffset(0);
     };
 
@@ -136,6 +139,10 @@ const Today = () => {
             } catch (err) {
                 console.error('Error fetching schedules:', err);
                 setSchedules([]);
+            } finally {
+                // Clear navigation loading state after fetch completes
+                // Set true for testing style
+                setIsNavigating(false);
             }
         };
 
@@ -173,9 +180,10 @@ const Today = () => {
         <div className="today-header">
             <div className="date-navigation">
                 <button 
-                    className="nav-btn nav-prev" 
+                    className={`nav-btn nav-prev ${isNavigating ? 'loading' : ''}`} 
                     onClick={goToPreviousDay}
                     title="Previous day"
+                    disabled={isNavigating}
                 >
                     <ChevronLeft size={20} />
                 </button>
@@ -187,16 +195,21 @@ const Today = () => {
                     </div>
                     <p className="date-subtitle">{getRelativeDateText()}</p>
                     {dayOffset !== 0 && (
-                        <button className="today-btn" onClick={goToToday}>
+                        <button 
+                            className={`today-btn ${isNavigating ? 'loading' : ''}`} 
+                            onClick={goToToday}
+                            disabled={isNavigating}
+                        >
                             Go to Today
                         </button>
                     )}
                 </div>
                 
                 <button 
-                    className="nav-btn nav-next" 
+                    className={`nav-btn nav-next ${isNavigating ? 'loading' : ''}`} 
                     onClick={goToNextDay}
                     title="Next day"
+                    disabled={isNavigating}
                 >
                     <ChevronRight size={20} />
                 </button>
@@ -204,7 +217,12 @@ const Today = () => {
         </div>
         
         <div className="schedule-cards-container">
-            {!isLoading && error ? (
+            {isNavigating ? (
+                <div className="navigation-loading">
+                    <div className="spinner"></div>
+                    <p>Loading schedules...</p>
+                </div>
+            ) : !isLoading && error ? (
                 <div className="error-state">
                     <Calendar size={48} />
                     <p>Error loading schedules: {error}</p>
@@ -248,7 +266,7 @@ const Today = () => {
                         </div>     
                     </div>
                 ))
-            ) : !isLoading ? (
+            ) : !isLoading && !isNavigating ? (
                 <div className="no-schedules">
                     <Calendar size={48} />
                     <p>No classes scheduled for {dayOffset === 0 ? 'today' : dayOffset === 1 ? 'tomorrow' : dayOffset === -1 ? 'yesterday' : 'this day'}!</p>

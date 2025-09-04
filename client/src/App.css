@@ -224,6 +224,30 @@ nav .wrapper .links a.active svg{
   transform: scale(0.95);
 }
 
+.nav-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.nav-btn.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.nav-btn.loading svg {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
 .date-info {
   display: flex;
   flex-direction: column;
@@ -273,6 +297,18 @@ nav .wrapper .links a.active svg{
 .today-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.today-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.today-btn.loading {
+  opacity: 0.7;
+  pointer-events: none;
 }
 
 #today > p {
@@ -492,6 +528,32 @@ nav .wrapper .links a.active svg{
 .loading-state p, .error-state p {
   font-size: 1.1rem;
   margin: 0 0 16px 0;
+}
+
+/* Navigation Loading State */
+.navigation-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  color: #6b7280;
+  min-height: 200px;
+}
+
+.navigation-loading .spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #f3f4f6;
+  border-top: 2px solid #2563eb;
+  margin-bottom: 12px;
+}
+
+.navigation-loading p {
+  font-size: 0.95rem;
+  margin: 0;
+  color: #9ca3af;
 }
 
 .spinner {
