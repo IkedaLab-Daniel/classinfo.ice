@@ -2480,6 +2480,28 @@ nav .wrapper .links a.active svg{
   }
 }
 
+/* Offline Schedule Styles */
+.offline-schedule-container {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.offline-schedule-text {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.offline-schedule-img {
+  max-width: 100%;
+  width: 280px;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
 /* Mobile Responsiveness for Loading Modal */
 @media (max-width: 768px) {
   .loading-modal {
@@ -2497,8 +2519,8 @@ nav .wrapper .links a.active svg{
 
   .loading-icon .spinner,
   .server-waking svg {
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
   }
 
   .pulse-ring:nth-child(1) {
@@ -2517,6 +2539,16 @@ nav .wrapper .links a.active svg{
     width: 100px;
     height: 100px;
     margin: -50px 0 0 -50px;
+  }
+
+  /* Mobile Offline Schedule Styles */
+  .offline-schedule-img {
+    width: 240px;
+    max-width: 90%;
+  }
+
+  .offline-schedule-text {
+    font-size: 0.8rem;
   }
 }
 

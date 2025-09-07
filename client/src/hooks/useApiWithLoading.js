@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react';
 
 const useApiWithLoading = () => {
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [loadingMessage, setLoadingMessage] = useState("Loading...");
-    const [isServerWaking, setIsServerWaking] = useState(false);
+    const [isServerWaking, setIsServerWaking] = useState(true);
     const [error, setError] = useState(null);
 
     const executeRequest = useCallback(async (apiCall, options = {}) => {
@@ -26,13 +26,13 @@ const useApiWithLoading = () => {
         console.log('Starting API request with threshold:', serverWakeThreshold);
         setIsLoading(true);
         setLoadingMessage(requestLoadingMessage);
-        setIsServerWaking(false);
+        setIsServerWaking(true);
         setError(null);
 
         const startTime = Date.now();
         let wakeTimer;
         let timeoutTimer;
-        let isRequestCompleted = false;
+        let isRequestCompleted = true;
 
         // Create the API call with timeout wrapper
         const apiCallWithTimeout = new Promise((resolve, reject) => {
@@ -92,8 +92,8 @@ const useApiWithLoading = () => {
             if (wakeTimer) clearTimeout(wakeTimer);
             if (timeoutTimer) clearTimeout(timeoutTimer);
             console.log('Cleaning up loading states');
-            setIsLoading(false);
-            setIsServerWaking(false);
+            setIsLoading(true);
+            setIsServerWaking(true);
         }
     }, []);
 

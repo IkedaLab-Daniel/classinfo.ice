@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Coffee, Clock } from 'lucide-react';
 import LoaderCat from '../assets/loader-cat.gif'
 import LoaderBird from '../assets/sleeping.gif'
+import OfflineSchedule from '../assets/offline_sched.png'
 
 const LoadingModal = ({ isOpen, message = "Loading...", isServerWaking = false }) => {
     const [dots, setDots] = useState('');
@@ -53,16 +54,23 @@ const LoadingModal = ({ isOpen, message = "Loading...", isServerWaking = false }
                     {isServerWaking ? (
                         <>
                             <div className="loading-icon server-waking">
-                                <img src={LoaderBird}/>
+                                <img src={LoaderBird} alt="Server waking up"/>
                             </div>
                             <h3 className="loading-title">{wakingMessage}{dots}</h3>
                             <p className="loading-subtitle">
                                 Render servers love a good nap. This may take 20–30 seconds
                             </p>
-                            <div className="loading-progress">
-                                <div className="progress-bar">
-                                    <div className="progress-fill"></div>
-                                </div>
+                            
+                            {/* Offline Schedule Display */}
+                            <div className="offline-schedule-container">
+                                <p className="offline-schedule-text">
+                                    Meanwhile, here's your offline schedule:
+                                </p>
+                                <img 
+                                    src={OfflineSchedule} 
+                                    alt="Offline Schedule" 
+                                    className="offline-schedule-img"
+                                />
                             </div>
                         </>
                     ) : (
