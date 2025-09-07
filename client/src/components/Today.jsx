@@ -70,28 +70,53 @@ const Today = () => {
         return date.toLocaleDateString('en-US', options);
     };
 
-    // Function to determine display status based on current time
+    // Function to determine display status based on current time and selected date
     const getDisplayStatus = (schedule) => {
         // If status is cancelled, don't change it
         if (schedule.status.toLowerCase() === 'cancelled') {
             return schedule.status;
         }
 
-        // Only modify "active" status based on current time
+        // Only modify "active" status based on current time and date
         if (schedule.status.toLowerCase() === 'active') {
             const now = new Date();
-            const currentTime = now.toTimeString().slice(0, 5); // Get HH:MM format
+            const selectedDate = new Date();
+            selectedDate.setDate(selectedDate.getDate() + dayOffset);
             
-            // Check if current time is within the schedule time range
-            if (currentTime >= schedule.startTime && currentTime <= schedule.endTime) {
-                return 'Live Now';
+            // Get dates in YYYY-MM-DD format for comparison
+            const currentDateString = now.getFullYear() + '-' + 
+                                    String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                                    String(now.getDate()).padStart(2, '0');
+            const selectedDateString = getSelectedDateString();
+            
+            // If the selected date is in the future, all schedules should be "Upcoming"
+            if (selectedDateString > currentDateString) {
+                return 'Upcoming';
             }
-            // Check if current time is after the schedule's end time
-            else if (currentTime > schedule.endTime) {
+            
+            // If the selected date is in the past, all schedules should be "Completed"
+            if (selectedDateString < currentDateString) {
                 return 'Completed';
-            } 
-            // Current time is before the schedule's start time
-            else {
+            }
+            
+            // If it's today (dayOffset === 0), use time-based logic
+            if (dayOffset === 0) {
+                const currentTime = now.toTimeString().slice(0, 5); // Get HH:MM format
+                
+                // Check if current time is within the schedule time range
+                if (currentTime >= schedule.startTime && currentTime <= schedule.endTime) {
+                    return 'Live Now';
+                }
+                // Check if current time is after the schedule's end time
+                else if (currentTime > schedule.endTime) {
+                    return 'Completed';
+                } 
+                // Current time is before the schedule's start time
+                else {
+                    return 'Upcoming';
+                }
+            } else {
+                // For today but with offset (shouldn't happen, but safety fallback)
                 return 'Upcoming';
             }
         }
