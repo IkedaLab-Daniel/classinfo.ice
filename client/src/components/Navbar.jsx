@@ -57,7 +57,6 @@ const NavBar = () => {
                                 }
                                 
                                 if (bestSection.id !== activeSection) {
-                                    console.log('🔍 Navigation: Switching to section:', bestSection.id, 'from:', activeSection);
                                     setActiveSection(bestSection.id);
                                 }
                             }
@@ -117,7 +116,6 @@ const NavBar = () => {
                     });
                     
                     if (currentSection !== activeSection) {
-                        console.log('📜 Scroll: Switching to section:', currentSection, 'from:', activeSection);
                         setActiveSection(currentSection);
                     }
                     
@@ -149,7 +147,6 @@ const NavBar = () => {
             // Use a more robust check
             setTimeout(() => {
                 if (!activeSection || activeSection === '') {
-                    console.log('🏠 Setting default active section to today-page');
                     setActiveSection('today-page');
                 }
             }, 1000); // Wait for AOS and other animations

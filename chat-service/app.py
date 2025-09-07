@@ -171,7 +171,7 @@ def call_openrouter_api(model, messages, max_tokens=1000, temperature=0.7):
         else:
             raise Exception(f"OpenRouter API error: {e}")
 
-# Personal LLM API helper function
+#  ! Personal LLM API helper function
 def call_personal_llm_api(model, messages, max_tokens=1000, temperature=0.7):
     """Call your personal LLM server running on your Mac"""
     try:
@@ -246,7 +246,7 @@ print(f"🚀 Working models: {[model['name'] for model in WORKING_MODELS]}")
 if not WORKING_MODELS:
     print("⚠️ No AI models available - will use rule-based responses only")
 
-# In-memory conversation storage (use Redis in production)
+# ! In-memory conversation storage (use Redis in production)
 conversations = {}
 
 # Global throttling state tracker
@@ -1150,9 +1150,12 @@ def chat():
         data = request.get_json()
         message = data.get('message', '').strip()
         user_id = data.get('user_id', 'anonymous')
+        requested_mode = data.get('mode', 'auto') 
         
         if not message:
             return jsonify({'error': 'Message is required'}), 400
+        
+        print(f"DEBUG - Chat request: mode='{requested_mode}', message='{message[:50]}...'")
         
         # Check for generic greetings and respond as a bee character
         message_lower = message.lower().strip()
@@ -1205,16 +1208,39 @@ def chat():
         # Find relevant context
         context = ContextManager.find_relevant_context(message, user_data)
         
-        # Use AI when available, fall back to Smart Mode when needed
+        # Determine which mode to use based on client request and server capabilities
         available_models = [model for model in WORKING_MODELS if model['name'] not in throttled_models]
         
-        if available_models:
-            # Try AI first
-            response, is_fallback = ChatService.generate_ai_response(message, context, conversation_history)
-        else:
-            # Use Smart Mode fallback
+        # ! Force specific mode behavior based on client selection
+        if requested_mode == 'smart_mode':
+            # Client explicitly requested Smart Mode - use structured responses
+            print("DEBUG - Client requested Smart Mode - using structured responses")
             response = ChatService.generate_fallback_response(message, context)
             is_fallback = True
+            actual_mode = 'smart_mode'
+        elif requested_mode == 'ai_enhanced' and available_models:
+            # Client requested AI Enhanced and we have working models
+            print("DEBUG - Client requested AI Enhanced - using AI")
+            response, is_fallback = ChatService.generate_ai_response(message, context, conversation_history)
+            actual_mode = 'ai_enhanced'
+        elif requested_mode == 'ai_enhanced' and not available_models:
+            # Client requested AI Enhanced but no models available - fallback to Smart Mode
+            print("DEBUG - Client requested AI Enhanced but no models available - falling back to Smart Mode")
+            response = ChatService.generate_fallback_response(message, context)
+            is_fallback = True
+            actual_mode = 'smart_mode'
+        else:
+            # Auto mode or unknown mode - use server logic
+            print("DEBUG - Auto mode or unknown - using server logic")
+            if available_models:
+                # Try AI first
+                response, is_fallback = ChatService.generate_ai_response(message, context, conversation_history)
+                actual_mode = 'ai_enhanced'
+            else:
+                # Use Smart Mode fallback
+                response = ChatService.generate_fallback_response(message, context)
+                is_fallback = True
+                actual_mode = 'smart_mode'
         
         # Store conversation
         if user_id not in conversations:
@@ -1280,9 +1306,11 @@ def chat():
         return jsonify({
             'response': response,
             'context_items_used': len(context),
-            'ai_powered': len(available_models) > 0 and not is_fallback,
+            'ai_powered': actual_mode == 'ai_enhanced' and not is_fallback,
             'is_throttled': is_fallback and len(WORKING_MODELS) > 0,
             'model_used': available_models[0]['name'] if available_models and not is_fallback else 'Rule-based',
+            'actual_mode': actual_mode,  # Tell client which mode was actually used
+            'requested_mode': requested_mode,  # Echo back what client requested
             'timestamp': datetime.now().isoformat(),
             'navigation_action': navigation_action,
             'navigation_actions': navigation_actions if navigation_actions else None

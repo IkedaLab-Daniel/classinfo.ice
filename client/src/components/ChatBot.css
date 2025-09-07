@@ -246,6 +246,35 @@
     gap: 8px;
 }
 
+/* Mode Selector */
+.mode-selector {
+    margin-right: 8px;
+}
+
+.mode-select {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+    min-width: 120px;
+}
+
+.mode-select:hover {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+}
+
+.mode-select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    background: white;
+}
+
 .clear-btn,
 .refresh-btn,
 .close-btn {

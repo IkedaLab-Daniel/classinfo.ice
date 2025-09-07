@@ -27,6 +27,8 @@ const ChatBot = () => {
     const [serviceMode, setServiceMode] = useState('loading'); // 'ai_enhanced', 'smart_mode', 'error', or 'loading'
     const [serviceDescription, setServiceDescription] = useState('Checking service status...');
     const [aiAvailable, setAiAvailable] = useState(true); // Track AI availability separately
+    const [userSelectedMode, setUserSelectedMode] = useState(null); // User's manual mode selection
+    const [availableModes, setAvailableModes] = useState([]); // Modes available from server
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
 
@@ -69,12 +71,25 @@ const ChatBot = () => {
             });
             const data = await response.json();
             
+            // Store available modes from server
+            const modes = [];
+            if (data.ai_available !== false) {
+                modes.push('ai_enhanced');
+            }
+            modes.push('smart_mode'); // Smart mode should always be available
+            setAvailableModes(modes);
+            
+            // Use user selected mode if available and valid, otherwise use server default
+            const modeToUse = (userSelectedMode && modes.includes(userSelectedMode)) 
+                ? userSelectedMode 
+                : (data.mode || 'smart_mode');
+            
             // Update service mode based on enhanced health response
-            setServiceMode(data.mode || 'error');
+            setServiceMode(modeToUse);
             setServiceDescription(data.description || 'Unknown status');
             setAiAvailable(data.ai_available !== false); // Default to true if not specified
             
-            console.log('Service status:', data.mode, '-', data.description, '- AI Available:', data.ai_available);
+            console.log('Service status:', modeToUse, '-', data.description, '- AI Available:', data.ai_available);
         } catch (error) {
             console.error('Health check failed:', error);
             
@@ -86,6 +101,7 @@ const ChatBot = () => {
                 setServiceDescription('Unable to connect to service');
             }
             setAiAvailable(false);
+            setAvailableModes(['smart_mode']); // Only smart mode available offline
         }
     };
 
@@ -149,7 +165,10 @@ const ChatBot = () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ message: message })
+                body: JSON.stringify({ 
+                    message: message,
+                    mode: serviceMode // Send the current mode to the server
+                })
             });
 
             const responseData = await response.json();
@@ -202,6 +221,19 @@ const ChatBot = () => {
             console.error('Clear chat error:', error);
             // Clear locally even if API call fails
             setMessages([]);
+        }
+    };
+
+    // Handle mode selection by user
+    const handleModeSelection = (selectedMode) => {
+        if (availableModes.includes(selectedMode)) {
+            setUserSelectedMode(selectedMode);
+            setServiceMode(selectedMode);
+            
+            // Clear messages when switching modes
+            setMessages([]);
+            
+            console.log('User selected mode:', selectedMode);
         }
     };
 
@@ -328,6 +360,25 @@ const ChatBot = () => {
                                 </div>
                             </div>
                             <div className="chat-header-actions">
+                                {/* Mode Selector */}
+                                {availableModes.length > 1 && serviceMode !== 'loading' && serviceMode !== 'error' && (
+                                    <div className="mode-selector">
+                                        <select 
+                                            value={serviceMode}
+                                            onChange={(e) => handleModeSelection(e.target.value)}
+                                            className="mode-select"
+                                            title="Choose chatbot mode"
+                                        >
+                                            {availableModes.includes('ai_enhanced') && (
+                                                <option value="ai_enhanced">🤖 AI Enhanced</option>
+                                            )}
+                                            {availableModes.includes('smart_mode') && (
+                                                <option value="smart_mode">⚡ Smart Mode</option>
+                                            )}
+                                        </select>
+                                    </div>
+                                )}
+                                
                                 {messages.length > 0 && (
                                     <button 
                                         className="clear-btn" 
@@ -360,6 +411,14 @@ const ChatBot = () => {
                                 <div className="welcome-message">
                                     <h4>Hi! I'm HunniBee 🐝</h4>
                                     <p>Your AI-powered academic assistant with two intelligent modes:</p>
+                                    
+                                    {availableModes.length > 1 && serviceMode !== 'loading' && (
+                                        <div className="mode-switch-notice">
+                                            <p style={{ fontSize: '0.9rem', color: '#6b7280', marginBottom: '16px' }}>
+                                                💡 <strong>Tip:</strong> You can switch between modes using the dropdown in the header!
+                                            </p>
+                                        </div>
+                                    )}
                                     
                                     <div className="modes-explanation">
                                         <div className={`mode-card ${serviceMode === 'loading' ? 'active' : ''}`} style={{ display: serviceMode === 'loading' ? 'block' : 'none' }}>
