@@ -2306,8 +2306,8 @@ nav .wrapper .links a.active svg{
 .loading-modal {
   background: white;
   border-radius: 16px;
-  padding: 40px;
-  max-width: 400px;
+  padding: 20px;
+  max-width: 450px;
   width: 90%;
   text-align: center;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
@@ -2495,7 +2495,7 @@ nav .wrapper .links a.active svg{
 
 .offline-schedule-img {
   max-width: 100%;
-  width: 280px;
+  width: 200px;
   height: auto;
   border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
