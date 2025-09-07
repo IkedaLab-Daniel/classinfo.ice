@@ -26,7 +26,7 @@ const useApiWithLoading = () => {
         console.log('Starting API request with threshold:', serverWakeThreshold);
         setIsLoading(true);
         setLoadingMessage(requestLoadingMessage);
-        setIsServerWaking(true);
+        setIsServerWaking(false);
         setError(null);
 
         const startTime = Date.now();
