@@ -40,20 +40,30 @@ router.get('/', asyncHandler(async (req, res) => {
   const schedules = await ClassSchedule.find(query)
     .sort(sort)
     .skip(skip)
-    .limit(parseInt(limit));
+    .limit(parseInt(limit))
+    .lean(); // Convert to plain JS objects for easier manipulation
+
+  // Filter out any schedules without valid dates and log them
+  const validSchedules = schedules.filter(schedule => {
+    if (!schedule.date) {
+      console.warn(`Schedule ${schedule._id} has no date field:`, schedule);
+      return false;
+    }
+    return true;
+  });
 
   const total = await ClassSchedule.countDocuments(query);
 
   res.json({
     success: true,
-    count: schedules.length,
+    count: validSchedules.length,
     total,
     pagination: {
       page: parseInt(page),
       limit: parseInt(limit),
       pages: Math.ceil(total / limit)
     },
-    data: schedules
+    data: validSchedules
   });
 }));
 
