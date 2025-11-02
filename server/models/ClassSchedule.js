@@ -49,6 +49,11 @@ classScheduleSchema.index({ date: 1, startTime: 1 });
 
 // Validation to ensure end time is after start time
 classScheduleSchema.pre('save', function(next) {
+  // Validate date exists and is valid
+  if (!this.date || isNaN(this.date.getTime())) {
+    return next(new Error('Invalid or missing date'));
+  }
+
   const startTime = this.startTime.split(':').map(Number);
   const endTime = this.endTime.split(':').map(Number);
   

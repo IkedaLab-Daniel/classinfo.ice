@@ -245,8 +245,10 @@ const Manage = () => {
         switch (filter) {
             case 'today':
                 filtered = schedules.filter(schedule => {
-                    const scheduleDate = new Date(schedule.date).toISOString().split('T')[0];
-                    return scheduleDate === todayStr;
+                    if (!schedule.date) return false; // Skip if no date
+                    const scheduleDate = new Date(schedule.date);
+                    if (isNaN(scheduleDate.getTime())) return false; // Skip if invalid date
+                    return scheduleDate.toISOString().split('T')[0] === todayStr;
                 });
                 break;
             
@@ -255,8 +257,10 @@ const Manage = () => {
                 tomorrow.setDate(tomorrow.getDate() + 1);
                 const tomorrowStr = tomorrow.toISOString().split('T')[0];
                 filtered = schedules.filter(schedule => {
-                    const scheduleDate = new Date(schedule.date).toISOString().split('T')[0];
-                    return scheduleDate === tomorrowStr;
+                    if (!schedule.date) return false; // Skip if no date
+                    const scheduleDate = new Date(schedule.date);
+                    if (isNaN(scheduleDate.getTime())) return false; // Skip if invalid date
+                    return scheduleDate.toISOString().split('T')[0] === tomorrowStr;
                 });
                 break;
             
@@ -272,7 +276,9 @@ const Manage = () => {
                 endOfWeek.setHours(23, 59, 59, 999);
                 
                 filtered = schedules.filter(schedule => {
+                    if (!schedule.date) return false; // Skip if no date
                     const scheduleDate = new Date(schedule.date);
+                    if (isNaN(scheduleDate.getTime())) return false; // Skip if invalid date
                     return scheduleDate >= startOfWeek && scheduleDate <= endOfWeek;
                 });
                 break;
@@ -289,7 +295,9 @@ const Manage = () => {
                 nextWeekEnd.setHours(23, 59, 59, 999);
                 
                 filtered = schedules.filter(schedule => {
+                    if (!schedule.date) return false; // Skip if no date
                     const scheduleDate = new Date(schedule.date);
+                    if (isNaN(scheduleDate.getTime())) return false; // Skip if invalid date
                     return scheduleDate >= nextWeekStart && scheduleDate <= nextWeekEnd;
                 });
                 break;
@@ -301,7 +309,9 @@ const Manage = () => {
                     toDate.setHours(23, 59, 59, 999);
                     
                     filtered = schedules.filter(schedule => {
+                        if (!schedule.date) return false; // Skip if no date
                         const scheduleDate = new Date(schedule.date);
+                        if (isNaN(scheduleDate.getTime())) return false; // Skip if invalid date
                         return scheduleDate >= fromDate && scheduleDate <= toDate;
                     });
                 }
