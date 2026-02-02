@@ -10,6 +10,7 @@ import ice from '../assets/ice.jpeg'
 import alvin from '../assets/alvin.jpg'
 import matthew from '../assets/matthew.jpg'
 import brix from '../assets/brix2.jpeg'
+import markidri from '../assets/markidri.jpeg'
 
 const Dashboard = () => {
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -375,8 +376,9 @@ const Dashboard = () => {
                                 <img src={alvin} alt="" />
                                 <img src={matthew} alt="" />
                                 <img src={brix} alt="" />
+                                <img src={markidri} alt="" />
                             </div>
-                            <p>Managed by: <span className='name'>Daniel, Alvin, Matthew, Brix</span></p>
+                            <p>Managed by: <span className='name'>Daniel, Alvin, Matthew, Brix, Markedrei</span></p>
                         </div>
                     </div>
                 </div>

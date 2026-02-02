@@ -51,10 +51,10 @@ const corsOptions = {
     ];
     
     if (allowedOrigins.indexOf(origin) !== -1) {
-      console.log(`✅ CORS: Origin '${origin}' - ALLOWED`);
+      console.log(`OK CORS: Origin '${origin}' - ALLOWED`);
       callback(null, true);
     } else {
-      console.log(`\n🚫 CORS ERROR: Origin '${origin}' - BLOCKED`);
+      console.log(`\nERROR CORS ERROR: Origin '${origin}' - BLOCKED`);
       console.log('📋 Allowed origins:');
       allowedOrigins.forEach((allowedOrigin, index) => {
         console.log(`   ${index + 1}. ${allowedOrigin}`);
