@@ -9,7 +9,7 @@ import { taskAPI, scheduleAPI } from '../config/api';
 import ice from '../assets/ice.jpeg'
 import alvin from '../assets/alvin.jpg'
 import matthew from '../assets/matthew.jpg'
-import brix from '../assets/brix2.jpeg'
+import brix from '../assets/brix.jpeg'
 import markidri from '../assets/markidri.jpeg'
 
 const Dashboard = () => {
