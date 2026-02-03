@@ -10,6 +10,13 @@
   [build.environment]
     NODE_VERSION = "18"
 
+# API proxy to EC2 server
+[[redirects]]
+  from = "/api/*"
+  to = "http://3.238.130.198/api/:splat"
+  status = 200
+  force = true
+
 # SPA redirect rules (fallback for _redirects file)
 [[redirects]]
   from = "/*"
