@@ -136,3 +136,8 @@ config/local.js
 *.backup
 *.bak
 *.old
+
+/cloud
+cloud
+./cloud
+cloud/
